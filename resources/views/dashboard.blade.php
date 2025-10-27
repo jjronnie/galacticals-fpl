@@ -76,6 +76,7 @@
                 <x-stat-card title="Most GW Last"
                     value="{{ $mostLast > 0 ? $lastManager . ' (' . $mostLast . ' times)' : 'N/A' }}"
                     icon="down-arrow" />
+                    
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-6">

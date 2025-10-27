@@ -10,7 +10,7 @@
     <div class="flex items-center">
           @if ($icon)
         <div class="flex-shrink-0">
-            <div class="w-12 h-12 bg-brown rounded-xl  flex items-center justify-center">
+            <div class="w-12 h-12 bg-blue-600 rounded-xl  flex items-center justify-center">
                 <i data-lucide="{{ $icon }}" class="w-5 h-5 text-white"></i>
             </div>
 
