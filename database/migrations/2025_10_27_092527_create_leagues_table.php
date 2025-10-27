@@ -16,9 +16,13 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('name');
             $table->string('slug')->unique();
-            $table->text('description')->nullable();
+            
+            $table->integer('current_season_year')->default(2025); // e.g., 2025 for 25/26 season
+            $table->integer('current_gameweek')->default(0); // 0 until GW1 starts $table->text('description')->nullable();
             $table->timestamps();
         });
+
+      
     }
 
     /**

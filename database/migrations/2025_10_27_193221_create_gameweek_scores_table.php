@@ -11,16 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-      Schema::create('gameweek_performances', function (Blueprint $table) {
+       Schema::create('gameweek_scores', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('season_id')->constrained()->onDelete('cascade');
             $table->foreignId('manager_id')->constrained()->onDelete('cascade');
             $table->integer('gameweek');
+            $table->integer('season_year'); // e.g., 2025 for 25/26 season
+         
             $table->integer('points');
             $table->timestamps();
-            
-            $table->unique(['season_id', 'manager_id', 'gameweek']);
+
+            // Enforce uniqueness: a manager can only have one score per gameweek per season
+            $table->unique(['manager_id', 'gameweek', 'season_year']);
         });
+
+      
+
     }
 
     /**
@@ -28,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('gameweek_performances');
+        Schema::dropIfExists('gameweek_scores');
     }
 };

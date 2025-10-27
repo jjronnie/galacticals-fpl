@@ -1,46 +1,44 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\Admin\LeagueController;
-use App\Http\Controllers\Admin\ManagerController;
-use App\Http\Controllers\Admin\SeasonController;
-use App\Http\Controllers\Admin\GameweekController;
 use App\Http\Controllers\FrontendController;
+use App\Http\Controllers\AdminController;
+
+use App\Models\League;
+
 use Illuminate\Support\Facades\Route;
 
-// Public Frontend Route
-Route::get('/league/{slug}', [FrontendController::class, 'show'])->name('frontend.league.show');
+//public routes
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return redirect()->route('admin.leagues.index');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/leagues', [FrontendController::class, 'listLeagues'])->name('public.leagues.list');
 
-Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
-    
-    // Leagues
-    Route::resource('leagues', LeagueController::class);
-    
-    // Managers
-    Route::get('leagues/{league}/managers/create', [ManagerController::class, 'create'])->name('managers.create');
-    Route::post('leagues/{league}/managers', [ManagerController::class, 'store'])->name('managers.store');
-    Route::get('leagues/{league}/managers/{manager}/edit', [ManagerController::class, 'edit'])->name('managers.edit');
-    Route::put('leagues/{league}/managers/{manager}', [ManagerController::class, 'update'])->name('managers.update');
-    Route::delete('leagues/{league}/managers/{manager}', [ManagerController::class, 'destroy'])->name('managers.destroy');
-    
-    // Seasons
-    Route::get('leagues/{league}/seasons/create', [SeasonController::class, 'create'])->name('seasons.create');
-    Route::post('leagues/{league}/seasons', [SeasonController::class, 'store'])->name('seasons.store');
-    Route::get('leagues/{league}/seasons/{season}', [SeasonController::class, 'show'])->name('seasons.show');
-    Route::post('leagues/{league}/seasons/{season}/activate', [SeasonController::class, 'activate'])->name('seasons.activate');
-    
-    // Gameweeks
-    Route::get('leagues/{league}/seasons/{season}/gameweeks/create', [GameweekController::class, 'create'])->name('gameweeks.create');
-    Route::post('leagues/{league}/seasons/{season}/gameweeks', [GameweekController::class, 'store'])->name('gameweeks.store');
-    Route::get('leagues/{league}/seasons/{season}/gameweeks/{gameweek}/edit', [GameweekController::class, 'edit'])->name('gameweeks.edit');
+Route::get('/leagues/{slug}/gw{gameweek?}', [FrontendController::class, 'showStats'])
+    ->where('gameweek', '[0-9]+') 
+    ->name('public.stats.show');
+
+
+Route::middleware(['auth', 'verified'])->group(function () {
+
+    Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
+
+    // --- League Setup/Management ---
+    Route::get('/dashboard/setup', [AdminController::class, 'createLeague'])->name('admin.league.create');
+    Route::post('/dashboard/setup', [AdminController::class, 'storeLeague'])->name('admin.league.store');
+
+
+
+    // Managers CRUD (simple)
+    Route::post('/dashboard/manager', [AdminController::class, 'storeManager'])->name('admin.manager.store');
+    Route::delete('/dashboard/manager/{manager}', [AdminController::class, 'destroyManager'])->name('admin.manager.destroy');
+
+    // --- Gameweek Scores & Stats ---
+    Route::get('/dashboard/gameweek/add', [AdminController::class, 'createGameweekScore'])->name('admin.gameweek.create');
+    Route::post('/dashboard/gameweek/add', [AdminController::class, 'storeGameweekScore'])->name('admin.gameweek.store');
+    Route::post('/dashboard/gameweek/next-season', [AdminController::class, 'nextSeason'])->name('admin.season.next');
 });
 
 Route::middleware('auth')->group(function () {
@@ -49,4 +47,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
+
+
+
+
+
+
+require __DIR__ . '/auth.php';
