@@ -1,0 +1,14 @@
+@layer components {
+    .label {
+        @apply block text-sm font-medium text-gray-600
+    }
+
+    .input {
+        @apply mt-1 block w-full border border-gray-300 bg-white text-gray-900 rounded-md shadow-sm sm:text-sm
+    }
+
+    .placeholder {
+
+        @apply mt-1 block w-full border border-gray-300 bg-white text-gray-900 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm
+    }
+}

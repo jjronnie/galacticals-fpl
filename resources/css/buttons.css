@@ -1,0 +1,106 @@
+
+
+@layer components {   
+
+    .button {
+        @apply inline-flex items-center px-3 py-2  border text-sm font-medium rounded-md transition-colors  duration-300 ease-in-out bg-blue-600 text-white ring-blue-800 hover:bg-blue-800;
+    }
+
+    .button:hover,
+    .button:focus {
+        @apply outline-none ring-2 ring-offset-2;
+    }
+
+    .btn {
+        @apply button;
+    }
+
+    /* SMALL  */
+    .button-sm {
+        @apply inline-flex items-center px-3 py-2 border text-xs font-medium rounded-md transition-colors   duration-300 ease-in-out bg-blue-600 text-white ring-blue-800 hover:bg-blue-800;
+    }
+
+    .button-sm:hover,
+    .button-sm:focus {
+        @apply outline-none ring-2 ring-offset-2;
+    }
+
+    .btn-sm {
+        @apply button-sm;
+    }
+
+
+
+    /* success */
+    .button-green {
+        @apply inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md transition-colors  duration-300 ease-in-out bg-green-600 text-white ring-green-600 hover:bg-green-800;
+    }
+
+    .button-green:hover,
+    .button-green:focus {
+        @apply outline-none ring-2 ring-offset-2;
+    }
+
+    .btn-success {
+        @apply button-green;
+    }
+
+    /* SMALL  */
+    .button-green-sm {
+        @apply inline-flex items-center px-2 py-2 border text-xs font-medium rounded-md transition-colors  duration-300 ease-in-out bg-green-600 text-white ring-green-600 hover:bg-green-800;
+    }
+
+    .button-green-sm:hover,
+    .button-green-sm:focus {
+        @apply outline-none ring-2 ring-offset-2;
+    }
+
+    .btn-success-sm {
+        @apply button-green-sm;
+    }
+    /* DANGER */
+    .button-red {
+        @apply inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md transition-colors duration-300 ease-in-out bg-red-600 text-white ring-red-600 hover:bg-red-800;
+    }
+
+    .button-red:hover,
+    .button-red:focus {
+        @apply outline-none ring-2 ring-offset-2;
+    }
+
+    .btn-danger {
+        @apply button-red;
+    }
+    /* SMALL  */
+    .button-red-sm {
+        @apply inline-flex items-center px-3 py-2 border text-xs font-medium rounded-md transition-colors  duration-300 ease-in-out bg-red-600 text-white ring-red-600 hover:bg-red-800;
+    }
+
+    .button-red-sm:hover,
+    .button-red-sm:focus {
+        @apply outline-none ring-2 ring-offset-2;
+    }
+
+    .btn-danger-sm {
+        @apply button-red-sm;
+    }
+
+    
+
+/* GRAY BUTTON */
+.button-gray {
+    @apply inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md 
+           transition-colors duration-300 ease-in-out bg-gray-200 text-gray-800 
+           hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400;
+}
+
+.btn-gray {
+    @apply button-gray;
+}
+
+
+  
+
+
+}
+

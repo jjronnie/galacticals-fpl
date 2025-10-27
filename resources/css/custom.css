@@ -1,0 +1,74 @@
+
+
+@layer components {
+
+
+  .details-section {
+    @apply flex items-start space-x-6 pb-6 border-b border-gray-200;
+  }
+
+  .profile-image-placeholder {
+    @apply w-24 h-24 bg-gray-200 flex-shrink-0;
+  }
+
+  .info-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-8 w-full;
+  }
+
+  .info-item {
+    @apply flex flex-col;
+  }
+
+  .info-label {
+    @apply text-sm text-gray-500 font-semibold uppercase tracking-wide;
+  }
+
+  .info-value {
+    @apply text-base text-gray-800 font-medium;
+  }
+
+  .transactions-section {
+    @apply pt-6;
+  }
+
+  .transactions-link {
+    @apply text-blue-600 font-semibold hover:underline;
+  }
+
+  .transactions-table-header {
+    @apply flex justify-between items-center py-3 mt-4 text-sm font-medium text-gray-500 border-b border-gray-200;
+  }
+
+  .header-item {
+    @apply w-1/5 text-left;
+  }
+
+  .no-data {
+    @apply text-center text-gray-400 py-12;
+  }
+}
+
+
+/* custom css */
+
+.no-scrollbar {
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari, Opera */
+}
+
+[x-cloak] {
+    display: none !important;
+}
+
+
+.flex.items-center.justify-between {
+    cursor: move;
+}
+

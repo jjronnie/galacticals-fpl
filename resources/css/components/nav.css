@@ -1,0 +1,11 @@
+.nav {
+  @apply bg-white border-b border-gray-200 px-4 py-3 flex items-center sticky top-0 z-30;
+}
+
+.menu-btn {
+  @apply lg:hidden p-2 rounded-md hover:bg-gray-100 transition-colors;
+}
+
+.quick-access-item {
+  @apply flex items-center space-x-3 px-3 py-2 rounded-md hover:bg-gray-50 text-gray-700;
+}

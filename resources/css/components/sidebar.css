@@ -1,0 +1,31 @@
+
+.sidebar {
+  @apply w-80 lg:w-64 bg-primary text-white flex flex-col fixed top-0 left-0 h-screen z-40 lg:z-[10000] transform transition-transform duration-300 -translate-x-full lg:translate-x-0;
+}
+
+.sidebar-header {
+  @apply p-4  flex items-center justify-between;
+}
+
+.sidebar-link {
+  @apply flex items-center space-x-3 px-3 py-2 rounded-full hover:bg-brown text-white text-sm font-medium;
+
+  
+}
+
+.sidebar-link-active {
+  @apply bg-brown text-white;
+}
+
+
+
+.sidebar-dropdown {
+  @apply w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors;
+}
+
+.sidebar-sub-link {
+  @apply block text-sm px-3 py-1 rounded transition-colors;
+}
+
+
+

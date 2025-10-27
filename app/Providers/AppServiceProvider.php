@@ -9,6 +9,12 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Register any application services.
      */
+
+      protected $policies = [
+        League::class => LeaguePolicy::class,
+    ];
+
+    
     public function register(): void
     {
         //
