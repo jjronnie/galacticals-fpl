@@ -1,14 +1,8 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800  leading-tight">
-            {{ $league->name }} Admin Dashboard
-            <span class="text-sm text-gray-500"> (Season: {{ $league->current_season_year }}/{{
-                $league->current_season_year + 1 }})</span>
-        </h2>
-    </x-slot>
+    
 
-    <x-page-title title="{{ $league->name }}"
-        subtitle=" (Season: {{ $league->current_season_year }}/{{ $league->current_season_year + 1 }})" />
+    <x-page-title title="{{ $league->name }} (Season: {{ $league->current_season_year }}/{{ $league->current_season_year + 1 }})"
+        />
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
@@ -36,7 +30,7 @@
                             'Season Complete' }}
                     </a>
 
-                    <form method="POST" action="{{ route('admin.season.next') }}" class="inline-block"
+                    {{-- <form method="POST" action="{{ route('admin.season.next') }}" class="inline-block"
                         onsubmit="return confirm('Are you sure you want to advance to the next season? This action cannot be undone for the current league status.');">
                         @csrf
                         <button type="submit"
@@ -45,7 +39,7 @@
                                 Start New Season ({{ $league->current_season_year + 1 }}/{{
                                 $league->current_season_year + 2 }})
                         </button>
-                    </form>
+                    </form> --}}
                 </div>
             </div>
 
@@ -75,7 +69,7 @@
                 @endphp
                 <x-stat-card title="Most GW Last"
                     value="{{ $mostLast > 0 ? $lastManager . ' (' . $mostLast . ' times)' : 'N/A' }}"
-                    icon="down-arrow" />
+                    icon="arrow-down" />
                     
             </div>
 
@@ -151,7 +145,7 @@
             @endif
 
             <x-page-title title="Manage Managers" />
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="grid grid-cols-1 lg:grid-cols-1 gap-8">
                 <div class="bg-white  p-6 shadow-md rounded-lg">
                     <h3 class="text-lg font-bold text-gray-900  mb-4">Add New Manager</h3>
                     <form method="POST" action="{{ route('admin.manager.store') }}">
@@ -162,6 +156,13 @@
                                     :value="old('name')" required placeholder="Manager's Name" />
                                 <x-input-error :messages="$errors->get('name')" class="mt-2" />
                             </div>
+
+                              <div class="flex-grow">
+                                <x-text-input id="team_name" class="w-full" type="text" name="team_name"
+                                    :value="old('team_name')" required placeholder="Team Name" />
+                                <x-input-error :messages="$errors->get('team_name')" class="mt-2" />
+                            </div>
+                            
                             <x-primary-button>
                                 {{ __('Add') }}
                             </x-primary-button>
@@ -169,26 +170,43 @@
                     </form>
                 </div>
 
-                <div class="bg-white  p-6 shadow-md rounded-lg">
-                    <h3 class="text-lg font-bold text-gray-900  mb-4">Current Managers ({{ $managers->count() }})
-                    </h3>
-                    @if($managers->count() > 0)
-                    <ul class="space-y-2 max-h-60 overflow-y-auto">
-                        @foreach($managers as $manager)
-                        <li class="flex justify-between items-center p-2 border-b ">
-                            <span class="text-gray-700 0">{{ $manager->name }}</span>
+                <div class="bg-white p-6 shadow-md rounded-lg">
+    <h3 class="text-lg font-bold text-gray-900 mb-4">Current Managers ({{ $managers->count() }})
+    </h3>
+    @if($managers->count() > 0)
+    
+    
+        <x-table :headers="['Name', 'Team', 'Action']" >
+            {{-- Loop through managers to create table rows --}}
+            @foreach($managers as $manager)
+            <x-table.row>
+                
+                {{-- Name Cell --}}
+                <x-table.cell>
+                    <span class="text-gray-700">{{ $manager->name ?? '-'}}</span>
+                </x-table.cell>
 
+                {{-- Team Cell --}}
+                <x-table.cell>
+                    <span class="text-gray-700">{{ $manager->team_name ?? '-' }}</span>
+                </x-table.cell>
 
-                            <x-confirm-modal :action="route('admin.manager.destroy', $manager)"
-                                warning="Are you sure you want to delete this Manager? This action cannot be undone."
-                                triggerIcon="trash" />
-                        </li>
-                        @endforeach
-                    </ul>
-                    @else
-                    <x-empty-state message="No managers added yet. Start by adding a manager!" />
-                    @endif
-                </div>
+                {{-- Action Cell with Confirm Modal --}}
+                <x-table.cell class="text-right"> {{-- Align action button to the right --}}
+                    <x-confirm-modal :action="route('admin.manager.destroy', $manager)"
+                        warning="Are you sure you want to delete this Manager? This action cannot be undone."
+                        triggerIcon="trash" />
+                </x-table.cell>
+                
+            </x-table.row>
+            @endforeach
+        </x-table>
+    
+    
+    @else
+    <x-empty-state message="No managers added yet. Start by adding a manager!" />
+    @endif
+</div>
             </div>
 
         </div>

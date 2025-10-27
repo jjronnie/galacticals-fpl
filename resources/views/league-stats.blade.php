@@ -36,7 +36,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
         
         {{-- League Title (Left/Center) --}}
-        <h1 class="flex text-xl font-extrabold items-center gap-2 text-center">
+        <h1 class="hidden md:inline-block flex text-xl font-extrabold items-center gap-2 text-center">
             {{ $league->name }} FPL Managers ({{ $league->current_season_year }}/{{ $league->current_season_year + 1 }})
             <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Flag_of_Uganda.svg" alt="Uganda Flag"
                 class="inline-block w-6 h-4" />
@@ -83,9 +83,18 @@
 </header>
 
     <main class="max-w-5xl mx-auto p-4 space-y-6">
+
+      
         
         <section class="mt-8">
-            <h2 class="mb-6 text-2xl font-bold text-center">Season Standings (Total Points)</h2>
+                 {{-- League Title (Left/Center) --}}
+        <h1 class=" text-xl font-extrabold gap-2 text-center">
+            {{ $league->name }} FPL Managers ({{ $league->current_season_year }}/{{ $league->current_season_year + 1 }})
+            <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Flag_of_Uganda.svg" alt="Uganda Flag"
+                class="inline-block w-6 h-4" />
+        </h1>
+
+            <h2 class="mb-6 text-2xl font-bold text-center">Table Standings</h2>
             <div class="overflow-x-auto glass">
                 <table class="min-w-full text-left text-sm font-light">
                     <thead class="font-medium bg-white/10">

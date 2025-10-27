@@ -172,10 +172,12 @@ class AdminController extends Controller
     {
         $league = $this->getCurrentLeague();
         $request->validate(['name' => 'required|string|max:255']);
+        $request->validate(['team_name' => 'required|string|max:255']);
 
         Manager::create([
             'league_id' => $league->id,
             'name' => $request->name,
+            'team_name' => $request->team_name,
         ]);
 
         return back()->with('status', 'Manager added!');
