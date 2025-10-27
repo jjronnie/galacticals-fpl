@@ -8,13 +8,13 @@
 }
 
 .sidebar-link {
-  @apply flex items-center space-x-3 px-3 py-2 rounded-full hover:bg-brown text-white text-sm font-medium;
+  @apply flex items-center space-x-3 px-3 py-2 rounded-full hover:bg-blue-600 text-white text-sm font-medium;
 
   
 }
 
 .sidebar-link-active {
-  @apply bg-brown text-white;
+  @apply bg-blue-800 text-white;
 }
 
 

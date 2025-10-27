@@ -11,9 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('gameweek_performances', function (Blueprint $table) {
+      Schema::create('gameweek_performances', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('season_id')->constrained()->onDelete('cascade');
+            $table->foreignId('manager_id')->constrained()->onDelete('cascade');
+            $table->integer('gameweek');
+            $table->integer('points');
             $table->timestamps();
+            
+            $table->unique(['season_id', 'manager_id', 'gameweek']);
         });
     }
 

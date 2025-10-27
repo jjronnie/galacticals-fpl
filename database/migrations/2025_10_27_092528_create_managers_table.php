@@ -11,8 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('managers', function (Blueprint $table) {
+       Schema::create('managers', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('league_id')->constrained()->onDelete('cascade');
+            $table->string('name');
+            $table->string('team_name')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

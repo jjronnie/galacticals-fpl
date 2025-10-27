@@ -35,40 +35,18 @@
             </a>
             <div class="space-y-1">
 
-                <a href="{{ route('products.index') }}"
-                    class="sidebar-link {{ request()->routeIs('products.*') ? 'sidebar-link-active' : '' }}">
-
-                    <i data-lucide="package" class="w-4 h-4 text-white"></i>
-                    <span>Products</span>
-                </a>
+             
 
 
+         
 
-                <a href="{{ route('sales.index') }}"
-                    class="sidebar-link {{ request()->routeIs('sales.*') ? 'sidebar-link-active' : '' }}">
-
-                    <i data-lucide="shopping-cart" class="w-4 h-4 text-white"></i>
-                    <span>Sales</span>
-                </a>
-
-
-                {{-- Customers --}}
-                <a href="{{ route('customers.index') }}"
-                    class="sidebar-link {{ request()->routeIs('customers.*') ? 'sidebar-link-active' : '' }}">
-                    <i data-lucide="users" class="w-4 h-4 text-white"></i>
-                    <span>Customers</span>
-                </a>
 
                 <a href="#" class="sidebar-link">
                     <i data-lucide="truck" class="w-4 h-4 text-white"></i>
                     <span>Purchases</span>
                 </a>
 
-                <a href="{{ route('suppliers.index') }}"
-                    class="sidebar-link {{ request()->routeIs('suppliers.*') ? 'sidebar-link-active' : '' }}">
-                    <i data-lucide="building-2" class="w-4 h-4 text-white"></i>
-                    <span>Suppliers</span>
-                </a>
+          
 
                 <a href="#" class="sidebar-link">
                     <i data-lucide="wrench" class="w-4 h-4 text-white"></i>
@@ -81,60 +59,7 @@
                 </a>
 
 
-                {{-- Users --}}
-                <a href="{{ route('users.index') }}"
-                    class="sidebar-link {{ request()->routeIs('users.*') ? 'sidebar-link-active' : '' }}">
-                    <i data-lucide="users" class="w-4 h-4 text-white"></i>
-                    <span>Users</span>
-                </a>
-
-
-                {{-- Settings --}}
-                <a href="{{ route('business.settings') }}"
-                    class="sidebar-link {{ request()->routeIs('business.*') ? 'sidebar-link-active' : '' }}">
-                    <i data-lucide="settings" class="w-4 h-4 text-white"></i>
-                    <span>Settings</span>
-                </a>
-
-
-                {{-- Subscription --}}
-                <a href="{{ route('billing.index') }}"
-                    class="sidebar-link {{ request()->routeIs('billing.*') ? 'sidebar-link-active' : '' }}">
-                    <i data-lucide="circle-dollar-sign" class="w-4 h-4 text-white"></i>
-                    <span>Subscription</span>
-                </a>
-
-                {{-- Super admin only --}}
-
-                @if(auth()->user() && auth()->user()->hasRole('superadmin'))
-
-
-                          {{-- Subscription --}}
-                <a href="{{ route('subscriptionPlans.index') }}"
-                    class="sidebar-link {{ request()->routeIs('subscriptionPlans.*') ? 'sidebar-link-active' : '' }}">
-                    <i data-lucide="tickets-plane" class="w-4 h-4 text-white"></i>
-                    <span>Businesses</span>
-                </a>
-
-                
-                {{-- Subscription --}}
-                <a href="{{ route('subscriptionPlans.index') }}"
-                    class="sidebar-link {{ request()->routeIs('subscriptionPlans.*') ? 'sidebar-link-active' : '' }}">
-                    <i data-lucide="tickets-plane" class="w-4 h-4 text-white"></i>
-                    <span>Subscription Plans</span>
-                </a>
-
-
-                   {{-- Permissions --}}
-                <a href="{{ route('permissions.index') }}"
-                    class="sidebar-link {{ request()->routeIs('permissions.*') ? 'sidebar-link-active' : '' }}">
-                    <i data-lucide="shield-check" class="w-4 h-4 text-white"></i>
-                    <span>Permissions</span>
-                </a>
-
-
-                @endif
-
+         
 
 
 
