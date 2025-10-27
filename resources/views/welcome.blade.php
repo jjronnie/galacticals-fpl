@@ -97,11 +97,11 @@
             <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">
                 <a href="#join-steps"
                     class="px-8 py-3 text-lg font-bold text-white bg-green-600 rounded-full shadow-lg hover:bg-green-700 transition duration-300 transform hover:scale-105">
-                    How To Join
+                    Get Started
                 </a>
                 <a href="{{route ('public.leagues.list') }}"
                     class="px-8 py-3 text-lg font-bold text-indigo-400 border-2 border-indigo-400 rounded-full shadow-lg hover:bg-indigo-700 hover:text-white transition duration-300 transform hover:scale-105">
-                    View Available Leagues
+                      Leagues
                 </a>
             </div>
         </section>
@@ -181,6 +181,7 @@
       
 
     </main>
+    <x-consent-banner/>
 
     <footer class="py-6 mt-12 text-center text-gray-500 text-sm border-t border-gray-800">
         © <span id="year"></span>

@@ -64,7 +64,7 @@
     @vite('resources/js/app.js')
     <script src="{{ asset('assets/js/main.js') }}"></script>
 
-
+<x-consent-banner/>
 
 </body>
 

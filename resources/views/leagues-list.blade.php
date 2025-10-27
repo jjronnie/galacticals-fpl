@@ -107,6 +107,7 @@
         
         
     </main>
+    <x-consent-banner/>
 
     <footer class="py-6 mt-8 text-center text-gray-500 text-sm border-t border-gray-800">
         © <span id="year"></span>

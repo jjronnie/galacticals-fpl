@@ -14,6 +14,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/privacy-policy', function () {
+    return view('privacy_policy');
+})->name('privacy.policy');
+
 Route::get('/leagues', [FrontendController::class, 'listLeagues'])->name('public.leagues.list');
 
 Route::get('/leagues/{slug}/gw{gameweek?}', [FrontendController::class, 'showStats'])

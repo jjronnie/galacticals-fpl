@@ -1,8 +1,8 @@
 {
-  "name": "Novas",
-  "short_name": "Novas",
-  "description": "An intelligent point of sale system for modern businesses.",
-  "start_url": "/login",
+  "name": "Fantasy Fun",
+  "short_name": "fpl fun",
+  "description": "FPL FUN.",
+  "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
   "scope": "/",
