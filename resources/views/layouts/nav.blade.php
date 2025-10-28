@@ -1,10 +1,13 @@
 <header class="nav" x-data="{ sidebarOpen: false, quickAccessOpen: false, notificationOpen: false }"
     @resize.window="if (window.innerWidth >= 1024) sidebarOpen = true">
 
-    <!-- Mobile Menu Button -->
-    <button class="menu-btn" id="menuBtn">
-        <i data-lucide="menu"></i>
-    </button>
+   <!-- Mobile Menu Button -->
+<a href="/"  class="flex items-center space-x-2">
+    
+    <i data-lucide="shirt"></i>
+    <span class="font-bold">FPL Galaxy</span>
+</a>
+
 
     <!-- Clock -->
     <div class="hidden md:flex items-center space-x-2 bg-blue-50 rounded-lg px-3 py-2 ml-4">
