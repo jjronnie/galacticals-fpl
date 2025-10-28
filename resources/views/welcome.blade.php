@@ -9,6 +9,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
+     <!--adsense script auto ads-->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1640926658118061"
+        crossorigin="anonymous"></script>
+
       <!--Start of Tawk.to Script-->
   <script type="text/javascript">
     var Tawk_API = Tawk_API || {},
@@ -64,9 +68,7 @@
         }
     </style>
 
-    <!--adsense script auto ads-->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1640926658118061"
-        crossorigin="anonymous"></script>
+   
 </head>
 
 <body class="min-h-screen text-gray-200 bg-black">
