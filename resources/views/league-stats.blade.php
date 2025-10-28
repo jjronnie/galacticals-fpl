@@ -221,57 +221,39 @@
             GameWeek Performance (Total GWs: {{ $currentGW }})
         </h2>
         
-        <div class="flex flex-wrap justify-center gap-2 mb-8">
-            @for ($gw = 1; $gw <= $currentGW; $gw++)
-                <a href="{{ route('public.stats.show', ['slug' => $league->slug, 'gameweek' => $gw]) }}" 
-                   class="py-1 px-3 text-xs font-semibold rounded-full transition duration-200 
-                          {{ $gw == $targetGW ? 'bg-green-500 text-black' : 'bg-gray-700 hover:bg-gray-600 text-white' }}">
-                    GW {{ $gw }}
-                </a>
-            @endfor
-            @if ($targetGW != $currentGW && $currentGW > 0)
-                <a href="{{ route('public.stats.show', ['slug' => $league->slug]) }}" 
-                   class="py-1 px-3 text-xs font-semibold rounded-full bg-[#5B0E9B] hover:bg-[#7C1FBF] text-white">
-                    Latest (GW {{ $currentGW }})
-                </a>
-            @endif
-        </div>
+      <!-- Responsive Grid for GWs -->
+<div class="grid gap-4 sm:grid-cols-1 lg:grid-cols-3">
+    @forelse ($gwPerformance as $gw)
+        <div class="p-6 rounded-lg shadow-lg glass border-2 border-gray-700">
+            <h2 class="mb-4 text-center text-white text-xl font-bold uppercase">
+                GameWeek {{ $gw['gameweek'] }}
+            </h2>
 
-        <div class="grid gap-4 sm:grid-cols-1 lg:grid-cols-1">
-            @if ($targetGW > 0)
-                @php
-                    // Filter GW performance to show the target GW data
-                    $targetGWData = collect($gwPerformance)->firstWhere('gameweek', $targetGW);
-                @endphp
-                @if ($targetGWData)
-                    <div class="p-6 rounded-lg shadow-lg glass border-4 {{ $targetGW == $currentGW ? 'border-yellow-500' : 'border-gray-500' }}">
-                        <h2 class="mb-4 text-center text-white text-xl font-bold uppercase">
-                            GameWeek {{ $targetGW }}
-                        </h2>
-                        <div class="flex justify-between">
-                            <div>
-                                <p class="text-gray-400 text-sm">Best Manager(s)</p>
-                                <p class="text-green-400 font-bold text-lg">
-                                    {{ implode(', ', $targetGWData['best_managers']) }}
-                                </p>
-                                <p class="text-green-400 text-sm font-semibold">{{ $targetGWData['best_points'] }}pts</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-gray-400 text-sm">Worst Manager(s)</p>
-                                <p class="text-red-400 font-bold text-lg">
-                                    {{ implode(', ', $targetGWData['worst_managers']) }}
-                                </p>
-                                <p class="text-red-400 text-sm font-semibold">{{ $targetGWData['worst_points'] }}pts</p>
-                            </div>
-                        </div>
-                    </div>
-                @else
-                    <div class="text-center py-8 text-gray-400">GW {{ $targetGW }} scores are not yet recorded.</div>
-                @endif
-            @else
-                <div class="text-center py-8 text-gray-400">No Gameweeks have been played yet for this season.</div>
-            @endif
+            <div class="flex justify-between">
+                <div>
+                    <p class="text-gray-400 text-sm">Best Manager(s)</p>
+                    <p class="text-green-400 font-bold text-lg">
+                        {{ implode(', ', $gw['best_managers']) }}
+                    </p>
+                    <p class="text-green-400 text-sm font-semibold">{{ $gw['best_points'] }}pts</p>
+                </div>
+
+                <div class="text-right">
+                    <p class="text-gray-400 text-sm">Worst Manager(s)</p>
+                    <p class="text-red-400 font-bold text-lg">
+                        {{ implode(', ', $gw['worst_managers']) }}
+                    </p>
+                    <p class="text-red-400 text-sm font-semibold">{{ $gw['worst_points'] }}pts</p>
+                </div>
+            </div>
         </div>
+    @empty
+        <div class="text-center py-8 text-gray-400">
+            No GameWeek data available yet.
+        </div>
+    @endforelse
+</div>
+
 
          <x-adsense/>
         
