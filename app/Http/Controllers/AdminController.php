@@ -176,10 +176,9 @@ public function index()
             ->with('info', 'Please complete your league setup first.');
     }
 
-    // Use the correct DB field
-    $seasonYear = $league->season; // Updated from current_season_year
+    $seasonYear = $league->season;
 
-    // Fetch all managers for this league and their scores for the current season
+    // Fetch all managers and their scores for the current season
     $managers = Manager::where('league_id', $league->id)
         ->with(['scores' => function ($query) use ($seasonYear) {
             $query->where('season_year', $seasonYear)->orderBy('gameweek');
@@ -196,7 +195,7 @@ public function index()
     $standings = $managers->map(function ($manager) {
         $totalPoints = $manager->scores->sum('points');
         return [
-            'name' => $manager->player_name, // Player name stays as frontend expects
+            'name' => $manager->player_name,
             'total_points' => $totalPoints,
         ];
     })->sortByDesc('total_points')->values();
@@ -216,27 +215,24 @@ public function index()
         $best = $scores->sortByDesc('points')->first();
         $worst = $scores->sortBy('points')->first();
 
-        $bestManagers = $scores->where('points', $best->points)->pluck('manager.player_name')->all();
-        $worstManagers = $scores->where('points', $worst->points)->pluck('manager.player_name')->all();
+        // Take only 1 manager for best and worst
+        $bestManager = $scores->where('points', $best->points)->pluck('manager.player_name')->first();
+        $worstManager = $scores->where('points', $worst->points)->pluck('manager.player_name')->first();
 
         $gwPerformance[] = [
             'gameweek' => $gw,
-            'best_managers' => $bestManagers,
+            'best_managers' => [$bestManager],
             'best_points' => $best->points,
-            'worst_managers' => $worstManagers,
+            'worst_managers' => [$worstManager],
             'worst_points' => $worst->points,
         ];
 
-        foreach ($bestManagers as $name) {
-            $managerLeads[$name] = ($managerLeads[$name] ?? 0) + 1;
-        }
-        foreach ($worstManagers as $name) {
-            $managerLasts[$name] = ($managerLasts[$name] ?? 0) + 1;
-        }
+        $managerLeads[$bestManager] = ($managerLeads[$bestManager] ?? 0) + 1;
+        $managerLasts[$worstManager] = ($managerLasts[$worstManager] ?? 0) + 1;
 
         if ($best->points > $highestGwScore['points']) {
             $highestGwScore = [
-                'manager' => implode(', ', $bestManagers),
+                'manager' => $bestManager,
                 'points' => $best->points,
                 'gw' => $gw,
             ];
@@ -244,14 +240,20 @@ public function index()
 
         if ($worst->points < $lowestGwScore['points']) {
             $lowestGwScore = [
-                'manager' => implode(', ', $worstManagers),
+                'manager' => $worstManager,
                 'points' => $worst->points,
                 'gw' => $gw,
             ];
         }
     }
 
-    // --- 3. Stats ---
+    // --- 3. Single winners for GW leads / lasts ---
+    $mostGWLeadPoints = max($managerLeads);
+    $mostGWLeadName = array_search($mostGWLeadPoints, $managerLeads);
+
+    $mostGWLastPoints = max($managerLasts);
+    $mostGWLastName = array_search($mostGWLastPoints, $managerLasts);
+
     $allManagerNames = $managers->pluck('player_name')->all();
     $bestOrWorstNames = array_keys($managerLeads + $managerLasts);
 
@@ -268,8 +270,8 @@ public function index()
         ->all();
 
     $stats = [
-        'most_gw_leads' => $managerLeads,
-        'most_gw_last' => $managerLasts,
+        'most_gw_leads' => [$mostGWLeadName => $mostGWLeadPoints],
+        'most_gw_last' => [$mostGWLastName => $mostGWLastPoints],
         'highest_gw_score' => $highestGwScore,
         'lowest_gw_score' => $lowestGwScore,
         'mediocres' => $mediocres,
@@ -278,7 +280,7 @@ public function index()
         'hundred_plus_league' => $hundredPlusLeague,
     ];
 
-    return view('dashboard', compact('league', 'managers',  'gwPerformance', 'stats'));
+    return view('dashboard', compact('league', 'managers', 'gwPerformance', 'stats'));
 }
 
      
