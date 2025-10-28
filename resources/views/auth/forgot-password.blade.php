@@ -5,7 +5,7 @@
             <div class="w-full max-w-sm mx-auto p-8 bg-white rounded-xl shadow-lg">
 
                 <div class="md:hidden mb-6 flex items-center justify-center">
-                    <x-application-logo/>
+                     <x-logo class="w-24 h-24" />
                 </div>
 
                 <h1 class="font-bold text-2xl text-gray-800 text-center mb-2">Forgot Password?</h1>

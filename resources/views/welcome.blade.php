@@ -9,6 +9,22 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
+      <!--Start of Tawk.to Script-->
+  <script type="text/javascript">
+    var Tawk_API = Tawk_API || {},
+      Tawk_LoadStart = new Date();
+    (function () {
+      var s1 = document.createElement("script"),
+        s0 = document.getElementsByTagName("script")[0];
+      s1.async = true;
+      s1.src = "https://embed.tawk.to/67ada27b3a842732607e284f/1ijv45d63";
+      s1.charset = "UTF-8";
+      s1.setAttribute("crossorigin", "*");
+      s0.parentNode.insertBefore(s1, s0);
+    })();
+  </script>
+  <!--End of Tawk.to Script-->
+
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap" rel="stylesheet" />
     <style>
         body {
@@ -47,7 +63,7 @@
             animation: blink 1.5s infinite;
         }
     </style>
-    
+
     <!--adsense script auto ads-->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1640926658118061"
         crossorigin="anonymous"></script>
@@ -55,44 +71,43 @@
 
 <body class="min-h-screen text-gray-200 bg-black">
 
-    <!-- Header Section (Retained from previous chat) -->
     <header id="top" class="py-4 text-white bg-[#5B0E9B] shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
 
-            <h1 class="flex text-xl font-extrabold items-center gap-2">
-                FPL Managers
-                <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Flag_of_Uganda.svg" alt="Uganda Flag"
-                    class="inline-block w-6 h-4" />
+            <h1 class="flex items-center gap-2 text-xl font-extrabold">
+                <a href="/" class="flex items-center gap-2 hover:text-indigo-300 transition">
+                    <x-logo class="w-12 h-12" />
+                    FPL Galaxy
+                </a>
             </h1>
 
-               {{-- Login/Register Buttons (Right) --}}
-        <nav class="flex space-x-4">
-            {{-- Login Button --}}
-            <a href="{{ route('login') }}" 
-               class="px-3 py-1.5 text-sm font-semibold text-white bg-indigo-600 rounded-md 
+            {{-- Login/Register Buttons (Right) --}}
+            <nav class="flex space-x-4">
+                {{-- Login Button --}}
+                <a href="{{ route('login') }}"
+                    class="px-3 py-1.5 text-sm font-semibold text-white bg-indigo-600 rounded-md 
                       hover:bg-indigo-700 transition duration-150 ease-in-out 
                       focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-[#5B0E9B]">
-                Login
-            </a>
-            
-            {{-- Register Button (Hidden on small screens, shown on medium and up) --}}
-            <a href="{{ route('register') }}" 
-               class="hidden md:inline-block px-3 py-1.5 text-sm font-semibold text-indigo-100 border border-indigo-100 rounded-md 
+                    Login
+                </a>
+
+                {{-- Register Button (Hidden on small screens, shown on medium and up) --}}
+                <a href="{{ route('register') }}" class=" md:inline-block px-3 py-1.5 text-sm font-semibold text-indigo-100 border border-indigo-100 rounded-md 
                       hover:bg-indigo-700 hover:text-white transition duration-150 ease-in-out">
-                Get Started
-            </a>
-        </nav>
+                    Get Started
+                </a>
+            </nav>
         </div>
     </header>
 
     <main class="max-w-5xl mx-auto p-4 space-y-12">
 
-        <x-adsense/>
+        <x-adsense />
 
         <!-- 1. Hero Section: Explanation, CTA, and Focus -->
         <section class="mt-12 text-center">
             <h2 class="text-5xl md:text-6xl font-extrabold text-white leading-tight mb-4">
-              Make Your<span class="text-indigo-400"> FPL Mini-League</span> More Fun
+                Make Your<span class="text-indigo-400"> FPL Mini-League</span> More Fun
             </h2>
             <p class="text-xl text-gray-400 mb-8 max-w-3xl mx-auto">
                 Go beyond total points. This platform provides advanced, gameweek-by-gameweek statistics to track
@@ -107,7 +122,7 @@
                 </a>
                 <a href="{{route ('public.leagues.list') }}"
                     class="px-8 py-3 text-lg font-bold text-indigo-400 border-2 border-indigo-400 rounded-full shadow-lg hover:bg-indigo-700 hover:text-white transition duration-300 transform hover:scale-105">
-                      Leagues
+                    Leagues
                 </a>
             </div>
         </section>
@@ -134,7 +149,7 @@
             </div>
         </section>
 
-          <x-adsense/>
+        <x-adsense />
 
         <!-- 3. How to Join/Admin Setup Illustration -->
         <section id="join-steps" class="pt-12">
@@ -179,19 +194,20 @@
                         Admins periodically input Gameweek scores. Once entered, the public link is ready for sharing
                         with all managers!
                     </p>
-                    <a href="{{route ('public.leagues.list') }}" class="text-green-400 font-semibold hover:text-green-300 blink">
+                    <a href="{{route ('public.leagues.list') }}"
+                        class="text-green-400 font-semibold hover:text-green-300 blink">
                         View Example Stats
                     </a>
                 </div>
             </div>
         </section>
 
-          <x-adsense/>
+        <x-adsense />
 
-      
+
 
     </main>
-    <x-consent-banner/>
+    <x-consent-banner />
 
     <footer class="py-6 mt-12 text-center text-gray-500 text-sm border-t border-gray-800">
         © <span id="year"></span>

@@ -29,8 +29,8 @@
 
 
     <!-- Favicon -->
-    <link rel="icon" href="{{ asset('favv1.png') }}">
-    <link rel="apple-touch-icon" href="{{ asset('favv1.png') }}">
+    <link rel="icon" href="{{ asset('assets/img/logo.webp') }}">
+    <link rel="apple-touch-icon" href="{{ asset('assets/img/logo.webp') }}">
 
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#001529">
@@ -41,6 +41,8 @@
     <!--adsense script auto ads-->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1640926658118061"
         crossorigin="anonymous"></script>
+
+        
 
 
 

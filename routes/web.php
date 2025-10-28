@@ -18,6 +18,17 @@ Route::get('/privacy-policy', function () {
     return view('privacy_policy');
 })->name('privacy.policy');
 
+Route::get('/terms-and-conditions', function () {
+    return view('terms');
+})->name('terms');
+
+Route::get('/how-to-find-fpl-league-id', function () {
+    return view('find');
+})->name('find');
+
+Route::get('/find-league', [FrontendController::class, 'showFinder'])->name('league.find');
+Route::post('/find-league', [FrontendController::class, 'search'])->name('league.search');
+
 Route::get('/leagues', [FrontendController::class, 'listLeagues'])->name('public.leagues.list');
 
 Route::get('/leagues/{slug}/{gameweek?}', [FrontendController::class, 'showStats'])
@@ -28,6 +39,7 @@ Route::get('/leagues/{slug}/{gameweek?}', [FrontendController::class, 'showStats
 Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
+    Route::get('/standings', [AdminController::class, 'table'])->name('table');
 
     // --- League Setup/Management ---
     Route::get('/dashboard/setup', [AdminController::class, 'createLeague'])->name('admin.league.create');

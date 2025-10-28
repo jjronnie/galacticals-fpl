@@ -21,8 +21,7 @@
       <p
         class="z-10 max-w-2xl px-4 text-white text-base leading-relaxed relative lg:text-lg"
       >
-        Transform Your Business with Novas | The complete point-of-sale solution
-        designed to streamline your operations, boost sales, and grow your
-        business.
+        Make Your FPL Mini-League More Fun
+Go beyond total points. This platform provides advanced, gameweek-by-gameweek statistics to track manager performance, consistency, and rivalry history within your private FPL mini-leagues.
       </p>
     </div>

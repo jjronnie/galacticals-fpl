@@ -1,6 +1,6 @@
 <img
-    src="{{ asset('novas3.png') }}"
-    alt="Novas Logo"
+    src="{{ asset('assets/img/logo.webp') }}"
+    alt=" Logo"
     class="object-contain {{ $class }}"
     width="{{ $width }}"
     height="{{ $height }}"

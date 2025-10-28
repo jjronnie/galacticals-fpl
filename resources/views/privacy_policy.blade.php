@@ -29,32 +29,58 @@
     <!--adsense script auto ads-->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1640926658118061"
         crossorigin="anonymous"></script>
+
+          <!--Start of Tawk.to Script-->
+  <script type="text/javascript">
+    var Tawk_API = Tawk_API || {},
+      Tawk_LoadStart = new Date();
+    (function () {
+      var s1 = document.createElement("script"),
+        s0 = document.getElementsByTagName("script")[0];
+      s1.async = true;
+      s1.src = "https://embed.tawk.to/67ada27b3a842732607e284f/1ijv45d63";
+      s1.charset = "UTF-8";
+      s1.setAttribute("crossorigin", "*");
+      s0.parentNode.insertBefore(s1, s0);
+    })();
+  </script>
+  <!--End of Tawk.to Script-->
+
+         <!-- Favicon -->
+    <link rel="icon" href="{{ asset('assets/img/logo.webp') }}">
+    <link rel="apple-touch-icon" href="{{ asset('assets/img/logo.webp') }}">
+
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#001529">
+
+    <meta name="mobile-web-app-capable" content="yes">
 </head>
 
 <body class="min-h-screen text-gray-200 bg-black">
-
-    <!-- Header Section (Consistent Style) -->
     <header id="top" class="py-4 text-white bg-[#5B0E9B] shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-            
-            <h1 class="flex text-xl font-extrabold items-center gap-2">
-                FPL Managers 
-                <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Flag_of_Uganda.svg" alt="Uganda Flag"
-                    class="inline-block w-6 h-4" />
+
+            <h1 class="flex items-center gap-2 text-xl font-extrabold">
+                <a href="/" class="flex items-center gap-2 hover:text-indigo-300 transition">
+                    <x-logo class="w-12 h-12" />
+                    FPL Galaxy
+                </a>
             </h1>
 
+            {{-- Login/Register Buttons (Right) --}}
             <nav class="flex space-x-4">
-                <a href="{{ route('login') }}" 
-                   class="px-3 py-1.5 text-sm font-semibold text-white bg-indigo-600 rounded-md 
-                          hover:bg-indigo-700 transition duration-150 ease-in-out 
-                          focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-[#5B0E9B]">
-                    Admin Login
+                {{-- Login Button --}}
+                <a href="{{ route('login') }}"
+                    class="px-3 py-1.5 text-sm font-semibold text-white bg-indigo-600 rounded-md 
+                      hover:bg-indigo-700 transition duration-150 ease-in-out 
+                      focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-[#5B0E9B]">
+                    Login
                 </a>
-                
-                <a href="{{ route('register') }}" 
-                   class="hidden md:inline-block px-3 py-1.5 text-sm font-semibold text-indigo-100 border border-indigo-100 rounded-md 
-                          hover:bg-indigo-700 hover:text-white transition duration-150 ease-in-out">
-                    Register Admin
+
+                {{-- Register Button (Hidden on small screens, shown on medium and up) --}}
+                <a href="{{ route('register') }}" class=" md:inline-block px-3 py-1.5 text-sm font-semibold text-indigo-100 border border-indigo-100 rounded-md 
+                      hover:bg-indigo-700 hover:text-white transition duration-150 ease-in-out">
+                    Get Started
                 </a>
             </nav>
         </div>

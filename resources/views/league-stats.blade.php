@@ -9,6 +9,31 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
+      <!--Start of Tawk.to Script-->
+  <script type="text/javascript">
+    var Tawk_API = Tawk_API || {},
+      Tawk_LoadStart = new Date();
+    (function () {
+      var s1 = document.createElement("script"),
+        s0 = document.getElementsByTagName("script")[0];
+      s1.async = true;
+      s1.src = "https://embed.tawk.to/67ada27b3a842732607e284f/1ijv45d63";
+      s1.charset = "UTF-8";
+      s1.setAttribute("crossorigin", "*");
+      s0.parentNode.insertBefore(s1, s0);
+    })();
+  </script>
+  <!--End of Tawk.to Script-->
+
+     <!-- Favicon -->
+    <link rel="icon" href="{{ asset('assets/img/logo.webp') }}">
+    <link rel="apple-touch-icon" href="{{ asset('assets/img/logo.webp') }}">
+
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#001529">
+
+    <meta name="mobile-web-app-capable" content="yes">
+
     {{-- @include('frontend.scripts') --}}
     
     <!--adsense script auto ads-->
@@ -37,99 +62,49 @@
 <body class="min-h-screen text-gray-200 bg-black">
     {{-- @include('frontend.adverts.adsense-top') --}}
 
-   <header id="top" class="py-4 text-white bg-[#5B0E9B] shadow-lg">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-        
-        {{-- League Title (Left/Center) --}}
-        <h1 class="hidden md:inline-block flex text-xl font-extrabold items-center gap-2 text-center">
-            {{ $league->name }} FPL Managers ({{ $league->current_season_year }}/{{ $league->current_season_year + 1 }})
-            <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Flag_of_Uganda.svg" alt="Uganda Flag"
-                class="inline-block w-6 h-4" />
-        </h1>
+    <header id="top" class="py-4 text-white bg-[#5B0E9B] shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
 
-        {{-- Authentication Links (Right) --}}
-        <nav class="flex space-x-4">
-            @auth
-                {{-- User is logged in --}}
-                <a href="{{ route('dashboard') }}" 
-                   class="px-3 py-1.5 text-sm font-semibold text-white bg-green-600 rounded-md 
-                          hover:bg-green-700 transition duration-150 ease-in-out 
-                          focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-[#5B0E9B]">
-                    Dashboard
+            <h1 class="flex items-center gap-2 text-xl font-extrabold">
+                <a href="/" class="flex items-center gap-2 hover:text-indigo-300 transition">
+                    <x-logo class="w-12 h-12" />
+                    FPL Galaxy
                 </a>
+            </h1>
 
-                {{-- Logout Button (Uses a form for POST request) --}}
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" 
-                           class="px-3 py-1.5 text-sm font-semibold text-white bg-red-600 rounded-md 
-                                  hover:bg-red-700 transition duration-150 ease-in-out 
-                                  focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-[#5B0E9B]">
-                        Logout
-                    </button>
-                </form>
-            @else
-                {{-- User is a guest (e.g., viewing public stats before logging in) --}}
-                <a href="{{ route('login') }}" 
-                   class="px-3 py-1.5 text-sm font-semibold text-white bg-indigo-600 rounded-md 
-                          hover:bg-indigo-700 transition duration-150 ease-in-out 
-                          focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-[#5B0E9B]">
+            {{-- Login/Register Buttons (Right) --}}
+            <nav class="flex space-x-4">
+                {{-- Login Button --}}
+                <a href="{{ route('login') }}"
+                    class="px-3 py-1.5 text-sm font-semibold text-white bg-indigo-600 rounded-md 
+                      hover:bg-indigo-700 transition duration-150 ease-in-out 
+                      focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-[#5B0E9B]">
                     Login
                 </a>
-                
-                <a href="{{ route('register') }}" 
-                   class="hidden md:inline-block px-3 py-1.5 text-sm font-semibold text-indigo-100 border border-indigo-100 rounded-md 
-                          hover:bg-indigo-700 hover:text-white transition duration-150 ease-in-out">
-                    Register
+
+                {{-- Register Button (Hidden on small screens, shown on medium and up) --}}
+                <a href="{{ route('register') }}" class=" md:inline-block px-3 py-1.5 text-sm font-semibold text-indigo-100 border border-indigo-100 rounded-md 
+                      hover:bg-indigo-700 hover:text-white transition duration-150 ease-in-out">
+                    Get Started
                 </a>
-            @endauth
-        </nav>
-    </div>
-</header>
+            </nav>
+        </div>
+    </header>
 
     <main class="max-w-5xl mx-auto p-4 space-y-6">
   <x-adsense/>
+
+  <h1 class=" text-xl font-extrabold gap-2 text-center">
+            {{ $league->name }} Classic League 
+        </h1>
       
         
-        <section class="mt-8">
-                 {{-- League Title (Left/Center) --}}
-        <h1 class=" text-xl font-extrabold gap-2 text-center">
-            {{ $league->name }} FPL Managers ({{ $league->current_season_year }}/{{ $league->current_season_year + 1 }})
-            <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Flag_of_Uganda.svg" alt="Uganda Flag"
-                class="inline-block w-6 h-4" />
-        </h1>
+ 
 
-            <h2 class="mb-6 text-2xl font-bold text-center">Table Standings</h2>
-            <div class="overflow-x-auto glass">
-                <table class="min-w-full text-left text-sm font-light">
-                    <thead class="font-medium bg-white/10">
-                        <tr>
-                            <th scope="col" class="px-6 py-4">Rank</th>
-                            <th scope="col" class="px-6 py-4">Manager Name</th>
-                            <th scope="col" class="px-6 py-4">Total Points</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($standings as $index => $standing)
-                            <tr class="border-b dark:border-neutral-500 {{ $index === 0 ? 'bg-green-600/30' : '' }}">
-                                <td class="whitespace-nowrap px-6 py-4 font-medium">{{ $index + 1 }}</td>
-                                <td class="whitespace-nowrap px-6 py-4">{{ $standing['name'] }}</td>
-                                <td class="whitespace-nowrap px-6 py-4 font-bold">{{ $standing['total_points'] }}</td>
-                            </tr>
-                        @empty
-                            <tr class="border-b dark:border-neutral-500">
-                                <td colspan="3" class="text-center py-8 text-gray-400">No managers or scores recorded yet.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-          <x-adsense/>
+        
 
         <section class="mt-8">
-            <h2 class="mb-6 text-2xl font-bold text-center">Season Stats (Up to GW {{ $currentGW }})</h2>
+            <h2 class="mb-6 text-2xl font-bold text-center">Season Stats </h2>
 
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <div class="p-4 rounded-lg shadow-lg glass">
@@ -255,7 +230,51 @@
 </div>
 
 
+  <x-adsense/>
+
+
+       <section class="mt-8">
+                 {{-- League Title (Left/Center) --}}
+        
+
+            <h2 class="mb-6 text-2xl font-bold text-center">Table Standings</h2>
+            <div class="overflow-x-auto glass">
+                <table class="min-w-full text-left text-sm font-light">
+                    <thead class="font-medium bg-white/10">
+                        <tr>
+                            <th scope="col" class="px-6 py-4">Rank</th>
+                            <th scope="col" class="px-6 py-4">Manager Name</th>
+                            <th scope="col" class="px-6 py-4">Total Points</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($standings as $index => $standing)
+                            <tr class="border-b dark:border-neutral-500 {{ $index === 0 ? 'bg-green-600/30' : '' }}">
+                                <td class="whitespace-nowrap px-6 py-4 font-medium">{{ $index + 1 }}</td>
+                                <td class="whitespace-nowrap px-6 py-4">{{ $standing['name'] }}</td>
+                                <td class="whitespace-nowrap px-6 py-4 font-bold">{{ $standing['total_points'] }}</td>
+                            </tr>
+                        @empty
+                            <tr class="border-b dark:border-neutral-500">
+                                <td colspan="3" class="text-center py-8 text-gray-400">No managers or scores recorded yet.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+
          <x-adsense/>
+
+           <div class="flex my-6 justify-center">
+    <a href="{{ route('register') }}" target="_blank"
+      class="py-2 px-6 text-white font-semibold bg-green-600 rounded-lg shadow-md hover:bg-purple-700 transition duration-200 blink">
+     Create account for your league
+    </a>
+
+    
+  </div>
         
     </main>
 

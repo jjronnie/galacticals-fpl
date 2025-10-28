@@ -6,7 +6,8 @@
     >
       <div class="w-full  mx-auto py-10 px-10 ">
         <div class="flex mb-2 mx-auto items-center justify-center lg:hidden">
-           <x-logo />
+           <x-logo class="w-24 h-24" />
+
         </div>
         <div class="text-center">
           <h1 class="mb-3 font-bold text-xl">Sign In to your account</h1>
@@ -18,7 +19,7 @@
 
         <!-- Session Status -->
         @if (session("status"))
-          <div class="mb-4 text-sm text-green-600 text-center">
+          <div class="mb-4 text-sm text-purple-600 text-center">
             {{ session("status") }}
           </div>
         @endif
@@ -37,11 +38,11 @@
               required
               autofocus
               placeholder="Email"
-              class="w-full px-4 pt-6 pb-2 text-gray-900 placeholder-transparent bg-white rounded-lg border border-gray-300 peer focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+              class="w-full px-4 pt-6 pb-2 text-gray-900 placeholder-transparent bg-white rounded-lg border border-gray-300 peer focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
             />
             <label
               for="email"
-              class="text-sm transition-all absolute left-4 top-2 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-2 peer-focus:text-sm peer-focus:text-green-600"
+              class="text-sm transition-all absolute left-4 top-2 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-2 peer-focus:text-sm peer-focus:text-purple-600"
             >
               Username
             </label>
@@ -58,11 +59,11 @@
               name="password"
               required
               placeholder="Password"
-              class="w-full px-4 pt-6 pb-2 text-gray-900 placeholder-transparent bg-white rounded-lg border border-gray-300 peer focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+              class="w-full px-4 pt-6 pb-2 text-gray-900 placeholder-transparent bg-white rounded-lg border border-gray-300 peer focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
             />
             <label
               for="password"
-              class="text-sm transition-all absolute left-4 top-2 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-2 peer-focus:text-sm peer-focus:text-green-600"
+              class="text-sm transition-all absolute left-4 top-2 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-2 peer-focus:text-sm peer-focus:text-purple-600"
             >
               Password
             </label>
@@ -87,7 +88,7 @@
               <input
                 id="remember_me"
                 type="checkbox"
-                class="text-green-600 border-gray-300 shadow-sm rounded focus:ring-green-500"
+                class="text-purple-600 border-gray-300 shadow-sm rounded focus:ring-purple-500"
                 name="remember"
               />
               <span class="text-sm text-gray-900 ms-2">
@@ -99,7 +100,7 @@
           <div class="flex mt-4 items-center justify-end">
             @if (Route::has("password.request"))
               <a
-                class="text-sm text-gray-900 rounded-md underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                class="text-sm text-gray-900 rounded-md underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
                 href="{{ route("password.request") }}"
               >
                 {{ __("Forgot your password?") }}
@@ -110,7 +111,7 @@
           <!-- Submit Button -->
           <button
             type="submit"
-            class="flex w-full py-3 text-white font-semibold bg-green-600 rounded-full login-button items-center justify-center gap-2 transition duration-300 hover:bg-green-700"
+            class="flex w-full py-3 text-white font-semibold bg-purple-600 rounded-full login-button items-center justify-center gap-2 transition duration-300 hover:bg-purple-700"
           >
             <span>Sign In</span>
             <i data-lucide="log-in" class="w-4 h-4"></i>
@@ -123,7 +124,7 @@
 
         <p class="mt-4 text-sm text-center">
           Dont have an Account?
-          <span class="text-green-600 underline">
+          <span class="text-purple-600 underline">
             <a href="{{ route("register") }}">Register Here</a>
           </span>
         </p>

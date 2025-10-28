@@ -1,3 +1,10 @@
+<hr class="border-t border-gray-200 my-4">
+
+<p class="text-center mt-2">OR</p>
+
+
+
+
 <button id="google-login"
     class="flex w-full py-3 mt-4 text-gray-700 font-medium bg-white border border-gray-300 rounded-full shadow-sm items-center justify-center gap-3 transition duration-300 select-none">
     <img src="{{ asset('assets/img/google144.png') }}" alt="Google Logo" class="w-5 h-5" />

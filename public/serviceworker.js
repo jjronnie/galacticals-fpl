@@ -1,18 +1,16 @@
 self.addEventListener('install', function (e) {
   e.waitUntil(
-    caches.open('fplfunv1').then(async function (cache) {
+    caches.open('fplGalaxyV1').then(async function (cache) {
       const files = [
         '/',
         'login',
         '/offline.html',
         'assets/css/main.css',
         '/assets/js/main.js',
-        '/favicon.webp',
-        '/assets/img/logo.png',
-        '/banner.png',
-        '/landing/index.html',
-        '/landing/assets/index-B-JF9dM1.css',
-        '/landing/assets/index-OefAGoZ2.js'
+      
+        '/assets/img/logo.webp',
+        '/banner.webp',
+       
       ];
       for (let file of files) {
         try {

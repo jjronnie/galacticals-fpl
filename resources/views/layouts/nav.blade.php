@@ -4,7 +4,7 @@
    <!-- Mobile Menu Button -->
 <a href="/"  class="flex items-center space-x-2">
     
-    <i data-lucide="shirt"></i>
+    <x-logo class="w-12 h-12 "/>
     <span class="font-bold">FPL Galaxy</span>
 </a>
 

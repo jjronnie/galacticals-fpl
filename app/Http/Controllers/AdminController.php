@@ -35,6 +35,134 @@ class AdminController extends Controller
 
 
 
+    
+
+
+
+    // --- Main Dashboard & Stats Generation ---
+
+public function table()
+{
+    // 1. Get the logged-in user's league
+    $league = League::where('user_id', Auth::id())->first();
+
+    // 2. Redirect if no league exists
+    if (is_null($league)) {
+        return redirect()->route('admin.league.create')
+            ->with('info', 'Please complete your league setup first.');
+    }
+
+    // Use the correct DB field
+    $seasonYear = $league->season; // Updated from current_season_year
+
+    // Fetch all managers for this league and their scores for the current season
+    $managers = Manager::where('league_id', $league->id)
+        ->with(['scores' => function ($query) use ($seasonYear) {
+            $query->where('season_year', $seasonYear)->orderBy('gameweek');
+        }])
+        ->get();
+
+    // Fetch all gameweek scores for this league and season
+    $allScores = $league->gameweekScores()
+        ->where('season_year', $seasonYear)
+        ->orderBy('gameweek')
+        ->get();
+
+    // --- 1. Season Standings (Total Points) ---
+    $standings = $managers->map(function ($manager) {
+        $totalPoints = $manager->scores->sum('points');
+        return [
+            'name' => $manager->player_name, 
+            'team' => $manager->team_name, 
+            'total_points' => $totalPoints,
+        ];
+    })->sortByDesc('total_points')->values();
+
+    // --- 2. Gameweek-by-Gameweek Breakdown ---
+    $gameweeks = $allScores->groupBy('gameweek');
+
+    $gwPerformance = [];
+    $managerLeads = [];
+    $managerLasts = [];
+    $highestGwScore = ['manager' => null, 'points' => 0, 'gw' => null];
+    $lowestGwScore = ['manager' => null, 'points' => 9999, 'gw' => null];
+
+    foreach ($gameweeks as $gw => $scores) {
+        if ($scores->isEmpty() || $gw == 0) continue;
+
+        $best = $scores->sortByDesc('points')->first();
+        $worst = $scores->sortBy('points')->first();
+
+        $bestManagers = $scores->where('points', $best->points)->pluck('manager.player_name')->all();
+        $worstManagers = $scores->where('points', $worst->points)->pluck('manager.player_name')->all();
+
+        $gwPerformance[] = [
+            'gameweek' => $gw,
+            'best_managers' => $bestManagers,
+            'best_points' => $best->points,
+            'worst_managers' => $worstManagers,
+            'worst_points' => $worst->points,
+        ];
+
+        foreach ($bestManagers as $name) {
+            $managerLeads[$name] = ($managerLeads[$name] ?? 0) + 1;
+        }
+        foreach ($worstManagers as $name) {
+            $managerLasts[$name] = ($managerLasts[$name] ?? 0) + 1;
+        }
+
+        if ($best->points > $highestGwScore['points']) {
+            $highestGwScore = [
+                'manager' => implode(', ', $bestManagers),
+                'points' => $best->points,
+                'gw' => $gw,
+            ];
+        }
+
+        if ($worst->points < $lowestGwScore['points']) {
+            $lowestGwScore = [
+                'manager' => implode(', ', $worstManagers),
+                'points' => $worst->points,
+                'gw' => $gw,
+            ];
+        }
+    }
+
+    // --- 3. Stats ---
+    $allManagerNames = $managers->pluck('player_name')->all();
+    $bestOrWorstNames = array_keys($managerLeads + $managerLasts);
+
+    $mediocres = array_values(array_diff($allManagerNames, $bestOrWorstNames));
+    $menStanding = array_values(array_diff($allManagerNames, array_keys($managerLasts)));
+    $hallOfShame = array_filter($managerLasts, fn($count) => $count >= 2);
+    arsort($hallOfShame);
+
+    $hundredPlusLeague = $allScores
+        ->where('points', '>=', 100)
+        ->map(fn($score) => $score->manager->player_name . ' (' . $score->points . ' pts in GW ' . $score->gameweek . ')')
+        ->unique()
+        ->values()
+        ->all();
+
+    $stats = [
+        'most_gw_leads' => $managerLeads,
+        'most_gw_last' => $managerLasts,
+        'highest_gw_score' => $highestGwScore,
+        'lowest_gw_score' => $lowestGwScore,
+        'mediocres' => $mediocres,
+        'men_standing' => $menStanding,
+        'hall_of_shame' => $hallOfShame,
+        'hundred_plus_league' => $hundredPlusLeague,
+    ];
+
+    return view('admin.table', compact('league', 'managers', 'standings', ));
+}
+
+
+
+
+
+
     // --- Main Dashboard & Stats Generation ---
 
 public function index()
