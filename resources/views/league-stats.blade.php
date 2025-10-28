@@ -11,6 +11,11 @@
 
     {{-- @include('frontend.scripts') --}}
     
+    <!--adsense script auto ads-->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1640926658118061"
+        crossorigin="anonymous"></script>
+
+    
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap" rel="stylesheet" />
     <style>
         body { font-family: "Nunito", sans-serif; }
@@ -83,7 +88,7 @@
 </header>
 
     <main class="max-w-5xl mx-auto p-4 space-y-6">
-
+  <x-adsense/>
       
         
         <section class="mt-8">
@@ -120,6 +125,8 @@
                 </table>
             </div>
         </section>
+
+          <x-adsense/>
 
         <section class="mt-8">
             <h2 class="mb-6 text-2xl font-bold text-center">Season Stats (Up to GW {{ $currentGW }})</h2>
@@ -208,7 +215,7 @@
             </div>
         </section>
 
-        {{-- @include('frontend.adverts.adsense-top') --}}
+        <x-adsense/>
 
         <h2 id="performance" class="mb-6 text-2xl font-bold text-center">
             GameWeek Performance (Total GWs: {{ $currentGW }})
@@ -266,7 +273,7 @@
             @endif
         </div>
 
-        {{-- @include('frontend.adverts.adsense-bottom') --}}
+         <x-adsense/>
         
     </main>
 

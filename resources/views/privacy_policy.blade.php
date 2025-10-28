@@ -25,6 +25,10 @@
         ul { @apply list-disc list-inside ml-4 mb-4; }
         li { @apply text-gray-400; }
     </style>
+    
+    <!--adsense script auto ads-->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1640926658118061"
+        crossorigin="anonymous"></script>
 </head>
 
 <body class="min-h-screen text-gray-200 bg-black">
@@ -57,6 +61,8 @@
     </header>
 
     <main class="max-w-4xl mx-auto p-4 space-y-4">
+
+          <x-adsense/>
         
         <div class="glass mt-8 p-6 sm:p-8">
             <h1 class="text-4xl font-extrabold text-white mb-6 text-center">Privacy Policy</h1>
@@ -127,6 +133,8 @@
             </p>
 
         </div>
+
+          <x-adsense/>
         
     </main>
 

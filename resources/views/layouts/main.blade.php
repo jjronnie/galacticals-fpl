@@ -37,6 +37,11 @@
 
     <meta name="mobile-web-app-capable" content="yes">
 
+    
+    <!--adsense script auto ads-->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1640926658118061"
+        crossorigin="anonymous"></script>
+
 
 
 

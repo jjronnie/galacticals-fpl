@@ -47,6 +47,10 @@
             animation: blink 1.5s infinite;
         }
     </style>
+    
+    <!--adsense script auto ads-->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1640926658118061"
+        crossorigin="anonymous"></script>
 </head>
 
 <body class="min-h-screen text-gray-200 bg-black">
@@ -82,6 +86,8 @@
     </header>
 
     <main class="max-w-5xl mx-auto p-4 space-y-12">
+
+        <x-adsense/>
 
         <!-- 1. Hero Section: Explanation, CTA, and Focus -->
         <section class="mt-12 text-center">
@@ -127,6 +133,8 @@
                     privately.</p>
             </div>
         </section>
+
+          <x-adsense/>
 
         <!-- 3. How to Join/Admin Setup Illustration -->
         <section id="join-steps" class="pt-12">
@@ -177,6 +185,8 @@
                 </div>
             </div>
         </section>
+
+          <x-adsense/>
 
       
 

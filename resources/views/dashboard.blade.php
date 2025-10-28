@@ -1,8 +1,8 @@
 <x-app-layout>
-    
 
-    <x-page-title title="{{ $league->name }} (Season: {{ $league->current_season_year }}/{{ $league->current_season_year + 1 }})"
-        />
+  <x-adsense/>
+    <x-page-title
+        title="{{ $league->name }} (Season: {{ $league->current_season_year }}/{{ $league->current_season_year + 1 }})" />
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
@@ -70,7 +70,7 @@
                 <x-stat-card title="Most GW Last"
                     value="{{ $mostLast > 0 ? $lastManager . ' (' . $mostLast . ' times)' : 'N/A' }}"
                     icon="arrow-down" />
-                    
+
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-6">
@@ -113,6 +113,8 @@
                     <x-empty-state message="No one has been last 2 or more times this season." />
                     @endif
                 </div>
+
+                  <x-adsense/>
 
                 <div class="bg-white  p-6 shadow-md rounded-lg lg:col-span-3">
                     <h3 class="text-xl font-bold text-pink-500 mb-4">💯 The 100+ League</h3>
@@ -157,12 +159,12 @@
                                 <x-input-error :messages="$errors->get('name')" class="mt-2" />
                             </div>
 
-                              <div class="flex-grow">
+                            <div class="flex-grow">
                                 <x-text-input id="team_name" class="w-full" type="text" name="team_name"
                                     :value="old('team_name')" required placeholder="Team Name" />
                                 <x-input-error :messages="$errors->get('team_name')" class="mt-2" />
                             </div>
-                            
+
                             <x-primary-button>
                                 {{ __('Add') }}
                             </x-primary-button>
@@ -171,44 +173,45 @@
                 </div>
 
                 <div class="bg-white p-6 shadow-md rounded-lg">
-    <h3 class="text-lg font-bold text-gray-900 mb-4">Current Managers ({{ $managers->count() }})
-    </h3>
-    @if($managers->count() > 0)
-    
-    
-        <x-table :headers="['Name', 'Team', 'Action']" >
-            {{-- Loop through managers to create table rows --}}
-            @foreach($managers as $manager)
-            <x-table.row>
-                
-                {{-- Name Cell --}}
-                <x-table.cell>
-                    <span class="text-gray-700">{{ $manager->name ?? '-'}}</span>
-                </x-table.cell>
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Current Managers ({{ $managers->count() }})
+                    </h3>
+                    @if($managers->count() > 0)
 
-                {{-- Team Cell --}}
-                <x-table.cell>
-                    <span class="text-gray-700">{{ $manager->team_name ?? '-' }}</span>
-                </x-table.cell>
 
-                {{-- Action Cell with Confirm Modal --}}
-                <x-table.cell class="text-right"> {{-- Align action button to the right --}}
-                    <x-confirm-modal :action="route('admin.manager.destroy', $manager)"
-                        warning="Are you sure you want to delete this Manager? This action cannot be undone."
-                        triggerIcon="trash" />
-                </x-table.cell>
-                
-            </x-table.row>
-            @endforeach
-        </x-table>
-    
-    
-    @else
-    <x-empty-state message="No managers added yet. Start by adding a manager!" />
-    @endif
-</div>
+                    <x-table :headers="['Name', 'Team', 'Action']">
+                        {{-- Loop through managers to create table rows --}}
+                        @foreach($managers as $manager)
+                        <x-table.row>
+
+                            {{-- Name Cell --}}
+                            <x-table.cell>
+                                <span class="text-gray-700">{{ $manager->name ?? '-'}}</span>
+                            </x-table.cell>
+
+                            {{-- Team Cell --}}
+                            <x-table.cell>
+                                <span class="text-gray-700">{{ $manager->team_name ?? '-' }}</span>
+                            </x-table.cell>
+
+                            {{-- Action Cell with Confirm Modal --}}
+                            <x-table.cell class="text-right"> {{-- Align action button to the right --}}
+                                <x-confirm-modal :action="route('admin.manager.destroy', $manager)"
+                                    warning="Are you sure you want to delete this Manager? This action cannot be undone."
+                                    triggerIcon="trash" />
+                            </x-table.cell>
+
+                        </x-table.row>
+                        @endforeach
+                    </x-table>
+
+
+                    @else
+                    <x-empty-state message="No managers added yet. Start by adding a manager!" />
+                    @endif
+                </div>
             </div>
 
         </div>
     </div>
+      <x-adsense/>
 </x-app-layout>

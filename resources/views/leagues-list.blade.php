@@ -8,6 +8,10 @@
     <title> FPL Managers Stats - GW </title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    
+    <!--adsense script auto ads-->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1640926658118061"
+        crossorigin="anonymous"></script>
 
     {{-- @include('frontend.scripts') --}}
     
@@ -64,7 +68,7 @@
 </header>
 
     <main class="max-w-5xl mx-auto p-4 space-y-6">
-        
+          <x-adsense/>
         
         <section class="mt-8">
             <h2 class="mb-6 text-2xl font-bold text-center">Leagues</h2>
@@ -103,7 +107,7 @@
 
   
         
-       
+         <x-adsense/>
         
         
     </main>
