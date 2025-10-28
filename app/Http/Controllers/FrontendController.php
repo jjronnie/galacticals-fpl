@@ -9,14 +9,14 @@ class FrontendController extends Controller
 {
     public function listLeagues()
     {
-        $leagues = League::all(['name', 'slug']);
+        $leagues = League::all(['name', 'league_id']);
 
         return view('leagues-list', compact('leagues'));
     }
 
-    public function showStats(string $slug, int $gameweek = null)
+    public function showStats(string $league_id, int $gameweek = null)
     {
-        $league = League::where('slug', $slug)
+        $league = League::where('league_id', $league_id)
             ->with('managers.scores')
             ->firstOrFail();
 
@@ -58,7 +58,7 @@ class FrontendController extends Controller
         $standings = $managers->map(function ($manager) use ($seasonYear, $allScores) {
             $totalPoints = $allScores->where('manager_id', $manager->id)->sum('points');
             return [
-                'name' => $manager->name,
+                'name' => $manager->player_name,
                 'total_points' => $totalPoints,
             ];
         })->sortByDesc('total_points')->values();

@@ -223,14 +223,14 @@
         
         <div class="flex flex-wrap justify-center gap-2 mb-8">
             @for ($gw = 1; $gw <= $currentGW; $gw++)
-                <a href="{{ route('public.stats.show', ['slug' => $league->slug, 'gameweek' => $gw]) }}" 
+                <a href="{{ route('public.stats.show', ['league_id' => $league->league_id, 'gameweek' => $gw]) }}" 
                    class="py-1 px-3 text-xs font-semibold rounded-full transition duration-200 
                           {{ $gw == $targetGW ? 'bg-green-500 text-black' : 'bg-gray-700 hover:bg-gray-600 text-white' }}">
                     GW {{ $gw }}
                 </a>
             @endfor
             @if ($targetGW != $currentGW && $currentGW > 0)
-                <a href="{{ route('public.stats.show', ['slug' => $league->slug]) }}" 
+                <a href="{{ route('public.stats.show', ['league_id' => $league->league_id]) }}" 
                    class="py-1 px-3 text-xs font-semibold rounded-full bg-[#5B0E9B] hover:bg-[#7C1FBF] text-white">
                     Latest (GW {{ $currentGW }})
                 </a>

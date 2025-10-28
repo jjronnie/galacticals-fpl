@@ -4,7 +4,7 @@
         <!-- Sidebar -->
         @include('layouts.sidebar')
         <!-- Main content -->
-        <div class="flex-1 flex flex-col min-w-0 lg:ml-64">
+        <div class="flex-1 flex flex-col min-w-0 ">
             <!-- Header -->
             @include('layouts.nav')
             <!-- Page content -->

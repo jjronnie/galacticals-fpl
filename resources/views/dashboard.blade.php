@@ -148,29 +148,7 @@
 
             <x-page-title title="Manage Managers" />
             <div class="grid grid-cols-1 lg:grid-cols-1 gap-8">
-                <div class="bg-white  p-6 shadow-md rounded-lg">
-                    <h3 class="text-lg font-bold text-gray-900  mb-4">Add New Manager</h3>
-                    <form method="POST" action="{{ route('admin.manager.store') }}">
-                        @csrf
-                        <div class="flex space-x-2">
-                            <div class="flex-grow">
-                                <x-text-input id="manager_name" class="w-full" type="text" name="name"
-                                    :value="old('name')" required placeholder="Manager's Name" />
-                                <x-input-error :messages="$errors->get('name')" class="mt-2" />
-                            </div>
-
-                            <div class="flex-grow">
-                                <x-text-input id="team_name" class="w-full" type="text" name="team_name"
-                                    :value="old('team_name')" required placeholder="Team Name" />
-                                <x-input-error :messages="$errors->get('team_name')" class="mt-2" />
-                            </div>
-
-                            <x-primary-button>
-                                {{ __('Add') }}
-                            </x-primary-button>
-                        </div>
-                    </form>
-                </div>
+              
 
                 <div class="bg-white p-6 shadow-md rounded-lg">
                     <h3 class="text-lg font-bold text-gray-900 mb-4">Current Managers ({{ $managers->count() }})
@@ -185,7 +163,7 @@
 
                             {{-- Name Cell --}}
                             <x-table.cell>
-                                <span class="text-gray-700">{{ $manager->name ?? '-'}}</span>
+                                <span class="text-gray-700">{{ $manager->player_name ?? '-'}}</span>
                             </x-table.cell>
 
                             {{-- Team Cell --}}

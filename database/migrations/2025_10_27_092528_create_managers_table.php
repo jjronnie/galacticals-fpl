@@ -11,14 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-       Schema::create('managers', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('league_id')->constrained()->onDelete('cascade');
-            $table->string('name');
-            $table->string('team_name')->nullable();
-            $table->boolean('is_active')->default(true);
-            $table->timestamps();
-        });
+       
+        Schema::create('managers', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('league_id')->constrained()->cascadeOnDelete();
+    $table->unsignedBigInteger('entry_id'); // FPL manager entry ID
+    $table->string('player_name');
+    $table->string('team_name');
+    $table->integer('rank')->nullable();
+    $table->integer('total_points')->nullable();
+    $table->timestamps();
+});
+
 
       
     }

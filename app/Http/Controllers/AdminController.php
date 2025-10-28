@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\DB;
 
 use Illuminate\Support\Facades\Auth;
 
+use Illuminate\Support\Facades\Http;
+
+
 class AdminController extends Controller
 {
     // Utility method to get the current user's league and season
@@ -29,19 +32,7 @@ class AdminController extends Controller
         return view('admin.league-setup'); 
     }
 
-    public function storeLeague(Request $request)
-    {
-        $request->validate(['name' => 'required|string|max:255']);
 
-        League::create([
-            'user_id' => auth()->id(),
-            'name' => $request->name,
-            'current_season_year' => date('Y'), // Start with the current year
-            'current_gameweek' => 0,
-        ]);
-
-        return redirect()->route('dashboard')->with('status', 'League created successfully!');
-    }
 
     // --- Main Dashboard & Stats Generation ---
 
@@ -76,7 +67,7 @@ class AdminController extends Controller
         $standings = $managers->map(function ($manager) use ($seasonYear) {
             $totalPoints = $manager->scores->sum('points');
             return [
-                'name' => $manager->name,
+                'name' => $manager->player_name,
                 'total_points' => $totalPoints,
             ];
         })->sortByDesc('total_points')->values();
@@ -134,7 +125,7 @@ class AdminController extends Controller
         }
 
         // --- 3. Complex Stats (Mediocres, Men Standing, Hall of Shame, 100+ League) ---
-        $allManagerNames = $managers->pluck('name')->all();
+        $allManagerNames = $managers->pluck('player_name')->all();
         $bestOrWorstNames = array_keys($managerLeads + $managerLasts);
         
         $mediocres = array_values(array_diff($allManagerNames, $bestOrWorstNames));
@@ -168,20 +159,6 @@ class AdminController extends Controller
 
     // --- Managers CRUD ---
     
-    public function storeManager(Request $request)
-    {
-        $league = $this->getCurrentLeague();
-        $request->validate(['name' => 'required|string|max:255']);
-        $request->validate(['team_name' => 'required|string|max:255']);
-
-        Manager::create([
-            'league_id' => $league->id,
-            'name' => $request->name,
-            'team_name' => $request->team_name,
-        ]);
-
-        return back()->with('status', 'Manager added!');
-    }
 
     public function destroyManager(Manager $manager)
     {
@@ -278,4 +255,82 @@ class AdminController extends Controller
 
         return redirect()->route('dashboard')->with('status', 'New season started! Existing season data preserved.');
     }
+
+
+
+public function storeLeague(Request $request)
+    {
+        $request->validate([
+            'league_id' => 'required|numeric'
+        ]);
+
+
+           $leagueId = $request->league_id;
+
+    // Check if league already exists and belongs to another user
+    $existingLeague = League::where('league_id', $leagueId)->first();
+    if ($existingLeague) {
+        // If same user, just inform that they already added it
+        if ($existingLeague->user_id === auth()->id()) {
+            return back()->withErrors(['league_exists' => 'You already added this league.']);
+        }
+        // If different user, deny access
+        return back()->withErrors(['league_taken' => 'This league is already registered by another user.']);
+    }
+
+
+
+        // Fetch data from FPL API
+        $response = Http::get("https://fantasy.premierleague.com/api/leagues-classic/{$leagueId}/standings/");
+
+        if ($response->failed()) {
+            return back()->withErrors(['api_error' => 'Failed to fetch league data from FPL API.']);
+        }
+
+        $data = $response->json();
+
+        if (!isset($data['league'])) {
+            return back()->withErrors(['invalid_league' => 'Invalid league ID or data unavailable.']);
+        }
+
+        // Extract league info
+        $leagueInfo = $data['league'];
+        $standings = $data['standings']['results'] ?? [];
+
+        // Store league
+        $league = League::updateOrCreate(
+            ['league_id' => $leagueInfo['id']],
+            [
+                'user_id' => auth()->id(),
+                'name' => $leagueInfo['name'],
+                'admin_name' => $leagueInfo['admin_entry'] ?? null,
+                'current_gameweek' => $data['standings']['has_next'] ? $data['standings']['page'] : 0,
+                'season' => date('Y'),
+            ]
+        );
+
+        // Store or update managers
+        foreach ($standings as $entry) {
+            Manager::updateOrCreate(
+                [
+                    'league_id' => $league->id,
+                    'entry_id' => $entry['entry'],
+                ],
+                [
+                    'player_name' => $entry['player_name'],
+                    'team_name' => $entry['entry_name'],
+                    'rank' => $entry['rank'],
+                    'total_points' => $entry['total'],
+                ]
+            );
+        }
+
+        return redirect()->route('dashboard')->with('status', 'League and managers imported successfully!');
+    }
+
+
+
+
+
+
 }

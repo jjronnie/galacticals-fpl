@@ -8,7 +8,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Manager extends Model
 {
     use HasFactory;
-    protected $fillable = ['league_id', 'name', 'team_name', 'is_active'];
+    protected $fillable = [
+        'league_id',
+        'entry_id',        
+        'player_name',
+        'team_name',
+        'rank',
+        'total_points',
+    ];
 
     public function league()
     {
