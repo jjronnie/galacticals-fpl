@@ -124,7 +124,7 @@ public function showStats(string $slug, int $gameweek = null)
         'mediocres' => array_values(array_diff($allManagerNames, $bestOrWorstNames)),
         'men_standing' => array_values(array_diff($allManagerNames, array_keys($managerLasts))),
         'hall_of_shame' => collect($managerLasts)
-            ->filter(fn($count) => $count >= 2)
+            ->filter(fn($count) => $count >= 3)
             ->sortByDesc(null)
             ->toArray(),
         'hundred_plus_league' => $allScores

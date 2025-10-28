@@ -22,7 +22,40 @@
             </div>
 
 
+            <div x-cloak x-data="{ updating: false }">
+                <form action="{{ route('admin.league.update') }}" method="POST"
+                    @submit.prevent="updating = true; $el.submit()">
+                    @csrf
+                    <button type="submit" class="btn">
+                        Update My League Data
+                    </button>
+                </form>
 
+                <!-- Overlay -->
+                <div x-show="updating"
+                    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div class="bg-white text-black p-6 rounded-lg flex items-center gap-4">
+                        <svg class="animate-spin h-6 w-6 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            </circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                        </svg>
+                        <span>Updating your league...</span>
+                    </div>
+                </div>
+            </div>
+
+            @php
+            $userLeague = auth()->user()->league; // Assuming User hasOne League
+            @endphp
+
+            @if($userLeague)
+            <a href="{{ route('public.stats.show', ['slug' => $userLeague->slug]) }}"
+                class="btn">
+                View My League
+            </a>
+            @endif
 
 
             <x-page-title title="Season Highlights" />
@@ -58,7 +91,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-6">
 
                 <div class="bg-white  p-6 shadow-md rounded-lg">
-                    <h3 class="text-xl font-bold text-yellow-500 mb-4">👑 Queen/King Mediocre</h3>
+                    <h3 class="text-xl font-bold text-yellow-500 mb-4">Mediocres</h3>
                     @if(count($stats['mediocres']) > 0)
                     <ul class="list-disc pl-5 text-gray-700 ">
                         @foreach($stats['mediocres'] as $name)
@@ -71,7 +104,7 @@
                 </div>
 
                 <div class="bg-white  p-6 shadow-md rounded-lg">
-                    <h3 class="text-xl font-bold text-purple-500 mb-4">🛡️ Men Standing (Never Last)</h3>
+                    <h3 class="text-xl font-bold text-purple-500 mb-4">Last Men Standing (Never Last)</h3>
                     @if(count($stats['men_standing']) > 0)
                     <ul class="list-disc pl-5 text-gray-700 ">
                         @foreach($stats['men_standing'] as $name)
@@ -84,7 +117,7 @@
                 </div>
 
                 <div class="bg-white  p-6 shadow-md rounded-lg">
-                    <h3 class="text-xl font-bold text-red-600 mb-4">🔴 Hall of Shame (Last 2+ Times)</h3>
+                    <h3 class="text-xl font-bold text-red-600 mb-4">🔴 Hall of Shame (Last 3+ Times)</h3>
                     @if(count($stats['hall_of_shame']) > 0)
                     <ul class="list-disc pl-5 text-gray-700 ">
                         @foreach($stats['hall_of_shame'] as $name => $count)
@@ -113,6 +146,7 @@
             </div>
 
 
+            {{--
             <x-page-title title="Season Standings" />
             @if($standings->count() > 0)
             <x-table :headers="['Pos', 'Team', 'Total ']">
@@ -126,7 +160,7 @@
             </x-table>
             @else
             <x-empty-state message="No scores recorded yet. Add managers and their GW scores!" />
-            @endif
+            @endif --}}
 
 
 

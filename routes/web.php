@@ -44,6 +44,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // --- League Setup/Management ---
     Route::get('/dashboard/setup', [AdminController::class, 'createLeague'])->name('admin.league.create');
     Route::post('/dashboard/setup', [AdminController::class, 'storeLeague'])->name('admin.league.store');
+    Route::post('/leaugue/update', [AdminController::class, 'updateUserLeague'])->name('admin.league.update');
 
 
 

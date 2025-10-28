@@ -257,7 +257,7 @@ public function index()
 
     $mediocres = array_values(array_diff($allManagerNames, $bestOrWorstNames));
     $menStanding = array_values(array_diff($allManagerNames, array_keys($managerLasts)));
-    $hallOfShame = array_filter($managerLasts, fn($count) => $count >= 2);
+    $hallOfShame = array_filter($managerLasts, fn($count) => $count >= 3);
     arsort($hallOfShame);
 
     $hundredPlusLeague = $allScores
@@ -278,7 +278,7 @@ public function index()
         'hundred_plus_league' => $hundredPlusLeague,
     ];
 
-    return view('dashboard', compact('league', 'managers', 'standings', 'gwPerformance', 'stats'));
+    return view('dashboard', compact('league', 'managers',  'gwPerformance', 'stats'));
 }
 
      
@@ -376,6 +376,83 @@ public function storeLeague(Request $request)
     return redirect()->route('dashboard')->with('status', 'League, managers, and gameweek scores imported successfully!');
 }
 
+public function updateUserLeague()
+{
+    $user = auth()->user();
+
+    // Get user's league(s) - assuming one league per user for simplicity
+    $league = League::where('user_id', $user->id)->first();
+
+    if (!$league) {
+        return back()->withErrors(['no_league' => 'You do not have any league registered yet.']);
+    }
+
+    $leagueId = $league->league_id;
+
+    // Fetch league data from FPL API
+    $response = Http::get("https://fantasy.premierleague.com/api/leagues-classic/{$leagueId}/standings/");
+    if ($response->failed()) {
+        return back()->withErrors(['api_error' => 'Failed to fetch league data from FPL API.']);
+    }
+
+    $data = $response->json();
+
+    if (!isset($data['league'])) {
+        return back()->withErrors(['invalid_league' => 'Invalid league ID or data unavailable.']);
+    }
+
+    $leagueInfo = $data['league'];
+    $standings = $data['standings']['results'] ?? [];
+
+    // Update league info
+    $league->update([
+        'name' => $leagueInfo['name'],
+        'admin_name' => $leagueInfo['admin_entry'] ?? null,
+        'current_gameweek' => $data['standings']['has_next'] ? $data['standings']['page'] : 0,
+        'season' => date('Y'),
+    ]);
+
+    // Update managers and gameweek scores
+    foreach ($standings as $entry) {
+        $manager = Manager::updateOrCreate(
+            [
+                'league_id' => $league->id,
+                'entry_id' => $entry['entry'],
+            ],
+            [
+                'player_name' => $entry['player_name'],
+                'team_name' => $entry['entry_name'],
+                'rank' => $entry['rank'],
+                'total_points' => $entry['total'],
+            ]
+        );
+
+        // Fetch manager gameweek history
+        $historyResponse = Http::get("https://fantasy.premierleague.com/api/entry/{$entry['entry']}/history/");
+        if ($historyResponse->failed()) continue;
+
+        $historyData = $historyResponse->json();
+
+        if (!isset($historyData['current'])) continue;
+
+        foreach ($historyData['current'] as $week) {
+            GameweekScore::updateOrCreate(
+                [
+                    'manager_id' => $manager->id,
+                    'gameweek' => $week['event'],
+                    'season_year' => date('Y'),
+                ],
+                [
+                    'points' => $week['points'],
+                ]
+            );
+        }
+
+        usleep(250000); // avoid rate limits
+    }
+
+    return back()->with('status', 'Your league, managers, and gameweek scores have been updated successfully!');
+}
 
 
 }

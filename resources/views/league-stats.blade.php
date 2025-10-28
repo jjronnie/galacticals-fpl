@@ -147,7 +147,7 @@
                 </div>
 
                 <div class="p-4 rounded-lg shadow-lg glass">
-                    <p class="text-yellow-400 font-bold">QUEEN MEDIOCRE</p>
+                    <p class="text-yellow-400 font-bold"> MEDIOCRES</p>
                     <p class="text-sm">
                         @forelse($stats['mediocres'] as $name)
                             {{ $name }} <br/>
@@ -170,7 +170,7 @@
 
                 <div class="p-4 rounded-lg shadow-lg glass sm:col-span-2 lg:col-span-3">
                     <p class="text-purple-400 font-bold">
-                        HALL OF SHAME - HAVE BEEN LAST 2 TIMES OR MORE
+                        HALL OF SHAME - HAVE BEEN LAST 3 TIMES OR MORE
                     </p>
                     @forelse($stats['hall_of_shame'] as $name => $count)
                         <p class="text-sm">- {{ $name }} {{ $count }} Times</p>
