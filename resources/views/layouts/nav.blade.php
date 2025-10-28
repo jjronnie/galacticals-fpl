@@ -18,43 +18,7 @@
     <!-- Right Section -->
     <div class="ml-auto flex items-center space-x-4 relative">
 
-        <!-- Quick Access -->
-        <div class="relative" @click.away="quickAccessOpen = false">
-            <button class="p-2 rounded-lg hover:bg-gray-100 transition-colors bg-blue-50 text-blue-600"
-                @click="quickAccessOpen = !quickAccessOpen">
-                <i data-lucide="zap" class="w-5 h-5"></i>
-            </button>
-
-            <div x-show="quickAccessOpen" x-transition x-cloak
-                class="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-30">
-                <div class="p-4">
-                    <h3 class="text-sm font-medium text-gray-900 mb-3">Quick Access</h3>
-                    <div class="space-y-2">
-                        <a href="#" class="quick-access-item">
-                            <i data-lucide="user-plus" class="w-4 h-4"></i>
-                            <span class="text-sm">Add Employee</span>
-                        </a>
-
-                        <a href="#" class="quick-access-item">
-                            <i data-lucide="list-todo" class="w-4 h-4"></i>
-                            <span class="text-sm">Inspection</span>
-                        </a>
-
-
-                        <a href="#" class="quick-access-item">
-                            <i data-lucide="calendar-plus" class="w-4 h-4"></i>
-                            <span class="text-sm">Mark Attendance</span>
-                        </a>
-
-                        <a href="#" class="quick-access-item">
-                            <i data-lucide="clipboard-pen-line" class="w-4 h-4"></i>
-                            <span class="text-sm">Apply For Leave</span>
-                        </a>
-
-                    </div>
-                </div>
-            </div>
-        </div>
+    
 
         <!-- Notifications -->
         <div class="relative" @click.away="notificationOpen = false">
@@ -62,65 +26,20 @@
                 @click="notificationOpen = !notificationOpen">
                 <i data-lucide="bell"></i>
                 <span
-                    class="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full leading-none">3</span>
+                    class="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full leading-none">0</span>
             </button>
 
             <div x-show="notificationOpen" x-transition x-cloak
                 class="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-200 z-30 p-4"
                 @click.away="notificationOpen = false">
 
-                <div class="flex items-center gap-3">
-                    <label for="toggleSound" class="text-sm font-medium text-gray-700">Alert Sound</label>
-
-                    <button id="toggleSound" type="button"
-                        class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-green-500 transition-colors duration-200 ease-in-out focus:outline-none"
-                        role="switch" aria-checked="true">
-                        <span aria-hidden="true"
-                            class="inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-5"
-                            id="toggleThumb"></span>
-                    </button>
-                </div>
+                
 
                 <h3 class="text-sm text-center font-semibold text-gray-800 mb-4"></h3>
 
-                <p class="text-center">No Notifications Found</p>
+                <p class="text-center">No Notifications </p>
 
-                <ul class="space-y-4 text-sm text-gray-700 max-h-80 overflow-y-auto">
-                    <li class="flex items-start space-x-3">
-                        <div class="w-10 h-10 flex items-center justify-center rounded-full bg-green-500 text-white">
-                            <i data-lucide="info" class="w-5 h-5"></i>
-                        </div>
-                        <div>
-                            <p class="font-semibold text-gray-800">Application Error</p>
-                            <p class="text-xs text-gray-500">Just now</p>
-                        </div>
-                    </li>
-                    <li class="flex items-start space-x-3">
-                        <div class="w-10 h-10 flex items-center justify-center rounded-full bg-yellow-400 text-white">
-                            <i data-lucide="settings" class="w-5 h-5"></i>
-                        </div>
-                        <div>
-                            <p class="font-semibold text-gray-800">Settings</p>
-                            <p class="text-xs text-gray-500">Private message</p>
-                        </div>
-                    </li>
-                    <li class="flex items-start space-x-3">
-                        <div class="w-10 h-10 flex items-center justify-center rounded-full bg-blue-500 text-white">
-                            <i data-lucide="user-plus" class="w-5 h-5"></i>
-                        </div>
-                        <div>
-                            <p class="font-semibold text-gray-800">New user registration</p>
-                            <p class="text-xs text-gray-500">2 days ago</p>
-                        </div>
-                    </li>
-                </ul>
-
-                <div class="mt-4 flex items-center justify-between border-t pt-3">
-                    <button class="text-sm text-blue-600 hover:underline font-medium"
-                        @click="alert('Marking all as read...')">Mark all as read</button>
-                    <button class="text-sm text-red-500 hover:underline font-medium"
-                        @click="alert('Clearing notifications...')">Clear all</button>
-                </div>
+              
             </div>
         </div>
 

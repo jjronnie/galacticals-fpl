@@ -15,4 +15,6 @@ class GameweekScore extends Model
     {
         return $this->belongsTo(Manager::class);
     }
+
+    
 }

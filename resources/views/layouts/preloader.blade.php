@@ -1,4 +1,4 @@
-
+{{-- 
     <style>
         body {
             margin: 0;
@@ -240,4 +240,4 @@
                 preloader.classList.add('hidden');
             }, 500);
         });
-    </script>
+    </script> --}}

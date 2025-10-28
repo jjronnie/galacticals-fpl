@@ -1,8 +1,6 @@
 <x-app-layout>
 
-  <x-adsense/>
-    <x-page-title
-        title="{{ $league->name }} (Season: {{ $league->current_season_year }}/{{ $league->current_season_year + 1 }})" />
+    <x-adsense />
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
@@ -18,30 +16,14 @@
             </div>
             @endif
 
-            <div class="flex justify-between items-center bg-white  p-4 rounded-lg shadow-md">
-                <div class="text-lg font-bold text-gray-800 ">
-                    Current GW: <span class="text-indigo-600">{{ $league->current_gameweek }} / 38</span>
-                </div>
 
-                <div class="space-x-4">
-                    <a href="{{ route('admin.gameweek.create') }}"
-                        class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                        {{ $league->current_gameweek < 38 ? 'Add Scores for GW ' . ($league->current_gameweek + 1) :
-                            'Season Complete' }}
-                    </a>
-
-                    {{-- <form method="POST" action="{{ route('admin.season.next') }}" class="inline-block"
-                        onsubmit="return confirm('Are you sure you want to advance to the next season? This action cannot be undone for the current league status.');">
-                        @csrf
-                        <button type="submit"
-                            class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 focus:bg-red-700 active:bg-red-900 disabled:opacity-50 transition ease-in-out duration-150"
-                            {{ $league->current_gameweek < 38 ? 'disabled' : '' }}>
-                                Start New Season ({{ $league->current_season_year + 1 }}/{{
-                                $league->current_season_year + 2 }})
-                        </button>
-                    </form> --}}
-                </div>
+            <div class="text-lg text-center font-bold text-gray-800 bg-white  p-4 rounded-lg shadow-md ">
+                You are managing: {{ $league->name }} Classic League
             </div>
+
+
+
+
 
             <x-page-title title="Season Highlights" />
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -114,7 +96,7 @@
                     @endif
                 </div>
 
-                  <x-adsense/>
+                <x-adsense />
 
                 <div class="bg-white  p-6 shadow-md rounded-lg lg:col-span-3">
                     <h3 class="text-xl font-bold text-pink-500 mb-4">💯 The 100+ League</h3>
@@ -131,9 +113,9 @@
             </div>
 
 
-            <x-page-title title="Season Standings (Total Points)" />
+            <x-page-title title="Season Standings" />
             @if($standings->count() > 0)
-            <x-table :headers="['Rank', 'Manager Name', 'Total Points']">
+            <x-table :headers="['Pos', 'Team', 'Total ']">
                 @foreach($standings as $index => $standing)
                 <x-table.row class="{{ $index === 0 ? 'bg-green-100 ' : '' }}">
                     <x-table.cell class="font-bold">{{ $index + 1 }}</x-table.cell>
@@ -146,50 +128,9 @@
             <x-empty-state message="No scores recorded yet. Add managers and their GW scores!" />
             @endif
 
-            <x-page-title title="Manage Managers" />
-            <div class="grid grid-cols-1 lg:grid-cols-1 gap-8">
-              
 
-                <div class="bg-white p-6 shadow-md rounded-lg">
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">Current Managers ({{ $managers->count() }})
-                    </h3>
-                    @if($managers->count() > 0)
-
-
-                    <x-table :headers="['Name', 'Team', 'Action']">
-                        {{-- Loop through managers to create table rows --}}
-                        @foreach($managers as $manager)
-                        <x-table.row>
-
-                            {{-- Name Cell --}}
-                            <x-table.cell>
-                                <span class="text-gray-700">{{ $manager->player_name ?? '-'}}</span>
-                            </x-table.cell>
-
-                            {{-- Team Cell --}}
-                            <x-table.cell>
-                                <span class="text-gray-700">{{ $manager->team_name ?? '-' }}</span>
-                            </x-table.cell>
-
-                            {{-- Action Cell with Confirm Modal --}}
-                            <x-table.cell class="text-right"> {{-- Align action button to the right --}}
-                                <x-confirm-modal :action="route('admin.manager.destroy', $manager)"
-                                    warning="Are you sure you want to delete this Manager? This action cannot be undone."
-                                    triggerIcon="trash" />
-                            </x-table.cell>
-
-                        </x-table.row>
-                        @endforeach
-                    </x-table>
-
-
-                    @else
-                    <x-empty-state message="No managers added yet. Start by adding a manager!" />
-                    @endif
-                </div>
-            </div>
 
         </div>
     </div>
-      <x-adsense/>
+    <x-adsense />
 </x-app-layout>

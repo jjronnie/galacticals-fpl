@@ -29,4 +29,10 @@ class Manager extends Model
     {
         return $this->hasMany(GameweekScore::class);
     }
+
+    public function gameweekScores()
+{
+    return $this->hasMany(GameweekScore::class);
+}
+
 }

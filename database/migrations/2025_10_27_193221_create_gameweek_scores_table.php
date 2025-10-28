@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('manager_id')->constrained()->onDelete('cascade');
             $table->integer('gameweek');
-            $table->integer('season_year'); // e.g., 2025 for 25/26 season
+            $table->integer('season_year'); 
          
             $table->integer('points');
             $table->timestamps();

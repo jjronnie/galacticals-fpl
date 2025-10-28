@@ -20,7 +20,7 @@ Route::get('/privacy-policy', function () {
 
 Route::get('/leagues', [FrontendController::class, 'listLeagues'])->name('public.leagues.list');
 
-Route::get('/leagues/{league_id}/gw{gameweek?}', [FrontendController::class, 'showStats'])
+Route::get('/leagues/{slug}/{gameweek?}', [FrontendController::class, 'showStats'])
     ->where('gameweek', '[0-9]+') 
     ->name('public.stats.show');
 
