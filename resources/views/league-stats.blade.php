@@ -111,45 +111,17 @@
         </div>
     </header>
     <main class="max-w-5xl mx-auto p-4 space-y-6">
-
-    <header id="top" class="py-4 text-white bg-[#5B0E9B] shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-
-            <h1 class="flex items-center gap-2 text-xl font-extrabold">
-                <a href="/" class="flex items-center gap-2 hover:text-indigo-300 transition">
-                    <x-logo class="w-12 h-12" />
-                    FPL Galaxy
-                </a>
-            </h1>
-
-            {{-- Login/Register Buttons (Right) --}}
-            <nav class="flex space-x-4">
-                {{-- Login Button --}}
-                <a href="{{ route('login') }}"
-                    class="px-3 py-1.5 text-sm font-semibold text-white bg-indigo-600 rounded-md 
-                      hover:bg-indigo-700 transition duration-150 ease-in-out 
-                      focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-[#5B0E9B]">
-                    Login
-                </a>
-
-                {{-- Register Button (Hidden on small screens, shown on medium and up) --}}
-                <a href="{{ route('register') }}" class=" md:inline-block px-3 py-1.5 text-sm font-semibold text-indigo-100 border border-indigo-100 rounded-md 
-                      hover:bg-indigo-700 hover:text-white transition duration-150 ease-in-out">
-                    Get Started
-                </a>
-            </nav>
-        </div>
-    </header>
-
-    <main class="max-w-5xl mx-auto p-4 space-y-6">
         <x-adsense />
 
-        <h1 class=" text-xl font-extrabold gap-2 text-center">
-            {{ $league->name }} Classic League
-        </h1>
+
 
 
         <section class="mt-8">
+
+            <h1 class=" text-xl font-extrabold gap-2 text-center">
+                {{ $league->name }} Classic League
+            </h1>
+
             <h2 class="mb-6 text-2xl font-bold text-center">Season Stats </h2>
 
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
