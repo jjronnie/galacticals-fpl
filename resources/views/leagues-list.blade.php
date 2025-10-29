@@ -121,7 +121,7 @@
                     Create account for your league
                 </a>
             </div>
-            <div class=" glass">
+            
 
                 <table class="min-w-full text-left text-sm font-light">
                     <thead class="font-medium bg-white/10">
@@ -153,7 +153,7 @@
 
 
 
-            </div>
+            
         </section>
 
 
