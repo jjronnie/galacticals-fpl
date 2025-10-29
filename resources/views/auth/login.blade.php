@@ -131,6 +131,8 @@
             <a href="{{ route("register") }}">Register Here</a>
           </span>
         </p>
+
+         <x-adsense/>
       </div>
     </div>
 

@@ -119,6 +119,7 @@
                     <a href="{{ route('login') }}"> Login Here</a>
                 </span>
             </p>
+             <x-adsense/>
         </div>
 
         <!-- Right: Banner -->
