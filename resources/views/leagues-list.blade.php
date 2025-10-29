@@ -8,16 +8,16 @@
     <title> FPL Managers Stats - GW </title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-     <!-- Favicon -->
+    <!-- Favicon -->
     <link rel="icon" href="{{ asset('assets/img/logo.webp') }}">
     <link rel="apple-touch-icon" href="{{ asset('assets/img/logo.webp') }}">
 
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#001529">
 
-      <!--Start of Tawk.to Script-->
-  <script type="text/javascript">
-    var Tawk_API = Tawk_API || {},
+    <!--Start of Tawk.to Script-->
+    <script type="text/javascript">
+        var Tawk_API = Tawk_API || {},
       Tawk_LoadStart = new Date();
     (function () {
       var s1 = document.createElement("script"),
@@ -28,22 +28,25 @@
       s1.setAttribute("crossorigin", "*");
       s0.parentNode.insertBefore(s1, s0);
     })();
-  </script>
-  <!--End of Tawk.to Script-->
+    </script>
+    <!--End of Tawk.to Script-->
 
     <meta name="mobile-web-app-capable" content="yes">
-    
+
     <!--adsense script auto ads-->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1640926658118061"
         crossorigin="anonymous"></script>
 
     {{-- @include('frontend.scripts') --}}
-    
+
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap" rel="stylesheet" />
     <style>
-        body { font-family: "Nunito", sans-serif; }
+        body {
+            font-family: "Nunito", sans-serif;
+        }
+
         .glass {
-            background: rgba(255, 255, 255, 0.08); 
+            background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
             border: 2px solid rgba(255, 255, 255, 0.18);
@@ -51,9 +54,28 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 255, 255, 0.05);
             padding: 1.5rem;
         }
-        html { scroll-behavior: smooth; }
-        @keyframes blink { 0%, 50%, 100% { opacity: 1; } 25%, 75% { opacity: 0.4; } }
-        .blink { animation: blink 1.5s infinite; }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        @keyframes blink {
+
+            0%,
+            50%,
+            100% {
+                opacity: 1;
+            }
+
+            25%,
+            75% {
+                opacity: 0.4;
+            }
+        }
+
+        .blink {
+            animation: blink 1.5s infinite;
+        }
     </style>
 </head>
 
@@ -89,13 +111,19 @@
         </div>
     </header>
     <main class="max-w-5xl mx-auto p-4 space-y-6">
-          <x-adsense/>
-        
-        <section class="mt-8">
-            <h2 class="mb-6 text-2xl font-bold text-center">Leagues</h2>
-            <div class="overflow-x-auto glass">
+        <x-adsense />
 
-                   <table class="min-w-full text-left text-sm font-light">
+        <section class="mt-8">
+            <h2 class="mb-6 text-2xl font-bold text-center">Leagues Using {{ config('app.name') }}</h2>
+            <div class="flex my-6 justify-center">
+                <a href="{{ route('register') }}" target="_blank"
+                    class="py-2 px-6 text-white font-semibold bg-green-600 rounded-lg shadow-md hover:bg-purple-700 transition duration-200 blink">
+                    Create account for your league
+                </a>
+            </div>
+            <div class=" glass">
+
+                <table class="min-w-full text-left text-sm font-light">
                     <thead class="font-medium bg-white/10">
                         <tr>
                             <th scope="col" class="px-6 py-4">#</th>
@@ -106,37 +134,40 @@
                     <tbody>
                         @forelse($leagues as $index => $league)
 
-                  
-                                <td class="whitespace-nowrap px-6 py-4 font-medium">{{ $index + 1 }}</td>
-                                <td class="whitespace-nowrap px-6 py-4">   {{ $league->name }}</td>
-                                <td class="whitespace-nowrap px-6 py-4 font-bold">  <a href="{{ route('public.stats.show', ['slug' => $league->slug]) }}" class="text-indigo-400 hover:text-indigo-300 font-bold px-3 py-1 rounded-md border border-indigo-400 hover:border-indigo-300 transition duration-150">
-                                    View League
-                                </a></td>
-                            </tr>
+
+                        <td class="whitespace-nowrap px-6 py-4 font-medium">{{ $index + 1 }}</td>
+                        <td class="whitespace-nowrap px-6 py-4"> {{ $league->name }}</td>
+                        <td class="whitespace-nowrap px-6 py-4 font-bold"> <a
+                                href="{{ route('public.stats.show', ['slug' => $league->slug]) }}"
+                                class="text-indigo-400 hover:text-indigo-300 font-bold px-3 py-1 rounded-md border border-indigo-400 hover:border-indigo-300 transition duration-150">
+                                View League
+                            </a></td>
+                        </tr>
                         @empty
-                            <tr class="border-b dark:border-neutral-500">
-                                <td colspan="3" class="text-center py-8 text-gray-400">No leagues have been created yet</td>
-                            </tr>
+                        <tr class="border-b dark:border-neutral-500">
+                            <td colspan="3" class="text-center py-8 text-gray-400">No leagues have been created yet</td>
+                        </tr>
                         @endforelse
                     </tbody>
                 </table>
 
 
-                
+
             </div>
         </section>
 
-  
-        
-         <x-adsense/>
-        
-        
+
+
+        <x-adsense />
+
+
     </main>
-    <x-consent-banner/>
+    <x-consent-banner />
 
     <footer class="py-6 mt-8 text-center text-gray-500 text-sm border-t border-gray-800">
         © <span id="year"></span>
-        <a href="https://techtowerinc.com" class="text-gray-400 hover:text-white transition">TechTower Inc.</a>. All rights reserved.
+        <a href="https://techtowerinc.com" class="text-gray-400 hover:text-white transition">TechTower Inc.</a>. All
+        rights reserved.
     </footer>
 
     <script>
