@@ -20,7 +20,7 @@
                 @endif
 
                 <div class="mb-6 text-sm text-gray-700 leading-relaxed">
-                    {{ __('Thanks for creating an account with TPOS! We need to verify your email address. Please click
+                    {{ __('Thanks for creating an account with {{ config('app.name') }}. We need to verify your email address. Please click
                     the link we just sent to you.') }}
                 </div>
 
@@ -28,7 +28,7 @@
                     <form method="POST" action="{{ route('verification.send') }}">
                         @csrf
                         <button type="submit"
-                            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                            class="btn">
                             {{ __('Resend Verification Email') }}
                         </button>
                     </form>

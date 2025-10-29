@@ -11,6 +11,10 @@
 
                 <h1 class="font-bold mb-3  text-xl">Create Account</h1>
 
+                   <!-- Google Sign In Button -->
+
+          @include('auth.google-button')
+
                
 
                 <p class="mb-6  text-sm">
@@ -106,7 +110,7 @@
                     </button>
                 </form>
 
-                  @include('auth.google-button')
+               
 
             </div>
             <p class="text-sm mt-4 text-center">

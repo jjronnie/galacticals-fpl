@@ -1,9 +1,3 @@
-<hr class="border-t border-gray-200 my-4">
-
-<p class="text-center mt-2">OR</p>
-
-
-
 
 <button id="google-login"
     class="flex w-full py-3 mt-4 text-gray-700 font-medium bg-white border border-gray-300 rounded-full shadow-sm items-center justify-center gap-3 transition duration-300 select-none">
@@ -14,6 +8,10 @@
       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
     </svg>
 </button>
+
+<hr class="border-t border-gray-200 my-4">
+
+<p class="text-center mt-2">OR</p>
 
 <script>
 document.getElementById('google-login').addEventListener('click', function () {
