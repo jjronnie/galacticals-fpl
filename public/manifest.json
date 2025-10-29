@@ -2,7 +2,7 @@
   "name": "FPL Galaxy",
   "short_name": "FPL Galaxy",
   "description": "A Stats app to add fun to your classic League.",
-  "start_url": "/leagues",
+  "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
   "scope": "/",
