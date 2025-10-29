@@ -5,9 +5,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="index, follow" />
-    <title>{{ $league->name }} FPL Managers Stats - GW {{ $targetGW }}</title>
+    <title> FPL Managers Stats - GW </title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <!-- Favicon -->
+    <link rel="icon" href="{{ asset('assets/img/logo.webp') }}">
+    <link rel="apple-touch-icon" href="{{ asset('assets/img/logo.webp') }}">
+
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#001529">
 
     <!--Start of Tawk.to Script-->
     <script type="text/javascript">
@@ -25,21 +31,13 @@
     </script>
     <!--End of Tawk.to Script-->
 
-    <!-- Favicon -->
-    <link rel="icon" href="{{ asset('assets/img/logo.webp') }}">
-    <link rel="apple-touch-icon" href="{{ asset('assets/img/logo.webp') }}">
-
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#001529">
-
     <meta name="mobile-web-app-capable" content="yes">
-
-    {{-- @include('frontend.scripts') --}}
 
     <!--adsense script auto ads-->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1640926658118061"
         crossorigin="anonymous"></script>
 
+    {{-- @include('frontend.scripts') --}}
 
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap" rel="stylesheet" />
     <style>
@@ -83,6 +81,36 @@
 
 <body class="min-h-screen text-gray-200 bg-black">
     {{-- @include('frontend.adverts.adsense-top') --}}
+
+    <header id="top" class="py-4 text-white bg-[#5B0E9B] shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+
+            <h1 class="flex items-center gap-2 text-xl font-extrabold">
+                <a href="/" class="flex items-center gap-2 hover:text-indigo-300 transition">
+                    <x-logo class="w-12 h-12" />
+                    FPL Galaxy
+                </a>
+            </h1>
+
+            {{-- Login/Register Buttons (Right) --}}
+            <nav class="flex space-x-4">
+                {{-- Login Button --}}
+                <a href="{{ route('login') }}"
+                    class="px-3 py-1.5 text-sm font-semibold text-white bg-indigo-600 rounded-md 
+                      hover:bg-indigo-700 transition duration-150 ease-in-out 
+                      focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-[#5B0E9B]">
+                    Login
+                </a>
+
+                {{-- Register Button (Hidden on small screens, shown on medium and up) --}}
+                <a href="{{ route('register') }}" class=" md:inline-block px-3 py-1.5 text-sm font-semibold text-indigo-100 border border-indigo-100 rounded-md 
+                      hover:bg-indigo-700 hover:text-white transition duration-150 ease-in-out">
+                    Get Started
+                </a>
+            </nav>
+        </div>
+    </header>
+    <main class="max-w-5xl mx-auto p-4 space-y-6">
 
     <header id="top" class="py-4 text-white bg-[#5B0E9B] shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
