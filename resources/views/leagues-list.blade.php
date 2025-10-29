@@ -139,7 +139,7 @@
                         <td class="whitespace-nowrap px-6 py-4"> {{ $league->name }}</td>
                         <td class="whitespace-nowrap px-6 py-4 font-bold"> <a
                                 href="{{ route('public.stats.show', ['slug' => $league->slug]) }}"
-                                class="text-indigo-400 hover:text-indigo-300 font-bold px-3 py-1 rounded-md border border-indigo-400 hover:border-indigo-300 transition duration-150">
+                                class="btn">
                                 View League
                             </a></td>
                         </tr>
