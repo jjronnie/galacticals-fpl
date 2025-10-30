@@ -27,6 +27,15 @@
         li { @apply text-gray-400; }
     </style>
     
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-36Z6T6DYQ4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-36Z6T6DYQ4');
+</script>
     <!--adsense script auto ads-->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1640926658118061"
         crossorigin="anonymous"></script>

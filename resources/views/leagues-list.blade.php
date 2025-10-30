@@ -12,6 +12,16 @@
     <link rel="icon" href="{{ asset('assets/img/logo.webp') }}">
     <link rel="apple-touch-icon" href="{{ asset('assets/img/logo.webp') }}">
 
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-36Z6T6DYQ4"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-36Z6T6DYQ4');
+</script>
+
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#001529">
 
