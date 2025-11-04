@@ -70,11 +70,10 @@ public function table()
 
     // --- 1. Season Standings (Total Points) ---
     $standings = $managers->map(function ($manager) {
-        $totalPoints = $manager->scores->sum('points');
         return [
             'name' => $manager->player_name, 
             'team' => $manager->team_name, 
-            'total_points' => $totalPoints,
+            'total_points' =>  $manager->total_points, 
         ];
     })->sortByDesc('total_points')->values();
 
@@ -193,12 +192,13 @@ public function index()
 
     // --- 1. Season Standings (Total Points) ---
     $standings = $managers->map(function ($manager) {
-        $totalPoints = $manager->scores->sum('points');
         return [
             'name' => $manager->player_name,
-            'total_points' => $totalPoints,
+            'total_points' =>$manager->total_points,
         ];
     })->sortByDesc('total_points')->values();
+
+    
 
     // --- 2. Gameweek-by-Gameweek Breakdown ---
     $gameweeks = $allScores->groupBy('gameweek');

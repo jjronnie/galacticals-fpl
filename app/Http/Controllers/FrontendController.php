@@ -50,10 +50,9 @@ public function showStats(string $slug, int $gameweek = null)
     $gameweeks = $allScores->groupBy('gameweek');
 
     $standings = $managers->map(function ($manager) use ($allScores) {
-        $totalPoints = $allScores->where('manager_id', $manager->id)->sum('points');
         return [
             'name' => $manager->player_name,
-            'total_points' => $totalPoints,
+            'total_points' =>$manager->total_points,
         ];
     })->sortByDesc('total_points')->values();
 
