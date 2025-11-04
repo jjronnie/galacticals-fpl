@@ -52,6 +52,7 @@ public function showStats(string $slug, int $gameweek = null)
     $standings = $managers->map(function ($manager) use ($allScores) {
         return [
             'name' => $manager->player_name,
+            'team' => $manager->team_name, 
             'total_points' =>$manager->total_points,
         ];
     })->sortByDesc('total_points')->values();

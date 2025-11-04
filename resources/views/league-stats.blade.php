@@ -273,7 +273,7 @@
                     <thead class="font-medium bg-white/10">
                         <tr>
                             <th scope="col" class="px-6 py-4">Rank</th>
-                            <th scope="col" class="px-6 py-4">Manager Name</th>
+                            <th scope="col" class="px-6 py-4">Team</th>
                             <th scope="col" class="px-6 py-4">Total Points</th>
                         </tr>
                     </thead>
@@ -281,7 +281,13 @@
                         @forelse($standings as $index => $standing)
                         <tr class="border-b dark:border-neutral-500 {{ $index === 0 ? 'bg-green-600/30' : '' }}">
                             <td class="whitespace-nowrap px-6 py-4 font-medium">{{ $index + 1 }}</td>
-                            <td class="whitespace-nowrap px-6 py-4">{{ $standing['name'] }}</td>
+                          <td class="whitespace-nowrap px-6 py-4">
+    <div class="flex flex-col ">
+        <span class="font-bold">{{ $standing['name'] }}</span>
+        <span class="text-sm text-gray-400">{{ $standing['team'] }}</span>
+    </div>
+</td>
+
                             <td class="whitespace-nowrap px-6 py-4 font-bold">{{ $standing['total_points'] }}</td>
                         </tr>
                         @empty
