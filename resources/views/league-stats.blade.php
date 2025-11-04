@@ -272,9 +272,9 @@
                 <table class="min-w-full text-left text-sm font-light">
                     <thead class="font-medium bg-white/10">
                         <tr>
-                            <th scope="col" class="px-6 py-4">Rank</th>
-                            <th scope="col" class="px-6 py-4">Team</th>
-                            <th scope="col" class="px-6 py-4">Total Points</th>
+                            <th scope="col" class="px-4 py-4">Rank</th>
+                            <th scope="col" class="px-4 py-4">Team</th>
+                            <th scope="col" class="px-4 py-4">Total</th>
                         </tr>
                     </thead>
                     <tbody>
