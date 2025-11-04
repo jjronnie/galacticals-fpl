@@ -283,8 +283,8 @@
                             <td class="whitespace-nowrap px-6 py-4 font-medium">{{ $index + 1 }}</td>
                           <td class="whitespace-nowrap px-6 py-4">
     <div class="flex flex-col ">
-        <span class="font-bold">{{ $standing['name'] }}</span>
-        <span class="text-sm text-gray-400">{{ $standing['team'] }}</span>
+        <span class="font-bold">{{ $standing['team'] }}</span>
+        <span class="text-sm text-gray-400">{{ $standing['name'] }}</span>
     </div>
 </td>
 
