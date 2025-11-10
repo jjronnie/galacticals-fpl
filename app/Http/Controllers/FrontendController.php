@@ -66,55 +66,81 @@ public function showStats(string $slug, int $gameweek = null)
     foreach ($gameweeks as $gw => $scores) {
         if ($scores->isEmpty() || $gw == 0) continue;
 
-        $best = $scores->sortByDesc('points')->first();
-        $worst = $scores->sortBy('points')->first();
+        // Get the points of the best and worst score for this gameweek
+        $bestScore = $scores->sortByDesc('points')->first()->points;
+        $worstScore = $scores->sortBy('points')->first()->points;
 
-        $bestManager = $scores->where('points', $best->points)->pluck('manager.player_name')->first();
-        $worstManager = $scores->where('points', $worst->points)->pluck('manager.player_name')->first();
+        // Get ALL managers (names) who achieved the best score (Handles ties for GW best)
+        $bestManagers = $scores->where('points', $bestScore)->pluck('manager.player_name')->unique()->values()->all();
+        
+        // Get ALL managers (names) who achieved the worst score (Handles ties for GW worst)
+        $worstManagers = $scores->where('points', $worstScore)->pluck('manager.player_name')->unique()->values()->all();
 
         $gwPerformance[] = [
             'gameweek' => $gw,
-            'best_managers' => [$bestManager],
-            'best_points' => $best->points,
-            'worst_managers' => [$worstManager],
-            'worst_points' => $worst->points,
+            'best_managers' => $bestManagers,
+            'best_points' => $bestScore,
+            'worst_managers' => $worstManagers,
+            'worst_points' => $worstScore,
         ];
 
-        // Count GW leads and lasts
-        $managerLeads[$bestManager] = ($managerLeads[$bestManager] ?? 0) + 1;
-        $managerLasts[$worstManager] = ($managerLasts[$worstManager] ?? 0) + 1;
+        // Count GW leads and lasts - loop through all tied managers
+        foreach ($bestManagers as $managerName) {
+            $managerLeads[$managerName] = ($managerLeads[$managerName] ?? 0) + 1;
+        }
+        foreach ($worstManagers as $managerName) {
+            $managerLasts[$managerName] = ($managerLasts[$managerName] ?? 0) + 1;
+        }
 
         // Track highest / lowest GW scores
-        if ($best->points > $highestGwScore['points']) {
+        if ($bestScore > $highestGwScore['points']) {
             $highestGwScore = [
-                'points' => $best->points,
-                'manager' => $bestManager,
+                'points' => $bestScore,
+                // Only storing the first manager name from the array for the overall record
+                'manager' => $bestManagers[0] ?? null, 
                 'gw' => $gw,
             ];
         }
 
-        if ($worst->points < $lowestGwScore['points']) {
+        if ($worstScore < $lowestGwScore['points']) {
             $lowestGwScore = [
-                'points' => $worst->points,
-                'manager' => $worstManager,
+                'points' => $worstScore,
+                // Only storing the first manager name from the array for the overall record
+                'manager' => $worstManagers[0] ?? null, 
                 'gw' => $gw,
             ];
         }
     }
 
-    // Only keep single top lead / last manager
-    $mostGWLeadManager = collect($managerLeads)->sortDesc()->first();
-    $mostGWLeadName = array_search($mostGWLeadManager, $managerLeads);
+    // --- Updated Logic to Handle Ties for Overall Most Leads/Lasts ---
+    
+    // Get the highest count of GW leads achieved by any manager
+    $maxLeadCount = collect($managerLeads)->max();
+    
+    // Filter managers to include ALL who achieved the max lead count
+    $mostGWLeads = collect($managerLeads)
+        ->filter(fn($count) => $count == $maxLeadCount && $maxLeadCount > 0)
+        ->sortDesc()
+        ->toArray();
 
-    $mostGWLastManager = collect($managerLasts)->sortDesc()->first();
-    $mostGWLastName = array_search($mostGWLastManager, $managerLasts);
+    // Get the highest count of GW lasts achieved by any manager
+    $maxLastCount = collect($managerLasts)->max();
+    
+    // Filter managers to include ALL who achieved the max last count
+    $mostGWLasts = collect($managerLasts)
+        ->filter(fn($count) => $count == $maxLastCount && $maxLastCount > 0)
+        ->sortDesc()
+        ->toArray();
+    
+    // --- End of Updated Logic ---
 
     $allManagerNames = $managers->pluck('player_name')->all();
     $bestOrWorstNames = array_keys($managerLeads + $managerLasts);
 
     $stats = [
-        'most_gw_leads' => [$mostGWLeadName => $mostGWLeadManager],
-        'most_gw_last' => [$mostGWLastName => $mostGWLastManager],
+        // Using the new $mostGWLeads and $mostGWLasts arrays
+        'most_gw_leads' => $mostGWLeads, 
+        'most_gw_last' => $mostGWLasts, 
         'highest_gw_score' => $highestGwScore,
         'lowest_gw_score' => $lowestGwScore,
         'mediocres' => array_values(array_diff($allManagerNames, $bestOrWorstNames)),
