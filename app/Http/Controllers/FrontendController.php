@@ -49,14 +49,39 @@ public function showStats(string $slug, int $gameweek = null)
     // Group scores by gameweek
     $gameweeks = $allScores->groupBy('gameweek');
 
+    // Initial Standings (for League Zones and Wooden Spoon Contenders)
     $standings = $managers->map(function ($manager) use ($allScores) {
         return [
             'name' => $manager->player_name,
             'team' => $manager->team_name, 
-            'total_points' =>$manager->total_points,
+            'total_points' => $manager->total_points,
         ];
     })->sortByDesc('total_points')->values();
+    
+    // League Zone Logic
+    $topManagers = $standings->take(5);
+    $relegationManagers = $standings->slice(-3)->values();
+    $woodenSpoonContenders = $relegationManagers->pluck('name')->all();
 
+    $leagueZones = [
+        'champions_league' => $topManagers->take(4)->pluck('name')->all(),
+        'europa_league' => $topManagers->slice(4, 1)->pluck('name')->all(),
+        'relegation_zone' => $relegationManagers->pluck('name')->all(),
+    ];
+
+    // Initialize variables for streaks and new stats
+    $managerTotalPoints = $managers->pluck('id', 'player_name')->map(fn() => 0)->toArray();
+    $currentTopStreak = 0;
+    $currentTopManager = null;
+    $longestTopStreak = 0;
+    $longestStreakManager = null;
+    $longestStreakStartGW = null;
+    $streakStartGW = null;
+    
+    // New Stat Initializations
+    $theBlowout = ['difference' => 0, 'gw' => null];
+    // Removed: $worstCaptainScore = ['points' => 9999, 'manager' => null, 'gw' => null];
+    
     $gwPerformance = [];
     $managerLeads = [];
     $managerLasts = [];
@@ -66,15 +91,28 @@ public function showStats(string $slug, int $gameweek = null)
     foreach ($gameweeks as $gw => $scores) {
         if ($scores->isEmpty() || $gw == 0) continue;
 
-        // Get the points of the best and worst score for this gameweek
+        // 1. Calculate GW Best/Worst and update Leads/Lasts
         $bestScore = $scores->sortByDesc('points')->first()->points;
         $worstScore = $scores->sortBy('points')->first()->points;
+        $scoreDifference = $bestScore - $worstScore; 
 
-        // Get ALL managers (names) who achieved the best score (Handles ties for GW best)
         $bestManagers = $scores->where('points', $bestScore)->pluck('manager.player_name')->unique()->values()->all();
-        
-        // Get ALL managers (names) who achieved the worst score (Handles ties for GW worst)
         $worstManagers = $scores->where('points', $worstScore)->pluck('manager.player_name')->unique()->values()->all();
+
+        // Check for The Blowout
+        if ($scoreDifference > $theBlowout['difference']) {
+            $theBlowout = [
+                'difference' => $scoreDifference,
+                'gw' => $gw,
+                'highest_scorer' => $bestManagers[0] ?? null,
+                'lowest_scorer' => $worstManagers[0] ?? null,
+                'highest_points' => $bestScore,
+                'lowest_points' => $worstScore,
+            ];
+        }
+
+        // Removed: Check for Worst Captain Score (PROXY: Lowest GW Score Ever)
+        // if ($worstScore < $worstCaptainScore['points']) { ... }
 
         $gwPerformance[] = [
             'gameweek' => $gw,
@@ -84,7 +122,7 @@ public function showStats(string $slug, int $gameweek = null)
             'worst_points' => $worstScore,
         ];
 
-        // Count GW leads and lasts - loop through all tied managers
+        // Update Leads/Lasts and Highest/Lowest GW Score logic
         foreach ($bestManagers as $managerName) {
             $managerLeads[$managerName] = ($managerLeads[$managerName] ?? 0) + 1;
         }
@@ -92,11 +130,9 @@ public function showStats(string $slug, int $gameweek = null)
             $managerLasts[$managerName] = ($managerLasts[$managerName] ?? 0) + 1;
         }
 
-        // Track highest / lowest GW scores
         if ($bestScore > $highestGwScore['points']) {
             $highestGwScore = [
                 'points' => $bestScore,
-                // Only storing the first manager name from the array for the overall record
                 'manager' => $bestManagers[0] ?? null, 
                 'gw' => $gw,
             ];
@@ -105,44 +141,98 @@ public function showStats(string $slug, int $gameweek = null)
         if ($worstScore < $lowestGwScore['points']) {
             $lowestGwScore = [
                 'points' => $worstScore,
-                // Only storing the first manager name from the array for the overall record
                 'manager' => $worstManagers[0] ?? null, 
                 'gw' => $gw,
             ];
         }
+        
+        // 2. Update Total Points for Streak Calculation
+        $currentGWManagersScores = $scores->keyBy('manager_id');
+        $currentStandings = [];
+
+        foreach ($managers as $manager) {
+            $score = $currentGWManagersScores->get($manager->id);
+            if ($score) {
+                $managerTotalPoints[$manager->player_name] += $score->points;
+            }
+            $currentStandings[] = [
+                'name' => $manager->player_name,
+                'total_points' => $managerTotalPoints[$manager->player_name],
+            ];
+        }
+
+        // Sort the current standings by total points (desc)
+        usort($currentStandings, fn($a, $b) => $b['total_points'] <=> $a['total_points']);
+
+        $leaderPoints = $currentStandings[0]['total_points'];
+        $leaders = collect($currentStandings)->filter(fn($m) => $m['total_points'] == $leaderPoints)->pluck('name')->all();
+
+        // 3. Track Longest Top Streak
+        if (count($leaders) === 1 && $leaders[0] === $currentTopManager) {
+            $currentTopStreak++;
+        } else {
+            if ($currentTopStreak > $longestTopStreak) {
+                $longestTopStreak = $currentTopStreak;
+                $longestStreakManager = $currentTopManager;
+                $longestStreakStartGW = $streakStartGW;
+            }
+
+            if (count($leaders) === 1) {
+                $currentTopManager = $leaders[0];
+                $currentTopStreak = 1;
+                $streakStartGW = $gw;
+            } else {
+                $currentTopManager = null;
+                $currentTopStreak = 0;
+                $streakStartGW = null;
+            }
+        }
+    }
+    
+    // Final check for the last calculated streak
+    if ($currentTopStreak > $longestTopStreak) {
+        $longestTopStreak = $currentTopStreak;
+        $longestStreakManager = $currentTopManager;
+        $longestStreakStartGW = $streakStartGW;
     }
 
-    // --- Updated Logic to Handle Ties for Overall Most Leads/Lasts ---
-    
-    // Get the highest count of GW leads achieved by any manager
+    // Handle overall most GW leads/lasts ties
     $maxLeadCount = collect($managerLeads)->max();
-    
-    // Filter managers to include ALL who achieved the max lead count
     $mostGWLeads = collect($managerLeads)
         ->filter(fn($count) => $count == $maxLeadCount && $maxLeadCount > 0)
         ->sortDesc()
         ->toArray();
 
-    // Get the highest count of GW lasts achieved by any manager
     $maxLastCount = collect($managerLasts)->max();
-    
-    // Filter managers to include ALL who achieved the max last count
     $mostGWLasts = collect($managerLasts)
         ->filter(fn($count) => $count == $maxLastCount && $maxLastCount > 0)
         ->sortDesc()
         ->toArray();
-    
-    // --- End of Updated Logic ---
+
+    $longestStreakStat = [
+        'manager' => $longestStreakManager,
+        'length' => $longestTopStreak,
+        'start_gw' => $longestStreakStartGW,
+        'end_gw' => $longestTopStreak > 0 ? ($longestStreakStartGW + $longestTopStreak - 1) : null,
+    ];
 
     $allManagerNames = $managers->pluck('player_name')->all();
     $bestOrWorstNames = array_keys($managerLeads + $managerLasts);
 
     $stats = [
-        // Using the new $mostGWLeads and $mostGWLasts arrays
         'most_gw_leads' => $mostGWLeads, 
         'most_gw_last' => $mostGWLasts, 
         'highest_gw_score' => $highestGwScore,
         'lowest_gw_score' => $lowestGwScore,
+        'longest_top_streak' => $longestStreakStat,
+        
+        // --- New Stats ---
+        'the_blowout' => $theBlowout,
+        'wooden_spoon_contenders' => $woodenSpoonContenders,
+        // Removed: 'captains_curse_proxy' => $worstCaptainScore,
+        'league_zones' => $leagueZones,
+        // --- End New Stats ---
+        
         'mediocres' => array_values(array_diff($allManagerNames, $bestOrWorstNames)),
         'men_standing' => array_values(array_diff($allManagerNames, array_keys($managerLasts))),
         'hall_of_shame' => collect($managerLasts)

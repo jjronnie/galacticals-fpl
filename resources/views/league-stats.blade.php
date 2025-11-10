@@ -134,7 +134,19 @@
 
             <h2 class="mb-6 text-2xl font-bold text-center">Season Stats </h2>
 
+            
+
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
+                  <div class="p-4 rounded-lg shadow-lg glass sm:col-span-2 lg:col-span-3">
+                    <p class="text-pink-400 font-bold">THE 100+ KINGS</p>
+                    @forelse($stats['hundred_plus_league'] as $entry)
+                    <p class="text-sm">- {{ $entry }}</p>
+                    @empty
+                    <p class="text-sm">No 100+ scores yet!</p>
+                    @endforelse
+                </div>
+
                 <div class="p-4 rounded-lg shadow-lg glass">
                     <p class="text-green-400 font-bold">MOST GW LEADS</p>
                     <p class="text-sm">
@@ -170,11 +182,38 @@
                     </p>
                 </div>
 
-                {{-- LONGEST TOP STREAK - Requires complex logic, skipped for minimal code --}}
                 <div class="p-4 rounded-lg shadow-lg glass">
-                    <p class="text-green-400 font-bold">LONGEST TOP STREAK</p>
-                    <p class="text-sm">Feature Coming soon</p>
-                </div>
+    <p class="text-green-400 font-bold">THE BLOWOUT - BIGGEST POINTS DIFF IN A GW</p>
+    @if ($stats['the_blowout']['difference'] > 0)
+        <p class="text-sm">
+            {{ $stats['the_blowout']['difference'] }} Points Difference 
+            (GW-{{ $stats['the_blowout']['gw'] }})
+        </p>
+        <p class="text-xs text-gray-400">
+            Highest: {{ $stats['the_blowout']['highest_scorer'] }} ({{ $stats['the_blowout']['highest_points'] }} pts)
+        </p>
+        <p class="text-xs text-gray-400">
+            Lowest: {{ $stats['the_blowout']['lowest_scorer'] }} ({{ $stats['the_blowout']['lowest_points'] }} pts)
+        </p>
+    @else
+        <p class="text-sm">No Gameweek data available yet.</p>
+    @endif
+</div>
+
+                {{-- LONGEST TOP STREAK - Requires complex logic, skipped for minimal code --}}
+            <div class="p-4 rounded-lg shadow-lg glass">
+    <p class="text-green-400 font-bold">LONGEST TOP STREAK</p>
+    @if ($stats['longest_top_streak']['length'] > 0)
+        <p class="text-lg font-semibold">{{ $stats['longest_top_streak']['manager'] }}</p>
+        <p class="text-sm">
+            {{ $stats['longest_top_streak']['length'] }} consecutive GWs 
+            (@GW {{ $stats['longest_top_streak']['start_gw'] }} 
+            to GW {{ $stats['longest_top_streak']['end_gw'] }})
+        </p>
+    @else
+        <p class="text-sm">Not enough data yet (or no consistent leader).</p>
+    @endif
+</div>
 
                 <div class="p-4 rounded-lg shadow-lg glass">
                     <p class="text-yellow-400 font-bold"> MEDIOCRES - NEVER BEST OR LAST</p>
@@ -186,6 +225,57 @@
                         @endforelse
                     </p>
                 </div>
+
+  <div class="p-4 rounded-lg shadow-lg glass">
+    {{-- Title centered --}}
+    <p class="text-green-400 font-bold text-center mb-2">LEAGUE ZONES </p>
+    
+    <ul class="list-disc list-inside space-y-2 text-sm">
+        {{-- Champions League --}}
+        <li>
+            <span class="text-blue-300 font-semibold">Champions League:</span>
+            <ul class="ml-4 space-y-0 text-gray-300">
+                @foreach ($stats['league_zones']['champions_league'] as $manager)
+                    <li>- {{ $manager }}</li>
+                @endforeach
+            </ul>
+        </li>
+
+        {{-- Europa League --}}
+        <li>
+            <span class="text-yellow-300 font-semibold">Europa League:</span>
+            <ul class="ml-4 space-y-0 text-gray-300">
+                @foreach ($stats['league_zones']['europa_league'] as $manager)
+                    <li>- {{ $manager }}</li>
+                @endforeach
+            </ul>
+        </li>
+
+        {{-- Relegation Zone --}}
+        <li>
+            <span class="text-red-300 font-semibold">Relegation Zone:</span>
+            <ul class="ml-4 space-y-0 text-gray-300">
+                @foreach ($stats['league_zones']['relegation_zone'] as $manager)
+                    <li>- {{ $manager }}</li>
+                @endforeach
+            </ul>
+        </li>
+    </ul>
+</div>
+
+          <div class="p-4 rounded-lg shadow-lg glass">
+    <p class="text-green-400 font-bold">WOODEN SPOON TROPHY CONTENDERS</p>
+    @if (!empty($stats['wooden_spoon_contenders']))
+        <ul class="list-disc list-inside text-sm pl-2">
+            @foreach ($stats['wooden_spoon_contenders'] as $contender)
+                <li class="text-sm leading-tight">{{ $contender }}</li>
+            @endforeach
+        </ul>
+    @else
+        <p class="text-sm">No managers in the league yet.</p>
+    @endif
+</div>
+
 
                 <div class="p-4 rounded-lg shadow-lg glass sm:col-span-2 lg:col-span-3">
                     <p class="text-purple-400 font-bold">
@@ -209,14 +299,9 @@
                     @endforelse
                 </div>
 
-                <div class="p-4 rounded-lg shadow-lg glass sm:col-span-2 lg:col-span-3">
-                    <p class="text-pink-400 font-bold">THE 100+ KINGS</p>
-                    @forelse($stats['hundred_plus_league'] as $entry)
-                    <p class="text-sm">- {{ $entry }}</p>
-                    @empty
-                    <p class="text-sm">No 100+ scores yet!</p>
-                    @endforelse
-                </div>
+
+      
+              
             </div>
         </section>
 
