@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="index, follow" />
-    <title>   {{ $league->name ?? 'STATS' }} - FPL Galaxy Stats </title>
+    <title> {{ $league->name ?? 'STATS' }} - FPL Galaxy Stats </title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <!-- Favicon -->
@@ -16,14 +16,14 @@
     <meta name="theme-color" content="#001529">
 
     <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-36Z6T6DYQ4"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-36Z6T6DYQ4"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
 
   gtag('config', 'G-36Z6T6DYQ4');
-</script>
+    </script>
 
     <!--Start of Tawk.to Script-->
     <script type="text/javascript">
@@ -134,11 +134,11 @@
 
             <h2 class="mb-6 text-2xl font-bold text-center">Season Stats </h2>
 
-            
+
 
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 
-                  <div class="p-4 rounded-lg shadow-lg glass sm:col-span-2 lg:col-span-3">
+                <div class="p-4 rounded-lg shadow-lg glass sm:col-span-2 lg:col-span-3">
                     <p class="text-pink-400 font-bold">THE 100+ KINGS</p>
                     @forelse($stats['hundred_plus_league'] as $entry)
                     <p class="text-sm">- {{ $entry }}</p>
@@ -183,37 +183,39 @@
                 </div>
 
                 <div class="p-4 rounded-lg shadow-lg glass">
-    <p class="text-green-400 font-bold">THE BLOWOUT - BIGGEST POINTS DIFF IN A GW</p>
-    @if ($stats['the_blowout']['difference'] > 0)
-        <p class="text-sm">
-            {{ $stats['the_blowout']['difference'] }} Points Difference 
-            (GW-{{ $stats['the_blowout']['gw'] }})
-        </p>
-        <p class="text-xs text-gray-400">
-            Highest: {{ $stats['the_blowout']['highest_scorer'] }} ({{ $stats['the_blowout']['highest_points'] }} pts)
-        </p>
-        <p class="text-xs text-gray-400">
-            Lowest: {{ $stats['the_blowout']['lowest_scorer'] }} ({{ $stats['the_blowout']['lowest_points'] }} pts)
-        </p>
-    @else
-        <p class="text-sm">No Gameweek data available yet.</p>
-    @endif
-</div>
+                    <p class="text-green-400 font-bold">THE BLOWOUT - BIGGEST POINTS DIFF IN A GW</p>
+                    @if ($stats['the_blowout']['difference'] > 0)
+                    <p class="text-sm">
+                        {{ $stats['the_blowout']['difference'] }} Points Difference
+                        (GW-{{ $stats['the_blowout']['gw'] }})
+                    </p>
+                    <p class="text-xs text-gray-400">
+                        Highest: {{ $stats['the_blowout']['highest_scorer'] }} ({{
+                        $stats['the_blowout']['highest_points'] }} pts)
+                    </p>
+                    <p class="text-xs text-gray-400">
+                        Lowest: {{ $stats['the_blowout']['lowest_scorer'] }} ({{ $stats['the_blowout']['lowest_points']
+                        }} pts)
+                    </p>
+                    @else
+                    <p class="text-sm">No Gameweek data available yet.</p>
+                    @endif
+                </div>
 
                 {{-- LONGEST TOP STREAK - Requires complex logic, skipped for minimal code --}}
-            <div class="p-4 rounded-lg shadow-lg glass">
-    <p class="text-green-400 font-bold">LONGEST TOP STREAK</p>
-    @if ($stats['longest_top_streak']['length'] > 0)
-        <p class="text-lg font-semibold">{{ $stats['longest_top_streak']['manager'] }}</p>
-        <p class="text-sm">
-            {{ $stats['longest_top_streak']['length'] }} consecutive GWs 
-            (@GW {{ $stats['longest_top_streak']['start_gw'] }} 
-            to GW {{ $stats['longest_top_streak']['end_gw'] }})
-        </p>
-    @else
-        <p class="text-sm">Not enough data yet (or no consistent leader).</p>
-    @endif
-</div>
+                <div class="p-4 rounded-lg shadow-lg glass">
+                    <p class="text-green-400 font-bold">LONGEST TOP STREAK</p>
+                    @if ($stats['longest_top_streak']['length'] > 0)
+                    <p class="text-lg font-semibold">{{ $stats['longest_top_streak']['manager'] }}</p>
+                    <p class="text-sm">
+                        {{ $stats['longest_top_streak']['length'] }} consecutive GWs
+                        (@GW {{ $stats['longest_top_streak']['start_gw'] }}
+                        to GW {{ $stats['longest_top_streak']['end_gw'] }})
+                    </p>
+                    @else
+                    <p class="text-sm">Not enough data yet (or no consistent leader).</p>
+                    @endif
+                </div>
 
                 <div class="p-4 rounded-lg shadow-lg glass">
                     <p class="text-yellow-400 font-bold"> MEDIOCRES - NEVER BEST OR LAST</p>
@@ -226,55 +228,55 @@
                     </p>
                 </div>
 
-  <div class="p-4 rounded-lg shadow-lg glass">
-    {{-- Title centered --}}
-    <p class="text-green-400 font-bold text-center mb-2">LEAGUE ZONES </p>
-    
-    <ul class="list-disc list-inside space-y-2 text-sm">
-        {{-- Champions League --}}
-        <li>
-            <span class="text-blue-300 font-semibold">Champions League:</span>
-            <ul class="ml-4 space-y-0 text-gray-300">
-                @foreach ($stats['league_zones']['champions_league'] as $manager)
-                    <li>- {{ $manager }}</li>
-                @endforeach
-            </ul>
-        </li>
+                <div class="p-4 rounded-lg shadow-lg glass">
+                    {{-- Title centered --}}
+                    <p class="text-green-400 font-bold text-center mb-2">LEAGUE ZONES </p>
 
-        {{-- Europa League --}}
-        <li>
-            <span class="text-yellow-300 font-semibold">Europa League:</span>
-            <ul class="ml-4 space-y-0 text-gray-300">
-                @foreach ($stats['league_zones']['europa_league'] as $manager)
-                    <li>- {{ $manager }}</li>
-                @endforeach
-            </ul>
-        </li>
+                    <ul class="list-disc list-inside space-y-2 text-sm">
+                        {{-- Champions League --}}
+                        <li>
+                            <span class="text-blue-300 font-semibold">Champions League:</span>
+                            <ul class="ml-4 space-y-0 text-gray-300">
+                                @foreach ($stats['league_zones']['champions_league'] as $manager)
+                                <li>- {{ $manager }}</li>
+                                @endforeach
+                            </ul>
+                        </li>
 
-        {{-- Relegation Zone --}}
-        <li>
-            <span class="text-red-300 font-semibold">Relegation Zone:</span>
-            <ul class="ml-4 space-y-0 text-gray-300">
-                @foreach ($stats['league_zones']['relegation_zone'] as $manager)
-                    <li>- {{ $manager }}</li>
-                @endforeach
-            </ul>
-        </li>
-    </ul>
-</div>
+                        {{-- Europa League --}}
+                        <li>
+                            <span class="text-yellow-300 font-semibold">Europa League:</span>
+                            <ul class="ml-4 space-y-0 text-gray-300">
+                                @foreach ($stats['league_zones']['europa_league'] as $manager)
+                                <li>- {{ $manager }}</li>
+                                @endforeach
+                            </ul>
+                        </li>
 
-          <div class="p-4 rounded-lg shadow-lg glass">
-    <p class="text-green-400 font-bold">WOODEN SPOON TROPHY CONTENDERS</p>
-    @if (!empty($stats['wooden_spoon_contenders']))
-        <ul class="list-disc list-inside text-sm pl-2">
-            @foreach ($stats['wooden_spoon_contenders'] as $contender)
-                <li class="text-sm leading-tight">{{ $contender }}</li>
-            @endforeach
-        </ul>
-    @else
-        <p class="text-sm">No managers in the league yet.</p>
-    @endif
-</div>
+                        {{-- Relegation Zone --}}
+                        <li>
+                            <span class="text-red-300 font-semibold">Relegation Zone:</span>
+                            <ul class="ml-4 space-y-0 text-gray-300">
+                                @foreach ($stats['league_zones']['relegation_zone'] as $manager)
+                                <li>- {{ $manager }}</li>
+                                @endforeach
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="p-4 rounded-lg shadow-lg glass">
+                    <p class="text-green-400 font-bold">WOODEN SPOON TROPHY CONTENDERS</p>
+                    @if (!empty($stats['wooden_spoon_contenders']))
+                    <ul class="list-disc list-inside text-sm pl-2">
+                        @foreach ($stats['wooden_spoon_contenders'] as $contender)
+                        <li class="text-sm leading-tight">{{ $contender }}</li>
+                        @endforeach
+                    </ul>
+                    @else
+                    <p class="text-sm">No managers in the league yet.</p>
+                    @endif
+                </div>
 
 
                 <div class="p-4 rounded-lg shadow-lg glass sm:col-span-2 lg:col-span-3">
@@ -300,8 +302,8 @@
                 </div>
 
 
-      
-              
+
+
             </div>
         </section>
 
@@ -348,43 +350,66 @@
         <x-adsense />
 
 
-        <section class="mt-8">
-            {{-- League Title (Left/Center) --}}
+<section class="mt-8" 
+    x-data="{ 
+        visible: 50,
+        loadMore() { 
+            if (this.visible < {{ count($standings) }}) { 
+                this.visible += 50 
+            }
+        }
+    }" 
+    x-init="
+        window.addEventListener('scroll', () => {
+            let bottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 200;
+            if (bottom) loadMore();
+        });
+    "
+>
+    <h2 class="mb-6 text-2xl font-bold text-center">Table Standings</h2>
 
+    <div class="overflow-x-auto glass">
+        <table class="min-w-full text-left text-sm font-light">
+            <thead class="font-medium bg-white/10">
+                <tr>
+                    <th scope="col" class="px-4 py-4">Rank</th>
+                    <th scope="col" class="px-4 py-4">Team</th>
+                    <th scope="col" class="px-4 py-4">Total</th>
+                </tr>
+            </thead>
 
-            <h2 class="mb-6 text-2xl font-bold text-center">Table Standings</h2>
-            <div class="overflow-x-auto glass">
-                <table class="min-w-full text-left text-sm font-light">
-                    <thead class="font-medium bg-white/10">
-                        <tr>
-                            <th scope="col" class="px-4 py-4">Rank</th>
-                            <th scope="col" class="px-4 py-4">Team</th>
-                            <th scope="col" class="px-4 py-4">Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($standings as $index => $standing)
-                        <tr class="border-b dark:border-neutral-500 {{ $index === 0 ? 'bg-green-600/30' : '' }}">
-                            <td class="whitespace-nowrap px-6 py-4 font-medium">{{ $index + 1 }}</td>
-                          <td class="whitespace-nowrap px-6 py-4">
-    <div class="flex flex-col ">
-        <span class="font-bold">{{ $standing['team'] }}</span>
-        <span class="text-sm text-gray-400">{{ $standing['name'] }}</span>
+            <tbody>
+                @forelse($standings as $index => $standing)
+                    <tr 
+                        x-show="{{ $index }} < visible" 
+                        x-transition 
+                        class="border-b dark:border-neutral-500 {{ $index === 0 ? 'bg-green-600/30' : '' }}"
+                    >
+                        <td class="whitespace-nowrap px-6 py-4 font-medium">{{ $index + 1 }}</td>
+                        <td class="whitespace-nowrap px-6 py-4">
+                            <div class="flex flex-col">
+                                <span class="font-bold">{{ $standing['team'] }}</span>
+                                <span class="text-sm text-gray-400">{{ $standing['name'] }}</span>
+                            </div>
+                        </td>
+                        <td class="whitespace-nowrap px-6 py-4 font-bold">{{ $standing['total_points'] }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="3" class="text-center py-8 text-gray-400">
+                            No managers or scores recorded yet.
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
-</td>
 
-                            <td class="whitespace-nowrap px-6 py-4 font-bold">{{ $standing['total_points'] }}</td>
-                        </tr>
-                        @empty
-                        <tr class="border-b dark:border-neutral-500">
-                            <td colspan="3" class="text-center py-8 text-gray-400">No managers or scores recorded yet.
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </section>
+    <div class="text-center mt-6" x-show="visible < {{ count($standings) }}">
+        <p class="text-gray-400 text-sm">Loading more...</p>
+    </div>
+</section>
+
 
 
         <x-adsense />

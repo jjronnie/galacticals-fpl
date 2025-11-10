@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\League;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class FrontendController extends Controller
 {
@@ -57,6 +59,12 @@ public function showStats(string $slug, int $gameweek = null)
             'total_points' => $manager->total_points,
         ];
     })->sortByDesc('total_points')->values();
+
+
+    
+
+
+    
     
     // League Zone Logic
     $topManagers = $standings->take(5);
