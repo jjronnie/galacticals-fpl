@@ -228,6 +228,8 @@
                     </p>
                 </div>
 
+                  <x-adsense />
+
                 <div class="p-4 rounded-lg shadow-lg glass">
                     {{-- Title centered --}}
                     <p class="text-green-400 font-bold text-center mb-2">LEAGUE ZONES </p>
