@@ -13,7 +13,9 @@ class FrontendController extends Controller
     {
         $leagues = League::all(['name', 'slug']);
 
-        return view('leagues-list', compact('leagues'));
+        $total = $leagues->count();
+
+        return view('leagues-list', compact('leagues', 'total'));
     }
 
 public function showStats(string $slug, int $gameweek = null)
