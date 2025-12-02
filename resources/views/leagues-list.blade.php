@@ -1,5 +1,5 @@
 <x-app-layout>
-    <main class="max-w-5xl mx-auto p-4 space-y-6">
+    <main class="mx-auto  space-y-6">
         <x-adsense />
         <section class="mt-8">
             <h2 class="mb-6 text-2xl font-bold text-center">Leagues Using {{ config('app.name') }} ({{ $total ?? 'O' }})</h2>
