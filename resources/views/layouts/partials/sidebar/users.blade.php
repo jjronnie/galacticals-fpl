@@ -1,4 +1,4 @@
-<nav class="fixed bottom-0 left-0 right-0 bg-primary border-t border-gray-700 z-50">
+<nav class="fixed bottom-0 left-0 right-0 bg-primary  z-50">
     <div class="flex justify-around items-center h-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         @guest
