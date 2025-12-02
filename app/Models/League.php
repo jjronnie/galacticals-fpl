@@ -71,10 +71,20 @@ class League extends Model
 
   
 
+
+
     public function gameweekScores()
-    {
-        return $this->hasManyThrough(GameweekScore::class, Manager::class);
-    }
+{
+    return $this->hasManyThrough(
+        GameweekScore::class,
+        Manager::class,
+        'league_id',
+        'manager_id',
+        'id',
+        'id'
+    );
+}
+
 
 
 }

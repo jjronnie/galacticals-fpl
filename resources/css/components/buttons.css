@@ -3,7 +3,7 @@
 @layer components {   
 
     .button {
-        @apply inline-flex items-center px-3 py-2  border text-sm font-medium rounded-md transition-colors  duration-300 ease-in-out bg-blue-600 text-white ring-blue-800 hover:bg-blue-800;
+        @apply inline-flex items-center px-3 py-2  border text-sm font-medium rounded-md transition-colors  duration-300 ease-in-out bg-primary text-white ring-blue-800 hover:bg-blue-800;
     }
 
     .button:hover,
@@ -17,7 +17,7 @@
 
     /* SMALL  */
     .button-sm {
-        @apply inline-flex items-center px-3 py-2 border text-xs font-medium rounded-md transition-colors   duration-300 ease-in-out bg-blue-600 text-white ring-blue-800 hover:bg-blue-800;
+        @apply inline-flex items-center px-3 py-2  text-xs font-medium rounded-md transition-colors   duration-300 ease-in-out bg-primary text-white ring-primary hover:ring-secondary hover:bg-secondary;
     }
 
     .button-sm:hover,
@@ -33,7 +33,7 @@
 
     /* success */
     .button-green {
-        @apply inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md transition-colors  duration-300 ease-in-out bg-green-600 text-white ring-green-600 hover:bg-green-800;
+        @apply inline-flex items-center px-4 py-2  text-sm font-medium rounded-md transition-colors  duration-300 ease-in-out bg-green-600 text-white ring-green-600 hover:bg-green-800;
     }
 
     .button-green:hover,
@@ -47,7 +47,7 @@
 
     /* SMALL  */
     .button-green-sm {
-        @apply inline-flex items-center px-2 py-2 border text-xs font-medium rounded-md transition-colors  duration-300 ease-in-out bg-green-600 text-white ring-green-600 hover:bg-green-800;
+        @apply inline-flex items-center px-2 py-2  text-xs font-medium rounded-md transition-colors  duration-300 ease-in-out bg-green-600 text-white ring-green-600 hover:bg-green-800;
     }
 
     .button-green-sm:hover,

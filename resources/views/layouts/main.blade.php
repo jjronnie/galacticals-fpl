@@ -22,7 +22,7 @@
 
 
     <title>
-        {{ ucfirst(Str::before(Route::currentRouteName() ?? 'Admin', '.')) }} | FPL
+       {{ config('app.name') }}
     </title>
     <link rel="stylesheet" href="{{ asset('assets/css/main.css') }}">
 
@@ -62,7 +62,7 @@
 </head>
 
 
-<body class="font-sans  bg-[#F2F3F6]  m-0 p-0 flex flex-col min-h-screen ">
+<body class="font-sans  text-white bg-primary  m-0 p-0 flex flex-col min-h-screen ">
 
     <!-- Preloader-->
     @if (!request()->routeIs(['login', 'register']))

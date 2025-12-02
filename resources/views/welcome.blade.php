@@ -1,116 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="robots" content="index, follow" />
-    <title>FPL Managers Stats Tracker</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-
-     <!--adsense script auto ads-->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1640926658118061"
-        crossorigin="anonymous"></script>
-
-        <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-36Z6T6DYQ4"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-36Z6T6DYQ4');
-</script>
-
-      <!--Start of Tawk.to Script-->
-  <script type="text/javascript">
-    var Tawk_API = Tawk_API || {},
-      Tawk_LoadStart = new Date();
-    (function () {
-      var s1 = document.createElement("script"),
-        s0 = document.getElementsByTagName("script")[0];
-      s1.async = true;
-      s1.src = "https://embed.tawk.to/67ada27b3a842732607e284f/1ijv45d63";
-      s1.charset = "UTF-8";
-      s1.setAttribute("crossorigin", "*");
-      s0.parentNode.insertBefore(s1, s0);
-    })();
-  </script>
-  <!--End of Tawk.to Script-->
-
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap" rel="stylesheet" />
-    <style>
-        body {
-            font-family: "Nunito", sans-serif;
-        }
-
-        .glass {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 2px solid rgba(255, 255, 255, 0.18);
-            border-radius: 1.5rem;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 255, 255, 0.05);
-            padding: 1.5rem;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        @keyframes blink {
-
-            0%,
-            50%,
-            100% {
-                opacity: 1;
-            }
-
-            25%,
-            75% {
-                opacity: 0.4;
-            }
-        }
-
-        .blink {
-            animation: blink 1.5s infinite;
-        }
-    </style>
-
-   
-</head>
-
-<body class="min-h-screen text-gray-200 bg-black">
-
-    <header id="top" class="py-4 text-white bg-[#5B0E9B] shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-
-            <h1 class="flex items-center gap-2 text-xl font-extrabold">
-                <a href="/" class="flex items-center gap-2 hover:text-indigo-300 transition">
-                    <x-logo class="w-12 h-12" />
-                    FPL Galaxy
-                </a>
-            </h1>
-
-            {{-- Login/Register Buttons (Right) --}}
-            <nav class="flex space-x-4">
-                {{-- Login Button --}}
-                <a href="{{ route('login') }}"
-                    class="px-3 py-1.5 text-sm font-semibold text-white bg-indigo-600 rounded-md 
-                      hover:bg-indigo-700 transition duration-150 ease-in-out 
-                      focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-[#5B0E9B]">
-                    Login
-                </a>
-
-                {{-- Register Button (Hidden on small screens, shown on medium and up) --}}
-                <a href="{{ route('register') }}" class=" md:inline-block px-3 py-1.5 text-sm font-semibold text-indigo-100 border border-indigo-100 rounded-md 
-                      hover:bg-indigo-700 hover:text-white transition duration-150 ease-in-out">
-                    Get Started
-                </a>
-            </nav>
-        </div>
-    </header>
+<x-app-layout>
 
     <main class="max-w-5xl mx-auto p-4 space-y-12">
 
@@ -139,27 +27,36 @@
             </div>
         </section>
 
-        <!-- 2. Features/Value Proposition Section -->
-        <section class="grid md:grid-cols-3 gap-6 pt-6">
-            <div class="glass text-center">
-                <p class="text-4xl text-indigo-400 mb-3">📈</p>
-                <h3 class="text-xl font-bold mb-2 text-white">Advanced Metrics</h3>
-                <p class="text-gray-400">See head-to-head records, manager consistency scores, and detailed season
-                    summaries.</p>
-            </div>
-            <div class="glass text-center">
-                <p class="text-4xl text-indigo-400 mb-3">🛡️</p>
-                <h3 class="text-xl font-bold mb-2 text-white">Rivalry Tracking</h3>
-                <p class="text-gray-400">Find out who your league's biggest rival is and who they dominate season after
-                    season.</p>
-            </div>
-            <div class="glass text-center">
-                <p class="text-4xl text-indigo-400 mb-3">🔒</p>
-                <h3 class="text-xl font-bold mb-2 text-white">Free & Private</h3>
-                <p class="text-gray-400">Admins can create and manage their mini-league for free, securely and
-                    privately.</p>
-            </div>
-        </section>
+       <!-- 2. Features/Value Proposition Section -->
+<section class="grid md:grid-cols-3 gap-6 pt-6">
+    <!-- Advanced Metrics -->
+    <div class="text-center rounded-3xl border-2 border-gray-700 bg-card p-6">
+        <div class="flex justify-center text-indigo-400 mb-3">
+            <i data-lucide="bar-chart-2" class="w-12 h-12"></i>
+        </div>
+        <h3 class="text-xl font-bold mb-2 text-white">Advanced Metrics</h3>
+        <p class="text-gray-400">Track head-to-head records, manager consistency scores, and detailed weekly summaries.</p>
+    </div>
+
+    <!-- Rivalry Tracking -->
+    <div class="text-center rounded-3xl border-2 border-gray-700 bg-card p-6">
+        <div class="flex justify-center text-indigo-400 mb-3">
+            <i data-lucide="file-stack" class="w-12 h-12"></i>
+        </div>
+        <h3 class="text-xl font-bold mb-2 text-white">Rivalry Tracking</h3>
+        <p class="text-gray-400">Identify your league’s toughest rivals and see who dominates each game week.</p>
+    </div>
+
+    <!-- Free & Private -->
+    <div class="text-center rounded-3xl border-2 border-gray-700 bg-card p-6">
+        <div class="flex justify-center text-indigo-400 mb-3">
+            <i data-lucide="lock" class="w-12 h-12"></i>
+        </div>
+        <h3 class="text-xl font-bold mb-2 text-white">Free & Private</h3>
+        <p class="text-gray-400">Create and manage your mini-league for free, with secure and private data access.</p>
+    </div>
+</section>
+
 
         <x-adsense />
 
@@ -171,7 +68,7 @@
             <div class="grid md:grid-cols-3 gap-8">
 
                 <!-- Step 1: Admin Registration -->
-                <div class="glass flex flex-col items-center text-center p-6">
+                <div class="rounded-3xl border-2 border-gray-700 bg-card flex flex-col items-center text-center p-6">
                     <div
                         class="w-12 h-12 flex items-center justify-center bg-indigo-600 rounded-full text-white text-2xl font-black mb-4">
                         1</div>
@@ -185,7 +82,7 @@
                 </div>
 
                 <!-- Step 2: League Creation -->
-                <div class="glass flex flex-col items-center text-center p-6">
+                <div class="rounded-3xl border-2 border-gray-700 bg-card flex flex-col items-center text-center p-6">
                     <div
                         class="w-12 h-12 flex items-center justify-center bg-indigo-600 rounded-full text-white text-2xl font-black mb-4">
                         2</div>
@@ -197,7 +94,7 @@
                 </div>
 
                 <!-- Step 3: Data Input & Sharing -->
-                <div class="glass flex flex-col items-center text-center p-6">
+                <div class="rounded-3xl border-2 border-gray-700 bg-card flex flex-col items-center text-center p-6">
                     <div
                         class="w-12 h-12 flex items-center justify-center bg-indigo-600 rounded-full text-white text-2xl font-black mb-4">
                         3</div>
@@ -219,17 +116,4 @@
 
 
     </main>
-    <x-consent-banner />
-
-    <footer class="py-6 mt-12 text-center text-gray-500 text-sm border-t border-gray-800">
-        © <span id="year"></span>
-        <a href="https://techtowerinc.com" class="text-gray-400 hover:text-white transition">TechTower Inc.</a>. All
-        rights reserved.
-    </footer>
-
-    <script>
-        document.getElementById("year").textContent = new Date().getFullYear();
-    </script>
-</body>
-
-</html>
+</x-app-layout>

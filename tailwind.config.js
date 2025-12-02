@@ -18,8 +18,13 @@ export default {
             },
 
             colors: {
-                primary: "#5B0E9B",
-                secondary: "#1D4ED8"
+                primary: "#1E0021",
+                secondary: "#6F00BC",
+                accent: "#00C8FF",
+                card: "#28002B",
+            },
+            backgroundImage: {
+                navgradient: "linear-gradient(to right, #00C8FF, #6F00BC)",
             },
         },
     },

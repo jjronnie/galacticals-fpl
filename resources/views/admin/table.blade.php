@@ -16,7 +16,7 @@
             <x-table.cell>
                 <div class="flex items-center">
                     <div class="ml-4">
-                        <div class="text-sm font-medium text-gray-900">{{ $standing['team'] }}</div>
+                        <div class="text-sm font-medium text-white">{{ $standing['team'] }}</div>
                         <div class="text-sm text-gray-500">{{ $standing['name'] }}</div>
                     </div>
                 </div>
@@ -31,6 +31,6 @@
     <x-empty-state message="No scores recorded yet. Add managers and their GW scores!" />
     @endif
 
-      <x-adsense/>
+    <x-adsense />
 
 </x-app-layout>

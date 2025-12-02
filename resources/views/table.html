@@ -1,0 +1,55 @@
+ <h2 class="mb-6 text-2xl font-bold text-center">Table Standings</h2>
+
+            <div class="overflow-x-auto glass">
+                <table class="min-w-full text-left text-sm font-light">
+                    <thead class="font-medium bg-white/10">
+                        <tr>
+                            <th scope="col" class="px-4 py-4">Rank</th>
+                            <th scope="col" class="px-4 py-4">Team</th>
+                            <th scope="col" class="px-4 py-4">Total</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @forelse($standings as $index => $standing)
+                        <tr x-show="{{ $index }} < visible" x-transition
+                            class="border-b dark:border-neutral-500 {{ $index === 0 ? 'bg-green-600/30' : '' }}">
+                            <td class="whitespace-nowrap px-6 py-4 font-medium">{{ $index + 1 }}</td>
+                            <td class="whitespace-nowrap px-6 py-4">
+                                <div class="flex flex-col">
+                                    <span class="font-bold">{{ $standing['team'] }}</span>
+                                    <span class="text-sm text-gray-400">{{ $standing['name'] }}</span>
+                                </div>
+                            </td>
+                            <td class="whitespace-nowrap px-6 py-4 font-bold">{{ $standing['total_points'] }}</td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="3" class="text-center py-8 text-gray-400">
+                                No managers or scores recorded yet.
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="text-center mt-6" x-show="visible < {{ count($standings) }}">
+                <p class="text-gray-400 text-sm">Loading more...</p>
+            </div>
+
+               <section class="mt-8" x-data="{ 
+        visible: 50,
+        loadMore() { 
+            if (this.visible < {{ count($standings) }}) { 
+                this.visible += 50 
+            }
+        }
+    }" x-init="
+        window.addEventListener('scroll', () => {
+            let bottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 200;
+            if (bottom) loadMore();
+        });
+    ">
+           
+        </section>

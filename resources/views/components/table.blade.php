@@ -7,7 +7,7 @@
     <div class="overflow-x-auto">
         <table class="min-w-full  text-sm">
             <!-- Table Head -->
-            <thead class="bg-gray-50  text-black ">
+            <thead class="bg-card text-white ">
                 <tr>
                     @foreach ($headers as $header)
                         <th scope="col"
@@ -28,7 +28,7 @@
             </thead>
 
             <!-- Table Body -->
-            <tbody class=" divide-y divide-gray-200 bg-white ">
+            <tbody class=" divide-y divide-secondary bg-card ">
                 {{ $slot }}
             </tbody>
         </table>

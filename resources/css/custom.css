@@ -1,5 +1,3 @@
-
-
 @layer components {
 
 
@@ -45,6 +43,11 @@
 
   .no-data {
     @apply text-center text-gray-400 py-12;
+
+
+  }
+  .glass{
+    @apply rounded-3xl border-2 border-gray-700 bg-card
   }
 }
 
@@ -52,23 +55,22 @@
 /* custom css */
 
 .no-scrollbar {
-    scrollbar-width: none;
-    /* Firefox */
-    -ms-overflow-style: none;
-    /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
 }
 
 .no-scrollbar::-webkit-scrollbar {
-    display: none;
-    /* Chrome, Safari, Opera */
+  display: none;
+  /* Chrome, Safari, Opera */
 }
 
 [x-cloak] {
-    display: none !important;
+  display: none !important;
 }
 
 
 .flex.items-center.justify-between {
-    cursor: move;
+  cursor: move;
 }
-

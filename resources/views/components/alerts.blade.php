@@ -1,29 +1,29 @@
 <div x-data="{
     colors: {
         'success': {
-            text: 'text-green-600',
+            text: 'text-green-300',
             icon: 'circle-check-big',
-            progress: 'bg-green-600'
+            progress: 'bg-green-300'
         },
         'info': {
-            text: 'text-blue-600',
+            text: 'text-blue-300',
             icon: 'info',
-            progress: 'bg-blue-600'
+            progress: 'bg-blue-300'
         },
         'warning': {
-            text: 'text-yellow-600',
+            text: 'text-yellow-300',
             icon: 'alert-triangle',
-            progress: 'bg-yellow-600'
+            progress: 'bg-yellow-300'
         },
         'error': {
-            text: 'text-red-600',
+            text: 'text-red-300',
             icon: 'x-circle',
-            progress: 'bg-red-600'
+            progress: 'bg-red-300'
         },
         'neutral': {
-            text: 'text-gray-600',
+            text: 'text-gray-300',
             icon: 'circle-help',
-            progress: 'bg-gray-600'
+            progress: 'bg-gray-300'
         }
     },
     alerts: [],
@@ -109,7 +109,7 @@ class="fixed inset-x-0 top-4 z-[9999] flex flex-col items-center p-4 space-y-2 p
             x-transition:leave-end="opacity-0 -translate-y-full"
             @mouseenter="togglePause(alert.id)"
             @mouseleave="togglePause(alert.id)"
-            class="pointer-events-auto max-w-sm w-full bg-white rounded-xl shadow-lg border border-gray-300 overflow-hidden"
+            class="pointer-events-auto max-w-sm w-full border-2 border-gray-700 bg-card rounded-xl shadow-lg   overflow-hidden"
             role="alert">
 
             <div class="p-4 flex items-center justify-between space-x-4">
@@ -117,7 +117,7 @@ class="fixed inset-x-0 top-4 z-[9999] flex flex-col items-center p-4 space-y-2 p
                     <i :data-lucide="colors[alert.type].icon" class="w-6 h-6"></i>
                 </div>
 
-                <div class="flex-1 text-sm font-medium pr-4 text-gray-800"
+                <div class="flex-1 text-sm font-medium pr-4 text-white"
                     x-text="alert.message"></div>
 
                 <div class="flex-shrink-0">

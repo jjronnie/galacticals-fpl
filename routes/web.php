@@ -33,7 +33,7 @@ Route::get('/leagues', [FrontendController::class, 'listLeagues'])->name('public
 
 Route::get('/leagues/{slug}/{gameweek?}', [FrontendController::class, 'showStats'])
     ->where('gameweek', '[0-9]+') 
-    ->name('public.stats.show');
+    ->name('public.leagues.show');
 
 
 Route::middleware(['auth', 'verified'])->group(function () {
