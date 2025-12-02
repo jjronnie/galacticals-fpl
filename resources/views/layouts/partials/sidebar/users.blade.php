@@ -1,11 +1,16 @@
 <nav class="fixed bottom-0 left-0 right-0 bg-primary border-t border-gray-700 z-50">
     <div class="flex justify-around items-center h-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
+        @guest
+            
+        
+
         <a href="{{ route('home') }}" class="flex flex-col items-center justify-center w-full p-2 text-gray-400 transition-colors duration-200 
                   {{ request()->routeIs('home') ? 'text-white' : 'hover:text-white' }}">
             <i data-lucide="house" class="w-5 h-5"></i>
             <span class="text-xs font-medium mt-1">Home</span>
         </a>
+        @endguest
 
         @auth
 
@@ -24,13 +29,13 @@
             <span class="text-xs font-medium mt-1">Leagues</span>
         </a>
 
-        {{-- @auth
+        @auth
         <a href="{{ route('table') }}" class="flex flex-col items-center justify-center w-full p-2 text-gray-400 transition-colors duration-200 
                   {{ request()->routeIs('table') ? 'text-white' : 'hover:text-white' }}">
             <i data-lucide="list" class="w-5 h-5"></i>
             <span class="text-xs font-medium mt-1">Standings</span>
         </a>
-        @endauth --}}
+        @endauth
         @guest
         <a href="{{ route('login') }}" class="flex flex-col items-center justify-center w-full p-2 text-gray-400 transition-colors duration-200 
                   {{ request()->routeIs('login.*') ? 'text-white' : 'hover:text-white' }}">
