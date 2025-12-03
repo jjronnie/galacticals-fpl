@@ -11,7 +11,7 @@
                 {{ $league->name }}
             </h1>
 
-            <h2 class="mb-6 p-2 text-2xl font-bold text-center"> {{ $league->season }} Season Stats </h2>
+            <h2 class="mb-6 p-2 text-2xl font-bold text-center"> {{ $league->season }}/{{ $league->season +1 }} Season Stats </h2>
 
          
                 @include('share')

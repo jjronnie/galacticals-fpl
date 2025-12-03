@@ -32,7 +32,7 @@
                         <a href="{{ route('login') }}" class="btn-gray mr-3">Cancel</a>
 
                         <button type="submit" class="btn">
-                            {{ __('Email Password Reset Link') }}
+                            {{ __('Send Reset Link') }}
                         </button>
 
                     </div>
