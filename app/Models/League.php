@@ -32,15 +32,25 @@ class League extends Model
             if (empty($league->slug)) {
                 $league->slug = self::generateUniqueSlug($league->name);
             }
+
+              // Generate shortcode if not set
+        if (empty($league->shortcode)) {
+            $league->shortcode = self::generateUniqueShortcode();
+        }
+        
         });
 
+       
+
+      
+
         // --- Update Hook: Re-generate unique slug if the name changes ---
-        static::updating(function ($league) {
-            // Only update the slug if the name has been changed
-            if ($league->isDirty('name')) {
-                $league->slug = self::generateUniqueSlug($league->name);
-            }
-        });
+        // static::updating(function ($league) {
+        //     // Only update the slug if the name has been changed
+        //     if ($league->isDirty('name')) {
+        //         $league->slug = self::generateUniqueSlug($league->name);
+        //     }
+        // });
     }
 
     protected static function generateUniqueSlug(string $name): string
@@ -56,6 +66,16 @@ class League extends Model
 
         return $slug;
     }
+
+    protected static function generateUniqueShortcode($length = 5)
+{
+    do {
+        // uppercase + numbers gives cleaner short links
+        $code = Str::upper(Str::random($length));
+    } while (self::where('shortcode', $code)->exists());
+
+    return $code;
+}
 
 
      public function user()

@@ -1,7 +1,8 @@
 <div class="w-full gap-4 " 
      x-data="{ 
         copied: false,
-        shareUrl: '{{ route('public.leagues.show', ['slug' => $league->slug]) }}',
+        shareUrl: '{{ route('short.league', $league->shortcode) }}',
+
         appName: '{{ config('app.name') }}',
         leagueName: '{{ addslashes($league->name) }}',
 
@@ -9,8 +10,13 @@
             return `Hi, my league ${this.leagueName} has some great fun stats powered by ${this.appName}, please view it here: ${this.shareUrl}`;
         },
 
+         get shareLink() {
+            return `${this.shareUrl}`;
+        },
+
+
         copyLink() {
-            navigator.clipboard.writeText(this.shareMessage).then(() => {
+            navigator.clipboard.writeText(this.shareLink).then(() => {
                 this.copied = true;
                 setTimeout(() => this.copied = false, 2000);
             });

@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\AdminController;
+use App\Models\League;
 
 
 use Illuminate\Support\Facades\Route;
@@ -32,8 +33,16 @@ Route::get('/sitemap.xml', function () {
 Route::get('/leagues', [FrontendController::class, 'listLeagues'])->name('public.leagues.list');
 
 Route::get('/leagues/{slug}/{gameweek?}', [FrontendController::class, 'showStats'])
-    ->where('gameweek', '[0-9]+') 
+    ->where('gameweek', '[0-9]+')
     ->name('public.leagues.show');
+
+
+
+Route::get('/s/{code}', function ($code) {
+    $league = League::where('shortcode', $code)->firstOrFail();
+    return redirect()->route('public.leagues.show', ['slug' => $league->slug]);
+})->name('short.league');
+
 
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -48,7 +57,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
 
-   
+
 });
 
 Route::middleware('auth')->group(function () {
