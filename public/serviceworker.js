@@ -1,16 +1,16 @@
 self.addEventListener('install', function (e) {
   e.waitUntil(
-    caches.open('fplGalaxyV1').then(async function (cache) {
+    caches.open('fplGalaxyV2').then(async function (cache) {
       const files = [
         '/',
-        'login',
-        '/offline.html',
+        '/login',
+        '/register',
+        '/leagues',
         'assets/css/main.css',
         '/assets/js/main.js',
-      
         '/assets/img/logo.webp',
         '/banner.webp',
-       
+
       ];
       for (let file of files) {
         try {
@@ -32,10 +32,7 @@ self.addEventListener('fetch', function (e) {
           if (response) {
             return response;
           }
-          // Only fallback to offline.html for navigation requests (pages)
-          if (e.request.mode === 'navigate') {
-            return caches.match('/offline.html');
-          }
+
         });
       })
   );
