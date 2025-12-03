@@ -48,9 +48,8 @@ $userLeague = auth()->user()->league;
 
                 <!-- Left Side: Title & Info -->
                 <div class="space-y-2">
-                    <h1 class="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+                    <h1 class="text-2xl font-extrabold text-white tracking-tight flex items-center gap-3">
                         {{ $league->name }}
-                        <span class="text-primary-500 font-light text-lg opacity-80">FPL League</span>
                     </h1>
                     <div class="flex items-center gap-2 text-sm text-gray-400">
                         <i class="fa-regular fa-clock"></i>

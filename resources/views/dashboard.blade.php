@@ -20,7 +20,7 @@
 
             <!-- Season Highlights -->
             <div>
-                <x-page-title title="League Highlights" />
+                <x-page-title title="League Info" />
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
                     <x-stat-card title="League ID" value="{{ $league->league_id ?? '-' }}" icon="hash" />
