@@ -9,20 +9,20 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-36Z6T6DYQ4"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-36Z6T6DYQ4"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
 
   gtag('config', 'G-36Z6T6DYQ4');
-</script>
+    </script>
 
-    
+
 
 
     <title>
-       {{ config('app.name') }}
+        {{ config('app.name') }}
     </title>
     <link rel="stylesheet" href="{{ asset('assets/css/main.css') }}">
 
@@ -40,20 +40,20 @@
 
 
     <!-- Favicon -->
-    <link rel="icon" href="{{ asset('assets/img/logo.webp') }}">
-    <link rel="apple-touch-icon" href="{{ asset('assets/img/logo.webp') }}">
+    <link rel="icon" href="{{ asset('assets/img/logo-light.webp') }}">
+    <link rel="apple-touch-icon" href="{{ asset('assets/img/logo-light.webp') }}">
 
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#001529">
 
     <meta name="mobile-web-app-capable" content="yes">
 
-    
+
     <!--adsense script auto ads-->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1640926658118061"
         crossorigin="anonymous"></script>
 
-        
+
 
 
 
@@ -82,7 +82,7 @@
     @vite('resources/js/app.js')
     <script src="{{ asset('assets/js/main.js') }}"></script>
 
-<x-consent-banner/>
+    <x-consent-banner />
 
 </body>
 

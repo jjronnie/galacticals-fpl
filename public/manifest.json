@@ -4,10 +4,11 @@
   "description": "A Stats app to add fun to your classic League.",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "any",
   "scope": "/",
-  "background_color": "#ffffff",
-  "theme_color": "#001529",
+  "background_color": "#1E0021",
+  "theme_color": "#28002B",
+
   "icons": [
     {
       "src": "windows11/SmallTile.scale-100.png",
@@ -458,6 +459,7 @@
       "sizes": "1024x1024"
     }
   ],
+
 
 
   "shortcuts": [
