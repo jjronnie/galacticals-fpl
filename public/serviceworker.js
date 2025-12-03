@@ -1,15 +1,25 @@
 self.addEventListener('install', function (e) {
   e.waitUntil(
-    caches.open('fplGalaxyV2').then(async function (cache) {
+    caches.open('fplGalaxyV3').then(async function (cache) {
       const files = [
         '/',
         '/login',
         '/register',
+        '/forgot-password',
         '/leagues',
+        '/standings',
+        '/dashboard',
+        '/profile',
+        '/privacy-policy',
+        '/terms-and-conditions',
+
         'assets/css/main.css',
         '/assets/js/main.js',
         '/assets/img/logo.webp',
-        '/banner.webp',
+        '/assets/img/logo-light.webp',
+        '/assets/img/banner.webp',
+        '/assets/img/google144.webp',
+
 
       ];
       for (let file of files) {
