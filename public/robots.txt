@@ -1,2 +1,8 @@
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /dashboard
+Disallow: /login
+Disallow: /register
+Disallow: /admin
+
+Sitemap: https://fantasy.thetechtower.com/sitemap.xml

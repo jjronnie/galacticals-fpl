@@ -1,12 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
+</html>
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex, nofollow">
-    <meta name="googlebot" content="noindex, nofollow">
+    <meta name="robots" content="index, follow">
+    <meta name="googlebot" content="index, follow">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+
+
+    {!! SEO::generate() !!}
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-36Z6T6DYQ4"></script>
@@ -65,7 +73,7 @@
 <body class="font-sans  text-white bg-primary  m-0 p-0 flex flex-col min-h-screen ">
 
     <!-- Preloader-->
-    @if (!request()->routeIs(['login', 'register']))
+    @if (!request()->routeIs(['login', 'register', 'dashboard']))
     @include('layouts.preloader')
     @endif
 

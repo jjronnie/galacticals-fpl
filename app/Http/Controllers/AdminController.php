@@ -7,6 +7,10 @@ use App\Models\League;
 use App\Models\Manager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Services\SeoService;
+use App\Services\SitemapService;
+
+
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -16,10 +20,11 @@ use Illuminate\Support\Facades\Http;
 
 class AdminController extends Controller
 {
-    // Utility method to get the current user's league and season
-    private function getCurrentLeague()
+        protected $seoService;
+
+    public function __construct(SEOService $seoService)
     {
-        return League::where('user_id', auth()->id())->firstOrFail();
+        $this->seoService = $seoService;
     }
 
     // --- League Setup ---
@@ -79,85 +84,10 @@ class AdminController extends Controller
             ];
         })->sortByDesc('total_points')->values();
 
-        // --- 2. Gameweek-by-Gameweek Breakdown ---
-        $gameweeks = $allScores->groupBy('gameweek');
+         $this->seoService->setStandings();
 
-        $gwPerformance = [];
-        $managerLeads = [];
-        $managerLasts = [];
-        $highestGwScore = ['manager' => null, 'points' => 0, 'gw' => null];
-        $lowestGwScore = ['manager' => null, 'points' => 9999, 'gw' => null];
-
-        foreach ($gameweeks as $gw => $scores) {
-            if ($scores->isEmpty() || $gw == 0)
-                continue;
-
-            $best = $scores->sortByDesc('points')->first();
-            $worst = $scores->sortBy('points')->first();
-
-            $bestManagers = $scores->where('points', $best->points)->pluck('manager.player_name')->all();
-            $worstManagers = $scores->where('points', $worst->points)->pluck('manager.player_name')->all();
-
-            $gwPerformance[] = [
-                'gameweek' => $gw,
-                'best_managers' => $bestManagers,
-                'best_points' => $best->points,
-                'worst_managers' => $worstManagers,
-                'worst_points' => $worst->points,
-            ];
-
-            foreach ($bestManagers as $name) {
-                $managerLeads[$name] = ($managerLeads[$name] ?? 0) + 1;
-            }
-            foreach ($worstManagers as $name) {
-                $managerLasts[$name] = ($managerLasts[$name] ?? 0) + 1;
-            }
-
-            if ($best->points > $highestGwScore['points']) {
-                $highestGwScore = [
-                    'manager' => implode(', ', $bestManagers),
-                    'points' => $best->points,
-                    'gw' => $gw,
-                ];
-            }
-
-            if ($worst->points < $lowestGwScore['points']) {
-                $lowestGwScore = [
-                    'manager' => implode(', ', $worstManagers),
-                    'points' => $worst->points,
-                    'gw' => $gw,
-                ];
-            }
-        }
-
-        // --- 3. Stats ---
-        $allManagerNames = $managers->pluck('player_name')->all();
-        $bestOrWorstNames = array_keys($managerLeads + $managerLasts);
-
-        $mediocres = array_values(array_diff($allManagerNames, $bestOrWorstNames));
-        $menStanding = array_values(array_diff($allManagerNames, array_keys($managerLasts)));
-        $hallOfShame = array_filter($managerLasts, fn($count) => $count >= 2);
-        arsort($hallOfShame);
-
-        $hundredPlusLeague = $allScores
-            ->where('points', '>=', 100)
-            ->map(fn($score) => $score->manager->player_name . ' (' . $score->points . ' pts in GW ' . $score->gameweek . ')')
-            ->unique()
-            ->values()
-            ->all();
-
-        $stats = [
-            'most_gw_leads' => $managerLeads,
-            'most_gw_last' => $managerLasts,
-            'highest_gw_score' => $highestGwScore,
-            'lowest_gw_score' => $lowestGwScore,
-            'mediocres' => $mediocres,
-            'men_standing' => $menStanding,
-            'hall_of_shame' => $hallOfShame,
-            'hundred_plus_league' => $hundredPlusLeague,
-        ];
-
-        return view('admin.table', compact('league', 'managers', 'standings', ));
+      
+        return view('admin.table', compact( 'standings', ));
     }
 
 
@@ -286,8 +216,10 @@ class AdminController extends Controller
             }
 
             // Optional: sleep to avoid rate-limiting (FPL API is sensitive)
-            usleep(250000); // 0.25 seconds per manager
+            // usleep(250000); // 0.25 seconds per manager
         }
+
+         SitemapService::update();
 
         return redirect()->route('dashboard')->with('status', 'League, managers, and gameweek scores imported successfully, Enjoy!');
     }
@@ -386,8 +318,10 @@ class AdminController extends Controller
                 );
             }
 
-            usleep(250000); // small delay per manager to stay under limits
+            // usleep(250000); // small delay per manager to stay under limits
         }
+
+         SitemapService::update();
 
         return back()->with('status', 'Your league, managers, and gameweek scores have been updated successfully!');
     }
