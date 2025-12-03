@@ -6,8 +6,8 @@ return [
             'title' => false,
             'titleBefore' => false, // Don't append anything before
             'description' => 'Advanced Fantasy Premier League statistics and analytics',
-            'separator' => ' - ',
-            'keywords' => [],
+            'separator' => ' | ',
+            'keywords' => ['FPL', 'Fantasy Premier League', 'FPL Stats', 'Mini League', 'FPL Galaxy', 'FPL Analytics'],
             'canonical' => null,
             'robots' => null,
         ],
@@ -28,7 +28,7 @@ return [
             'url' => null,
             'type' => 'website',
             'site_name' => 'FPL Galaxy',
-            'images' => [],
+            'images' => ['/assets/img/logo.webp'],
         ],
     ],
     'twitter' => [
@@ -43,7 +43,8 @@ return [
             'description' => 'Advanced Fantasy Premier League statistics',
             'url' => null,
             'type' => 'WebPage',
-            'images' => [],
+            'images' => ['/assets/img/logo.webp'],
         ],
     ],
 ];
+

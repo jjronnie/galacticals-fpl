@@ -29,9 +29,6 @@
 
 
 
-    <title>
-        {{ config('app.name') }}
-    </title>
     <link rel="stylesheet" href="{{ asset('assets/css/main.css') }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
