@@ -1,4 +1,4 @@
-<div class="w-full space-y-4" 
+<div class="w-full gap-4 " 
      x-data="{ 
         copied: false,
         shareUrl: '{{ route('public.leagues.show', ['slug' => $league->slug]) }}',

@@ -1,5 +1,5 @@
 <x-app-layout>
-    <main class="max-w-6xl mx-auto p-4 space-y-6">
+    <main class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
         <x-adsense />
 
 
@@ -13,16 +13,15 @@
 
             <h2 class="mb-6 p-2 text-2xl font-bold text-center"> {{ $league->season }} Season Stats </h2>
 
-            <div class="p-6 w-full">
+         
                 @include('share')
 
 
-            </div>
 
             <div class="p-6 text-center">
 
                 <a href="#current" class="btn">
-                    Current GW
+                    View Current GW
                 </a>
 
             </div>
@@ -207,11 +206,12 @@
 
 
 
-     <div id="current" class="p-6 w-full">
+     <span id="current" class="">
+     </span>  
                 @include('share')
 
 
-            </div>
+         
 
 
 
