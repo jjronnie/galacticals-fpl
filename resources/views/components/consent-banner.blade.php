@@ -7,7 +7,7 @@
         }
     }"
     x-show="!consentGiven" x-cloak
-    class="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-[95%] sm:w-[90%] md:w-[70%] lg:w-[80%] max-w-md bg-navgradient border border-green-500 rounded-xl shadow-lg p-5 md:p-6 z-50 transition-all"
+    class="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-[95%] sm:w-[90%] md:w-[70%] lg:w-[80%] max-w-md bg-card border border-gray-500 rounded-xl shadow-lg p-5 md:p-6 z-50 transition-all"
 >
     <div class="flex flex-col gap-4">
         <div class="text-gray-300 text-sm  leading-relaxed">
