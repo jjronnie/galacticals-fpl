@@ -4,7 +4,6 @@
   "description": "A Stats app to add fun to your classic League.",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "any",
   "scope": "/",
   "background_color": "#1E0021",
   "theme_color": "#28002B",
