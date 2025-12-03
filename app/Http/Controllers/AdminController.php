@@ -180,100 +180,11 @@ class AdminController extends Controller
 
         $seasonYear = $league->season;
 
-        // Fetch all managers and their scores for the current season
-        $managers = Manager::where('league_id', $league->id)
-            ->with([
-                'scores' => function ($query) use ($seasonYear) {
-                    $query->where('season_year', $seasonYear)->orderBy('gameweek');
-                }
-            ])
-            ->get();
-
-        // Fetch all gameweek scores for this league and season
-        $allScores = $league->gameweekScores()
-            ->where('season_year', $seasonYear)
-            ->orderBy('gameweek')
-            ->get();
-
-        // --- 1. Season Standings (Total Points) ---
-        $standings = $managers->map(function ($manager) {
-            return [
-                'name' => $manager->player_name,
-                'total_points' => $manager->total_points,
-            ];
-        })->sortByDesc('total_points')->values();
+        $totalManagers = Manager::where('league_id', $league->id)->count();
 
 
 
-        // --- 2. Gameweek-by-Gameweek Breakdown ---
-        $gameweeks = $allScores->groupBy('gameweek');
 
-        $gwPerformance = [];
-        $managerLeads = [];
-        $managerLasts = [];
-        $highestGwScore = ['manager' => null, 'points' => 0, 'gw' => null];
-        $lowestGwScore = ['manager' => null, 'points' => 9999, 'gw' => null];
-
-        foreach ($gameweeks as $gw => $scores) {
-            if ($scores->isEmpty() || $gw == 0)
-                continue;
-
-            $best = $scores->sortByDesc('points')->first();
-            $worst = $scores->sortBy('points')->first();
-
-            // Take only 1 manager for best and worst
-            $bestManager = $scores->where('points', $best->points)->pluck('manager.player_name')->first();
-            $worstManager = $scores->where('points', $worst->points)->pluck('manager.player_name')->first();
-
-            $gwPerformance[] = [
-                'gameweek' => $gw,
-                'best_managers' => [$bestManager],
-                'best_points' => $best->points,
-                'worst_managers' => [$worstManager],
-                'worst_points' => $worst->points,
-            ];
-
-            $managerLeads[$bestManager] = ($managerLeads[$bestManager] ?? 0) + 1;
-            $managerLasts[$worstManager] = ($managerLasts[$worstManager] ?? 0) + 1;
-
-            if ($best->points > $highestGwScore['points']) {
-                $highestGwScore = [
-                    'manager' => $bestManager,
-                    'points' => $best->points,
-                    'gw' => $gw,
-                ];
-            }
-
-            if ($worst->points < $lowestGwScore['points']) {
-                $lowestGwScore = [
-                    'manager' => $worstManager,
-                    'points' => $worst->points,
-                    'gw' => $gw,
-                ];
-            }
-        }
-
-        // --- 3. Single winners for GW leads / lasts ---
-        $mostGWLeadPoints = max($managerLeads);
-        $mostGWLeadName = array_search($mostGWLeadPoints, $managerLeads);
-
-        $mostGWLastPoints = max($managerLasts);
-        $mostGWLastName = array_search($mostGWLastPoints, $managerLasts);
-
-        $allManagerNames = $managers->pluck('player_name')->all();
-        $bestOrWorstNames = array_keys($managerLeads + $managerLasts);
-
-        $mediocres = array_values(array_diff($allManagerNames, $bestOrWorstNames));
-        $menStanding = array_values(array_diff($allManagerNames, array_keys($managerLasts)));
-        $hallOfShame = array_filter($managerLasts, fn($count) => $count >= 3);
-        arsort($hallOfShame);
-
-        $hundredPlusLeague = $allScores
-            ->where('points', '>=', 100)
-            ->map(fn($score) => $score->manager->player_name . ' (' . $score->points . ' pts in GW ' . $score->gameweek . ')')
-            ->unique()
-            ->values()
-            ->all();
 
 
         $lastUpdated = $league->gameweekScores()
@@ -281,18 +192,9 @@ class AdminController extends Controller
             ->value('gameweek_scores.updated_at');
 
 
-        $stats = [
-            'most_gw_leads' => [$mostGWLeadName => $mostGWLeadPoints],
-            'most_gw_last' => [$mostGWLastName => $mostGWLastPoints],
-            'highest_gw_score' => $highestGwScore,
-            'lowest_gw_score' => $lowestGwScore,
-            'mediocres' => $mediocres,
-            'men_standing' => $menStanding,
-            'hall_of_shame' => $hallOfShame,
-            'hundred_plus_league' => $hundredPlusLeague,
-        ];
 
-        return view('dashboard', compact('league', 'managers', 'gwPerformance', 'lastUpdated', 'stats'));
+
+        return view('dashboard', compact('league', 'totalManagers', 'lastUpdated', ));
     }
 
 

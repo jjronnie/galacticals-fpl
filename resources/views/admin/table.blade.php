@@ -32,5 +32,6 @@
     @endif
 
     <x-adsense />
+     <x-back-to-top/>
 
 </x-app-layout>

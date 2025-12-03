@@ -1,8 +1,8 @@
-<x-guest-layout>
+<x-app-layout>
   <div class="flex flex-col min-h-screen w-full lg:flex-row">
     <!-- Left: Login Form -->
     <div
-      class="flex flex-col w-full px-6 py-12 justify-center sm:px-10 lg:w-1/3"
+      class="flex flex-col w-full  justify-center  lg:w-1/3 bg-navgradient rounded-xl"
     >
       <div class="w-full  mx-auto py-10 px-10 ">
         <div class="flex mb-2 mx-auto items-center justify-center lg:hidden">
@@ -24,13 +24,13 @@
 
         <!-- Session Status -->
         @if (session("status"))
-          <div class="mb-4 text-sm text-purple-600 text-center">
+          <div class="mb-4 text-sm text-white text-center">
             {{ session("status") }}
           </div>
         @endif
 
         <!-- Login Form -->
-        <form method="POST" action="{{ route("login") }}" class="space-y-4">
+        <form method="POST" action="{{ route("login") }}" class="space-y-4 ">
           @csrf
 
           <!-- Email -->
@@ -43,16 +43,16 @@
               required
               autofocus
               placeholder="Email"
-              class="w-full px-4 pt-6 pb-2 text-gray-900 placeholder-transparent bg-white rounded-lg border border-gray-300 peer focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+              class="w-full px-4 pt-6 pb-2 text-white placeholder-transparent bg-navgradient rounded-lg border border-gray-300 peer focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
             />
             <label
               for="email"
-              class="text-sm transition-all absolute left-4 top-2 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-2 peer-focus:text-sm peer-focus:text-purple-600"
+              class="text-sm transition-all absolute left-4 top-2 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-2 peer-focus:text-sm peer-focus:text-white"
             >
               Username
             </label>
             @error("email")
-              <p class="mt-2 text-red-600 text-sm">{{ $message }}</p>
+              <p class="mt-2 text-white bg-primary rounded-xl p-2 text-center text-sm ">{{ $message }}</p>
             @enderror
           </div>
 
@@ -64,11 +64,11 @@
               name="password"
               required
               placeholder="Password"
-              class="w-full px-4 pt-6 pb-2 text-gray-900 placeholder-transparent bg-white rounded-lg border border-gray-300 peer focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+              class="w-full px-4 pt-6 pb-2 text-white placeholder-transparent bg-navgradient rounded-lg border border-gray-300 peer focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
             />
             <label
               for="password"
-              class="text-sm transition-all absolute left-4 top-2 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-2 peer-focus:text-sm peer-focus:text-purple-600"
+              class="text-sm transition-all absolute left-4 top-2 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-2 peer-focus:text-sm peer-focus:text-white"
             >
               Password
             </label>
@@ -77,13 +77,13 @@
             <button
               type="button"
               onclick="togglePassword()"
-              class="text-gray-700 absolute right-4 top-4 focus:outline-none"
+              class="text-white absolute right-4 top-4 focus:outline-none"
             >
               <i data-lucide="eye" id="eye-icon" class="w-5 h-5"></i>
             </button>
 
             @error("password")
-              <p class="mt-2 text-red-600 text-sm">{{ $message }}</p>
+              <p class="mt-2 text-white bg-primary rounded-xl p-2 text-center text-sm">{{ $message }}</p>
             @enderror
           </div>
 
@@ -93,10 +93,10 @@
               <input
                 id="remember_me"
                 type="checkbox"
-                class="text-purple-600 border-gray-300 shadow-sm rounded focus:ring-purple-500"
+                class="text-primary border-gray-300 shadow-sm rounded focus:ring-primary"
                 name="remember"
               />
-              <span class="text-sm text-gray-900 ms-2">
+              <span class="text-sm text-white ms-2">
                 {{ __("Remember me") }}
               </span>
             </label>
@@ -105,7 +105,7 @@
           <div class="flex mt-4 items-center justify-end">
             @if (Route::has("password.request"))
               <a
-                class="text-sm text-gray-900 rounded-md underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                class="text-sm text-white rounded-md underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
                 href="{{ route("password.request") }}"
               >
                 {{ __("Forgot your password?") }}
@@ -116,7 +116,7 @@
           <!-- Submit Button -->
           <button
             type="submit"
-            class="flex w-full py-3 text-white font-semibold bg-purple-600 rounded-full login-button items-center justify-center gap-2 transition duration-300 hover:bg-purple-700"
+            class="flex w-full py-3 text-white font-semibold bg-card rounded-full login-button items-center justify-center gap-2 transition duration-300 hover:bg-purple-700"
           >
             <span>Sign In</span>
             <i data-lucide="log-in" class="w-4 h-4"></i>
@@ -127,7 +127,7 @@
 
         <p class="mt-4 text-sm text-center">
           Dont have an Account?
-          <span class="text-purple-600 underline">
+          <span class="text-white underline">
             <a href="{{ route("register") }}">Register Here</a>
           </span>
         </p>
@@ -186,4 +186,4 @@
       lucide.createIcons();
     }
   </script>
-</x-guest-layout>
+</x-app-layout>

@@ -51,6 +51,11 @@
   }
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
+
 
 /* custom css */
 

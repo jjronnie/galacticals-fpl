@@ -113,7 +113,7 @@
 
         <x-adsense />
 
-
+ <x-back-to-top/>
 
     </main>
 </x-app-layout>

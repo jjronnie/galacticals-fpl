@@ -1,5 +1,5 @@
 <x-app-layout>
-    <main class="max-w-5xl mx-auto p-4 space-y-6">
+    <main class="max-w-6xl mx-auto p-4 space-y-6">
         <x-adsense />
 
 
@@ -8,10 +8,25 @@
         <section class="mt-8">
 
             <h1 class=" text-xl font-extrabold gap-2 text-center">
-                {{ $league->name }} 
+                {{ $league->name }}
             </h1>
 
-            <h2 class="mb-6 p-2 text-2xl font-bold text-center">Season Stats </h2>
+            <h2 class="mb-6 p-2 text-2xl font-bold text-center"> {{ $league->season }} Season Stats </h2>
+
+            <div class="p-6 w-full">
+                @include('share')
+
+
+            </div>
+
+            <div class="p-6 text-center">
+
+                <a href="#current" class="btn">
+                    Current GW
+                </a>
+
+            </div>
+
 
 
 
@@ -82,15 +97,9 @@
                     <p class="text-sm">Not enough data yet.</p>
                     @endif
                 </x-gw-stat-card>
-                </div>
 
-                <div class="p-2 h-24">
-                   <x-adsense />
-                   </div>
 
-                <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 
-             
 
                 <x-gw-stat-card title="MEDIOCRES - NEVER BEST OR LAST" color="yellow">
                     @forelse($stats['mediocres'] as $name)
@@ -198,7 +207,11 @@
 
 
 
+     <div id="current" class="p-6 w-full">
+                @include('share')
 
+
+            </div>
 
 
 
@@ -209,6 +222,9 @@
 
         <x-adsense />
 
+        @guest
+            
+      
         <div class="flex my-6 justify-center">
             <a href="{{ route('register') }}" target="_blank"
                 class="py-2 px-6 text-white font-semibold bg-green-600 rounded-lg shadow-md hover:bg-purple-700 transition duration-200 blink">
@@ -217,6 +233,10 @@
 
 
         </div>
+          @endguest
+
+          <x-back-to-top/>
+
 
     </main>
 </x-app-layout>

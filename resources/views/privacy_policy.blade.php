@@ -75,6 +75,7 @@
         </div>
 
           <x-adsense/>
+           <x-back-to-top/>
         
     </main>
 

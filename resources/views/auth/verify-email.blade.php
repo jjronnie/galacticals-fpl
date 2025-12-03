@@ -1,15 +1,15 @@
-<x-guest-layout>
+<x-app-layout>
     <div class="flex flex-col md:flex-row min-h-screen w-full font-sans">
 
-        <div class="w-full md:w-1/3 flex flex-col justify-center items-center p-6 sm:p-10 bg-gray-50">
-            <div class="w-full max-w-sm mx-auto p-8 bg-white rounded-xl shadow-lg">
+        <div class="w-full md:w-1/3 flex flex-col justify-center items-center p-6 sm:p-10 bg-navgradient rounded-xl">
+            <div class="w-full max-w-sm mx-auto p-8 ">
 
                 <div class="md:hidden mb-6 flex items-center justify-center">
                      <x-logo class="w-24 h-24" />
                 </div>
 
-                <h1 class="font-bold text-2xl text-gray-800 text-center mb-2">Verify Your Email</h1>
-                <p class="text-sm text-gray-500 text-center mb-8">Just one more step to get started!</p>
+                <h1 class="font-bold text-2xl text-white text-center mb-2">Verify Your Email</h1>
+                <p class="text-sm text-white text-center mb-8">Just one more step to get started!</p>
 
                 @if (session('status') == 'verification-link-sent')
                 <div class="mb-4 p-4 font-medium text-sm text-green-700 bg-green-100 rounded-lg">
@@ -19,8 +19,8 @@
                 </div>
                 @endif
 
-                <div class="mb-6 text-sm text-gray-700 leading-relaxed">
-                    {{ __('Thanks for creating an account with {{ config('app.name') }}. We need to verify your email address. Please click
+                <div class="mb-6 text-sm text-white leading-relaxed">
+                    {{ __('Thanks for creating an account with FPL Galaxy. We need to verify your email address. Please click
                     the link we just sent to you.') }}
                 </div>
 
@@ -35,7 +35,7 @@
 
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="text-sm text-gray-500 hover:text-gray-900 underline ml-4">
+                        <button type="submit" class="text-sm text-white hover:text-gray-900 underline ml-4">
                             {{ __('Log Out') }}
                         </button>
                     </form>
@@ -45,4 +45,4 @@
 
         @include('auth.right-banner')
     </div>
-</x-guest-layout>
+</x-app-layout>

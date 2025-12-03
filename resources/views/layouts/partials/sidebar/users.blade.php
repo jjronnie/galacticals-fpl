@@ -1,9 +1,11 @@
-<nav class="fixed bottom-0 left-0 right-0 bg-primary  z-50">
+<nav class="fixed bottom-0 left-0 right-0 bg-card z-50 rounded-t-2xl">
+
+
     <div class="flex justify-around items-center h-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         @guest
-            
-        
+
+
 
         <a href="{{ route('home') }}" class="flex flex-col items-center justify-center w-full p-2 text-gray-400 transition-colors duration-200 
                   {{ request()->routeIs('home') ? 'text-white' : 'hover:text-white' }}">
@@ -37,18 +39,25 @@
         </a>
         @endauth
         @guest
-        <a href="{{ route('login') }}" class="flex flex-col items-center justify-center w-full p-2 text-gray-400 transition-colors duration-200 
-                  {{ request()->routeIs('login.*') ? 'text-white' : 'hover:text-white' }}">
+        
+        {{-- Login link --}}
+        @if (!request()->routeIs('login'))
+        <a href="{{ route('login') }}" class="flex flex-col items-center justify-center w-full p-2 text-gray-400 transition-colors duration-200
+       {{ request()->routeIs('login') ? 'text-white' : 'hover:text-white' }}">
             <i data-lucide="log-in" class="w-5 h-5"></i>
             <span class="text-xs font-medium mt-1">Login</span>
         </a>
+        @endif
 
-
-        <a href="{{ route('register') }}" class="flex flex-col items-center justify-center w-full p-2 text-gray-400 transition-colors duration-200 
-                  {{ request()->routeIs('login.*') ? 'text-white' : 'hover:text-white' }}">
+        {{-- Register link --}}
+        @if (!request()->routeIs('register'))
+        <a href="{{ route('register') }}" class="flex flex-col items-center justify-center w-full p-2 text-gray-400 transition-colors duration-200
+       {{ request()->routeIs('register') ? 'text-white' : 'hover:text-white' }}">
             <i data-lucide="user-plus" class="w-5 h-5"></i>
             <span class="text-xs font-medium mt-1">Register</span>
         </a>
+        @endif
+
 
         @endguest
 
