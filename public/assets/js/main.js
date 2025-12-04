@@ -6,25 +6,7 @@ if ('serviceWorker' in navigator) {
 }
 
 
-
-
-
 document.addEventListener("DOMContentLoaded", () => {
-
-      // === Reveal GIF on load ===
-    const gif = document.getElementById('adGif');
-    const img = new Image();
-    img.src = gif?.src;
-    img.onload = () => {
-        gif.classList.remove('hidden', 'opacity-0');
-        gif.classList.add('opacity-100');
-    };
-
-    // === Initialize on load ===
-    updateReadingProgress();
-    highlightActiveSection();
-
-
     // Clock Display
     const clockDisplay = document.getElementById("clockDisplay");
     function updateClock() {

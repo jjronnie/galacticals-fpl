@@ -11,3 +11,23 @@
         </a>
     </div>
 </div>
+
+
+<script>
+    // Wait for the DOM to fully load
+document.addEventListener('DOMContentLoaded', () => {
+    // === Reveal GIF on load ===
+    const gif = document.getElementById('adGif');
+    const img = new Image();
+    img.src = gif?.src;
+    img.onload = () => {
+        gif.classList.remove('hidden', 'opacity-0');
+        gif.classList.add('opacity-100');
+    };
+
+    // === Initialize on load ===
+    updateReadingProgress();
+    highlightActiveSection();
+});
+
+</script>
