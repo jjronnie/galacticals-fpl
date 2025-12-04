@@ -1,6 +1,9 @@
 <x-app-layout>
     <main class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
         <x-adsense />
+        <span class="p-2"></span>
+
+        <x-gif-advert />
 
 
 
@@ -11,10 +14,11 @@
                 {{ $league->name }}
             </h1>
 
-            <h2 class="mb-6 p-2 text-2xl font-bold text-center"> {{ $league->season }}/{{ $league->season +1 }} Season Stats </h2>
+            <h2 class="mb-6 p-2 text-2xl font-bold text-center"> {{ $league->season }}/{{ $league->season +1 }} Season
+                Stats </h2>
 
-         
-                @include('share')
+
+            @include('share')
 
 
 
@@ -206,12 +210,12 @@
 
 
 
-     <span id="current" class="">
-     </span>  
-                @include('share')
+        <span id="current" class="">
+        </span>
+        @include('share')
 
 
-         
+
 
 
 
@@ -223,8 +227,8 @@
         <x-adsense />
 
         @guest
-            
-      
+
+
         <div class="flex my-6 justify-center">
             <a href="{{ route('register') }}" target="_blank"
                 class="py-2 px-6 text-white font-semibold bg-green-600 rounded-lg shadow-md hover:bg-purple-700 transition duration-200 blink">
@@ -233,9 +237,9 @@
 
 
         </div>
-          @endguest
+        @endguest
 
-          <x-back-to-top/>
+        <x-back-to-top />
 
 
     </main>
