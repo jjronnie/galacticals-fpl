@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="flex flex-col md:flex-row min-h-screen w-full font-sans">
 
-        <div class="w-full md:w-1/3 flex flex-col justify-center items-center p-6 sm:p-10 bg-navgradient rounded-xl">
+        <div class="w-full md:w-1/3 flex flex-col justify-center items-center p-6 sm:p-10 bg-primary rounded-xl">
             <div class="w-full max-w-sm mx-auto p-8 ">
 
                 <div class="md:hidden mb-6 flex items-center justify-center">

@@ -2,7 +2,7 @@
   <div class="flex flex-col min-h-screen w-full lg:flex-row">
     <!-- Left: Reset Form -->
     <div
-      class="flex flex-col w-full justify-center lg:w-1/3 bg-navgradient rounded-xl"
+      class="flex flex-col w-full justify-center lg:w-1/3 bg-primary rounded-xl"
     >
       <div class="w-full mx-auto py-10 px-10">
         <div class="flex mb-2 mx-auto items-center justify-center lg:hidden">

@@ -2,7 +2,7 @@
    
     <div class="flex flex-col lg:flex-row min-h-screen w-full">
         <!-- Left: Register Form -->
-        <div class="w-full lg:w-1/3 flex flex-col justify-center px-6 py-12 sm:px-10 bg-navgradient rounded-xl">
+        <div class="w-full lg:w-1/3 flex flex-col justify-center px-6 py-12 sm:px-10 bg-primary rounded-xl">
             <div class="w-full max-w-md mx-auto ">
                 <div class="lg:hidden mb-2 mx-auto flex items-center justify-center">
                      <x-logo class="w-24 h-24" />
@@ -105,7 +105,7 @@
 
                     <!-- Submit -->
                     <button type="submit"
-                        class="w-full py-3 register-button bg-card hover:bg-purple-700 text-white font-semibold rounded-lg transition duration-200">
+                        class="w-full py-3 register-button bg-card hover:bg-purple-700 border text-white font-semibold rounded-lg transition duration-200">
                         Create Account
                     </button>
                 </form>

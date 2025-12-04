@@ -2,7 +2,7 @@
   <div class="flex flex-col min-h-screen w-full lg:flex-row">
     <!-- Left: Login Form -->
     <div
-      class="flex flex-col w-full  justify-center  lg:w-1/3 bg-navgradient rounded-xl"
+      class="flex flex-col w-full  justify-center  lg:w-1/3 bg-primary rounded-xl"
     >
       <div class="w-full  mx-auto py-10 px-10 ">
         <div class="flex mb-2 mx-auto items-center justify-center lg:hidden">
@@ -105,7 +105,7 @@
           <div class="flex mt-4 items-center justify-end">
             @if (Route::has("password.request"))
               <a
-                class="text-sm text-white rounded-md underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                class="text-sm text-white rounded-md  underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
                 href="{{ route("password.request") }}"
               >
                 {{ __("Forgot your password?") }}
@@ -116,7 +116,7 @@
           <!-- Submit Button -->
           <button
             type="submit"
-            class="flex w-full py-3 text-white font-semibold bg-card rounded-full login-button items-center justify-center gap-2 transition duration-300 hover:bg-purple-700"
+            class="flex w-full py-3 text-white border font-semibold bg-card rounded-full login-button items-center justify-center gap-2 transition duration-300 hover:bg-purple-700"
           >
             <span>Sign In</span>
             <i data-lucide="log-in" class="w-4 h-4"></i>
