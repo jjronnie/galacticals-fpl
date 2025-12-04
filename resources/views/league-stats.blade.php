@@ -25,7 +25,7 @@
             <div class="p-6 text-center">
 
                 <a href="#current" class="btn">
-                    GO to Current GW
+                    Go to Current GW
                 </a>
 
             </div>
