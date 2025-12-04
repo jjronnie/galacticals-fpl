@@ -1,5 +1,4 @@
-<x-adsense />
-
+ <x-gif-advert />
 
 
 <footer class="  py-4">
