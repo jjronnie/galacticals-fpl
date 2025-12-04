@@ -35,6 +35,14 @@
 
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 
+                <x-gw-stat-card title="THE 100+ KINGS" color="pink">
+                    @forelse($stats['hundred_plus_league'] as $entry)
+                    <p class="text-sm">- {{ $entry }}</p>
+                    @empty
+                    <p class="text-sm">No 100+ scores yet!</p>
+                    @endforelse
+                </x-gw-stat-card>
+
 
 
 
@@ -85,7 +93,7 @@
                     @endif
                 </x-gw-stat-card>
 
-                <x-gw-stat-card title="LONGEST TOP STREAK" color="green">
+                {{-- <x-gw-stat-card title="LONGEST TOP STREAK" color="green">
                     @if ($stats['longest_top_streak']['length'] > 0)
                     <p class="text-lg font-semibold">
                         {{ $stats['longest_top_streak']['manager'] }}
@@ -99,18 +107,12 @@
                     @else
                     <p class="text-sm">Not enough data yet.</p>
                     @endif
-                </x-gw-stat-card>
+                </x-gw-stat-card> --}}
 
 
 
 
-                <x-gw-stat-card title="MEDIOCRES - NEVER BEST OR LAST" color="yellow">
-                    @forelse($stats['mediocres'] as $name)
-                    - {{ $name }} <br>
-                    @empty
-                    - - Never Best or Worst
-                    @endforelse
-                </x-gw-stat-card>
+
 
                 <x-gw-stat-card title="LEAGUE ZONES" color="green">
                     <ul class="list-disc list-inside space-y-2 text-sm">
@@ -157,13 +159,7 @@
                     @endif
                 </x-gw-stat-card>
 
-                <x-gw-stat-card title="ONLY MEN STANDING - HAVEN’T BEEN LAST BEFORE" color="purple">
-                    @forelse($stats['men_standing'] as $name)
-                    <p class="text-sm">- {{ $name }}</p>
-                    @empty
-                    <p class="text-sm">All managers have been last at least once!</p>
-                    @endforelse
-                </x-gw-stat-card>
+
 
                 <x-gw-stat-card title="HALL OF SHAME - HAVE BEEN LAST 3 TIMES OR MORE" color="purple">
                     @forelse($stats['hall_of_shame'] as $name => $count)
@@ -173,13 +169,56 @@
                     @endforelse
                 </x-gw-stat-card>
 
-                <x-gw-stat-card title="THE 100+ KINGS" color="pink">
-                    @forelse($stats['hundred_plus_league'] as $entry)
-                    <p class="text-sm">- {{ $entry }}</p>
-                    @empty
-                    <p class="text-sm">No 100+ scores yet!</p>
-                    @endforelse
+
+
+                <x-gw-stat-card title="ONLY MEN STANDING - HAVEN’T BEEN LAST BEFORE" color="purple">
+                    <div x-data="{
+            items: @js($stats['men_standing']),
+            limit: 5,
+            loadMore() { this.limit += 10 }
+        }">
+
+                        <template x-if="items.length === 0">
+                            <p class="text-sm">NO Data</p>
+                        </template>
+
+                        <template x-for="(name, index) in items.slice(0, limit)" :key="index">
+                            <p class="text-sm">- <span x-text="name"></span></p>
+                        </template>
+
+                        <button x-show="limit < items.length" @click="loadMore()"
+                            class="mt-2 flex items-center text-sm text-gray-400 hover:text-white">
+                            <i data-lucide="chevron-down" class="w-4 h-4 mr-1"></i>
+                            Show more
+                        </button>
+                    </div>
                 </x-gw-stat-card>
+
+
+
+                <x-gw-stat-card title="MEDIOCRES - NEVER BEST OR LAST" color="yellow">
+                    <div x-data="{
+            items: @js($stats['mediocres']),
+            limit: 5,
+            loadMore() { this.limit += 10 }
+        }">
+
+                        <template x-if="items.length === 0">
+                            <p class="text-sm">- - Never Best or Worst</p>
+                        </template>
+
+                        <template x-for="(name, index) in items.slice(0, limit)" :key="index">
+                            <p class="text-sm">- <span x-text="name"></span></p>
+                        </template>
+
+                        <button x-show="limit < items.length" @click="loadMore()"
+                            class="mt-2 flex items-center text-sm text-gray-400 hover:text-white">
+                            <i data-lucide="chevron-down" class="w-4 h-4 mr-1"></i>
+                            Show more
+                        </button>
+                    </div>
+                </x-gw-stat-card>
+
 
 
 
