@@ -1,6 +1,6 @@
 self.addEventListener('install', function (e) {
   e.waitUntil(
-    caches.open('fplGalaxyV2').then(async function (cache) {
+    caches.open('fplGalaxyV3').then(async function (cache) {
       const files = [
         '/',
         '/login',
@@ -12,6 +12,7 @@ self.addEventListener('install', function (e) {
         '/profile',
         '/privacy-policy',
         '/terms-and-conditions',
+        '/how-to-find-fpl-league-id',
         'assets/css/main.css',
         '/assets/js/main.js',
         '/assets/img/logo.webp',
