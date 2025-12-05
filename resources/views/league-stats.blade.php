@@ -174,8 +174,8 @@
                 <x-gw-stat-card title="ONLY MEN STANDING - HAVEN’T BEEN LAST BEFORE" color="purple">
                     <div x-data="{
             items: @js($stats['men_standing']),
-            limit: 5,
-            loadMore() { this.limit += 10 }
+            limit: 10,
+            loadMore() { this.limit += 20 }
         }">
 
                         <template x-if="items.length === 0">
@@ -199,8 +199,8 @@
                 <x-gw-stat-card title="MEDIOCRES - NEVER BEST OR LAST" color="yellow">
                     <div x-data="{
             items: @js($stats['mediocres']),
-            limit: 5,
-            loadMore() { this.limit += 10 }
+            limit: 10,
+            loadMore() { this.limit += 20 }
         }">
 
                         <template x-if="items.length === 0">

@@ -5,7 +5,7 @@
     <!-- Logo -->
     <a href="/" class="flex items-center space-x-2">
         <x-logo class="w-12 h-12" />
-        <span class="font-bold">FPL Galaxy</span>
+        {{-- <span class="font-bold">FPL Galaxy</span> --}}
     </a>
 
        <!-- Clock -->
@@ -17,7 +17,7 @@
     @guest
         
 
-    <div class="hidden md:flex items-center space-x-2 p-2">
+    <div class="flex items-center space-x-2 p-2">
         <a href="/#join-steps" class="text-sm  text-white hover:underline " >How it works?</a>
     </div>
     @endguest

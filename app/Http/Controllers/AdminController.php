@@ -9,23 +9,26 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Services\SeoService;
 use App\Services\SitemapService;
-
-
-
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use App\Services\LeagueStatsService;
 
 
 
 
 class AdminController extends Controller
 {
-        protected $seoService;
+    protected $seoService;
+    protected $statsService;
 
-    public function __construct(SEOService $seoService)
+
+    public function __construct(SEOService $seoService, LeagueStatsService $statsService)
     {
         $this->seoService = $seoService;
+        $this->statsService = $statsService;
     }
+
+
 
     // --- League Setup ---
 
@@ -37,9 +40,6 @@ class AdminController extends Controller
         // Return a simple form view (you'd need to create this Blade file)
         return view('admin.league-setup');
     }
-
-
-
 
 
 
@@ -84,10 +84,10 @@ class AdminController extends Controller
             ];
         })->sortByDesc('total_points')->values();
 
-         $this->seoService->setStandings();
+        $this->seoService->setStandings();
 
-      
-        return view('admin.table', compact( 'standings', ));
+
+        return view('admin.table', compact('standings', ));
     }
 
 
@@ -219,7 +219,7 @@ class AdminController extends Controller
             // usleep(250000); // 0.25 seconds per manager
         }
 
-         SitemapService::update();
+        SitemapService::update();
 
         return redirect()->route('dashboard')->with('status', 'League, managers, and gameweek scores imported successfully, Enjoy!');
     }
@@ -321,7 +321,9 @@ class AdminController extends Controller
             // usleep(250000); // small delay per manager to stay under limits
         }
 
-         SitemapService::update();
+        $this->statsService->flushLeagueStats($league);
+
+        SitemapService::update();
 
         return back()->with('status', 'Your league, managers, and gameweek scores have been updated successfully!');
     }

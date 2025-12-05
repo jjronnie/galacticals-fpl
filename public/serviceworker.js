@@ -19,8 +19,6 @@ self.addEventListener('install', function (e) {
         '/assets/img/banner.webp',
         '/assets/img/google144.png',
         '/offline.html'
-
-
       ];
       for (let file of files) {
         try {
@@ -33,20 +31,35 @@ self.addEventListener('install', function (e) {
   );
 });
 
-// Serve from cache first, then network; if offline, show offline.html
-self.addEventListener('fetch', function (e) {
-  e.respondWith(
-    fetch(e.request)
-      .catch(() => {
-        return caches.match(e.request).then((response) => {
-          if (response) {
+// Single fetch listener for all requests
+self.addEventListener('fetch', function (event) {
+  const url = event.request.url;
+
+  // League API caching (dynamic cache)
+  if (url.includes('/leagues/')) {
+    event.respondWith(
+      caches.open('league-cache').then(cache => {
+        return fetch(event.request)
+          .then(response => {
+            cache.put(event.request, response.clone());
             return response;
-          }
-          // Only fallback to offline.html for navigation requests (pages)
-          if (e.request.mode === 'navigate') {
+          })
+          .catch(() => cache.match(event.request));
+      })
+    );
+    return; // exit, league handled
+  }
+
+  // General cache: cache-first, fallback to offline.html for pages
+  event.respondWith(
+    caches.match(event.request).then(response => {
+      if (response) return response;
+      return fetch(event.request)
+        .catch(() => {
+          if (event.request.mode === 'navigate') {
             return caches.match('/offline.html');
           }
         });
-      })
+    })
   );
 });
