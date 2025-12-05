@@ -35,7 +35,7 @@
             <i data-lucide="bar-chart-2" class="w-12 h-12"></i>
         </div>
         <h3 class="text-xl font-bold mb-2 text-white">Advanced Metrics</h3>
-        <p class="text-gray-400">Track head-to-head records, manager consistency scores, and detailed weekly summaries.</p>
+        <p class="text-gray-400">Track gameweek records, manager consistency scores, and detailed weekly summaries.</p>
     </div>
 
     <!-- Rivalry Tracking -->
@@ -103,12 +103,11 @@
                         3</div>
                     <h4 class="text-xl font-bold text-white mb-2">Track & Share</h4>
                     <p class="text-gray-400 mb-4">
-                        Admins periodically input Gameweek scores. Once entered, the public link is ready for sharing
-                        with all managers!
+                        The App will fetch data from FPL and generate detailed stats every gameweek with a dedicated page for your league
                     </p>
                     <a href="{{route ('public.leagues.list') }}"
                         class="text-green-400 font-semibold hover:text-green-300 blink">
-                        View Example Stats
+                        View Leagues already enjoying
                     </a>
                 </div>
             </div>
