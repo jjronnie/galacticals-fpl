@@ -2,7 +2,7 @@
   "name": "FPL Galaxy",
   "short_name": "FPL Galaxy",
   "description": "A Stats app to add fun to your classic League.",
-  "start_url": "/",
+  "start_url": "/leagues",
   "display": "standalone",
   "scope": "/",
   "background_color": "#1E0021",
@@ -473,7 +473,7 @@
       "name": "View Stats",
       "short_name": "Reports",
       "description": "Access  reports and analytics",
-      "url": "/standings",
+      "url": "/leagues",
       "icons": [{ "src": "android/android-launchericon-96-96.png" }]
     }
   ]

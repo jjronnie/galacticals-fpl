@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>You're Offline!</title>
+    <style>
+        /* Base styles for the entire page */
+        :root {
+            --primary-color: #4f46e5; /* A vibrant purple for primary elements */
+            --primary-dark-color: #4338ca; /* Darker shade for hover */
+            --accent-color: #c4b5fd; /* Light accent for background gradients */
+            --background-light: #f8fafc; /* Very light background */
+            --text-dark: #1e293b; /* Dark text for readability */
+            --text-medium: #475569; /* Medium gray text */
+            --border-radius: 0.75rem; /* Rounded corners for elements */
+            --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.08); /* Soft shadow */
+            --shadow-button: 0 6px 16px rgba(79, 70, 229, 0.4); /* Button specific shadow */
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--background-light);
+            color: var(--text-dark);
+            box-sizing: border-box; /* Include padding and border in the element's total width and height */
+            animation: fadeInPage 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeInPage {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Container for the main content */
+        .app-container {
+            background-color: #ffffff;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-light);
+            padding: 2.5rem 1.5rem; /* Responsive padding */
+            text-align: center;
+            max-width: 90%; /* Max width for smaller screens */
+            width: 480px; /* Fixed width for larger screens */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        /* Icon styling */
+        .icon {
+            width: 6rem; /* 96px */
+            height: 6rem; /* 96px */
+            color: var(--text-medium);
+            margin-bottom: 1.5rem; /* 24px */
+        }
+
+        /* Heading styles */
+        h1 {
+            font-size: 2rem; /* 32px */
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 1rem; /* 16px */
+        }
+
+        /* Paragraph text styles */
+        p {
+            font-size: 1.125rem; /* 18px */
+            color: var(--text-medium);
+            margin-bottom: 2rem; /* 32px */
+            line-height: 1.6;
+        }
+
+        /* Retry button styling */
+        .retry-button {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0.875rem 2.5rem; /* 14px 40px */
+            font-size: 1rem; /* 16px */
+            font-weight: 600;
+            color: #ffffff;
+            background-image: linear-gradient(to right, var(--primary-color), #8b5cf6);
+            border: none;
+            border-radius: 9999px; /* Fully rounded pill shape */
+            cursor: pointer;
+            outline: none;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-image 0.2s ease-in-out;
+            box-shadow: var(--shadow-button);
+        }
+
+        .retry-button:hover {
+            transform: translateY(-3px);
+            background-image: linear-gradient(to right, var(--primary-dark-color), #7c3aed);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.6);
+        }
+
+        .retry-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Message for still offline */
+        .offline-message {
+            color: #ef4444; /* Red color */
+            font-size: 0.875rem; /* 14px */
+            margin-top: 1rem; /* 16px */
+        }
+
+        /* Media queries for responsiveness */
+        @media (max-width: 640px) {
+            .app-container {
+                padding: 2rem 1rem;
+                border-radius: 0; /* No rounded corners on very small screens for edge-to-edge feel */
+                min-height: 100vh; /* Take full height on mobile */
+                max-width: 100%;
+                width: 100%;
+                justify-content: center; /* Center content vertically */
+            }
+            h1 {
+                font-size: 1.75rem; /* Smaller heading on mobile */
+            }
+            p {
+                font-size: 1rem; /* Smaller text on mobile */
+            }
+            .retry-button {
+                width: 100%; /* Full width button on mobile */
+                padding: 0.75rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- SVG Icon: Using inline SVG for full offline compatibility -->
+        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <h1>Looks Like You're Offline!!</h1>
+        <p>
+            It looks like you're not connected to the internet. Please check your network connection and try again.
+        </p>
+        <button id="retryButton" class="retry-button">
+            Retry Connecting
+        </button>
+        <div id="offlineMessage" class="offline-message"></div>
+    </div>
+
+    <script>
+
+          // Listen for the 'online' event on the window object
+    window.addEventListener('online', function() {
+        console.log("Internet connection restored. Reloading page...");
+        // Reload the page once the connection is back
+        window.location.reload();
+    });
+
+        document.getElementById('retryButton').addEventListener('click', function() {
+            // Check if online before attempting navigation
+            if (navigator.onLine) {
+                // Attempt to reload the current page. If it was triggered by a failed navigation
+                // to another page, reloading the current page (offline.html) might not be ideal.
+                // A better approach for PWA would be to navigate to the PWA's start URL.
+                window.location.reload();
+                // Alternatively, if you know your PWA's entry point:
+                // window.location.href = '/';
+            } else {
+                // If still offline, inform the user via the UI
+                const messageElement = document.getElementById('offlineMessage');
+                messageElement.textContent = "Still offline. Please check your connection and try again.";
+            }
+        });
+    </script>
+</body>
+</html>

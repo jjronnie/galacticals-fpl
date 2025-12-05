@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
-</html>
 
 <head>
     <meta charset="UTF-8">
@@ -12,7 +11,6 @@
 
 
 
-    {!! SEO::generate() !!}
 
     <link rel="icon" href="{{ asset('assets/img/logo-light.webp') }}">
     <link rel="apple-touch-icon" href="{{ asset('assets/img/logo-light.webp') }}">
@@ -59,7 +57,7 @@
 
 
 
-
+ {!! SEO::generate() !!}
 
 
 

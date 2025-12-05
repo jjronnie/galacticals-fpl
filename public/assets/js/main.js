@@ -1,9 +1,4 @@
 
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/serviceworker.js')
-        .then(() => console.log("Service worker registered"))
-        .catch((e) => console.error("Service worker error:", e));
-}
 
 
 document.addEventListener("DOMContentLoaded", () => {

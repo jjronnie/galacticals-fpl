@@ -1,6 +1,6 @@
 self.addEventListener('install', function (e) {
   e.waitUntil(
-    caches.open('fplGalaxyV3').then(async function (cache) {
+    caches.open('fplGalaxyV2').then(async function (cache) {
       const files = [
         '/',
         '/login',
@@ -12,13 +12,13 @@ self.addEventListener('install', function (e) {
         '/profile',
         '/privacy-policy',
         '/terms-and-conditions',
-
         'assets/css/main.css',
         '/assets/js/main.js',
         '/assets/img/logo.webp',
         '/assets/img/logo-light.webp',
         '/assets/img/banner.webp',
-        '/assets/img/google144.webp',
+        '/assets/img/google144.png',
+        '/offline.html'
 
 
       ];
@@ -42,7 +42,10 @@ self.addEventListener('fetch', function (e) {
           if (response) {
             return response;
           }
-
+          // Only fallback to offline.html for navigation requests (pages)
+          if (e.request.mode === 'navigate') {
+            return caches.match('/offline.html');
+          }
         });
       })
   );

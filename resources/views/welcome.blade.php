@@ -88,9 +88,12 @@
                         2</div>
                     <h4 class="text-xl font-bold text-white mb-2">Create Your League</h4>
                     <p class="text-gray-400 mb-4">
-                        Admins enter their FPL league name and ID to initialize the stats tracker on the dashboard.
+                        Admins enter their FPL league ID to initialize the stats tracker on the dashboard.
                     </p>
                     <span class="text-sm text-gray-500">Requires FPL League ID</span>
+                      <a href="{{ route('find') }}" class="text-indigo-400 font-semibold hover:text-indigo-300">
+                       See How to get the ID &rarr;
+                    </a>
                 </div>
 
                 <!-- Step 3: Data Input & Sharing -->

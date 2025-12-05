@@ -18,7 +18,7 @@
         
 
     <div class="hidden md:flex items-center space-x-2 p-2">
-        <a href="{{ route('home') }}" class="text-sm  text-white hover:underline " >How it works?</a>
+        <a href="/#join-steps" class="text-sm  text-white hover:underline " >How it works?</a>
     </div>
     @endguest
 

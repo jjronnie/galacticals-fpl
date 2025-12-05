@@ -33,7 +33,7 @@
             <div class="p-4 rounded-lg border-2 border-gray-700 bg-card">
                 <h3 class="text-xl font-bold mb-2">Step 3. Copy the League ID</h3>
                 <p>
-                    The league ID is inside your browser URL. Review the image below and click it to zoom.
+                    The league ID is inside your browser URL. See example image below (the digits that are in the box).
                 </p>
 
                 <div class="mt-4 cursor-pointer">
