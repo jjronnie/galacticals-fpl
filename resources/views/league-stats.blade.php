@@ -1,9 +1,7 @@
 <x-app-layout>
     <main class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
         <x-adsense />
-        <span class="p-2"></span>
-
-        <x-gif-advert />
+      
 
 
 
