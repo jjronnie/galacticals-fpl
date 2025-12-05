@@ -1,6 +1,9 @@
-self.addEventListener('install', function (e) {
-  e.waitUntil(
-    caches.open('fplGalaxyV3').then(async function (cache) {
+const STATIC_CACHE = 'fplGalaxyV3';
+const LEAGUE_CACHE = 'league-cache';
+
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(STATIC_CACHE).then(async cache => {
       const files = [
         '/',
         '/login',
@@ -13,7 +16,7 @@ self.addEventListener('install', function (e) {
         '/privacy-policy',
         '/terms-and-conditions',
         '/how-to-find-fpl-league-id',
-        'assets/css/main.css',
+        '/assets/css/main.css',
         '/assets/js/main.js',
         '/assets/img/logo.webp',
         '/assets/img/logo-light.webp',
@@ -30,16 +33,20 @@ self.addEventListener('install', function (e) {
       }
     })
   );
+  self.skipWaiting();
 });
 
-// Single fetch listener for all requests
-self.addEventListener('fetch', function (event) {
+self.addEventListener('activate', event => {
+  event.waitUntil(self.clients.claim());
+});
+
+self.addEventListener('fetch', event => {
   const url = event.request.url;
 
-  // League API caching (dynamic cache)
+  // Dynamic caching for league API
   if (url.includes('/leagues/')) {
     event.respondWith(
-      caches.open('league-cache').then(cache => {
+      caches.open(LEAGUE_CACHE).then(cache => {
         return fetch(event.request)
           .then(response => {
             cache.put(event.request, response.clone());
@@ -48,19 +55,26 @@ self.addEventListener('fetch', function (event) {
           .catch(() => cache.match(event.request));
       })
     );
-    return; // exit, league handled
+    return;
   }
 
-  // General cache: cache-first, fallback to offline.html for pages
+  // For navigation requests (pages), network first
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          return caches.open(STATIC_CACHE).then(cache => {
+            cache.put(event.request, response.clone());
+            return response;
+          });
+        })
+        .catch(() => caches.match(event.request).then(resp => resp || caches.match('/offline.html')))
+    );
+    return;
+  }
+
+  // For other assets: cache-first
   event.respondWith(
-    caches.match(event.request).then(response => {
-      if (response) return response;
-      return fetch(event.request)
-        .catch(() => {
-          if (event.request.mode === 'navigate') {
-            return caches.match('/offline.html');
-          }
-        });
-    })
+    caches.match(event.request).then(response => response || fetch(event.request))
   );
 });
