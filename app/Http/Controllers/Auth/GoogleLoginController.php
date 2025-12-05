@@ -32,6 +32,7 @@ class GoogleLoginController extends Controller
             $googleUser = Socialite::driver('google')->user();
             $googleId = $googleUser->getId();
             $email = $googleUser->getEmail();
+            $avatar = $googleUser->getAvatar();
 
             // Try to find user by Google ID first, then by email
             $user = User::where('google_id', $googleId)->orWhere('email', $email)->first();
@@ -40,6 +41,11 @@ class GoogleLoginController extends Controller
                 // Update Google ID if missing
                 if (empty($user->google_id)) {
                     $user->google_id = $googleId;
+                    $user->save();
+                }
+
+                   if (empty($user->profile_photo_path)) {
+                    $user->profile_photo_path = $avatar;
                     $user->save();
                 }
 
@@ -55,7 +61,7 @@ class GoogleLoginController extends Controller
                     'role' => 'user',
                     'password' => Hash::make(\Str::random(24)), // Random password
                     'google_id' => $googleId,
-                    'profile_photo_path' => $googleUser->getAvatar(),
+                    'profile_photo_path' => $avatar,
                     'signup_method' => 'google',
                     'status' => 'active',
                     'email_verified_at' => now(),

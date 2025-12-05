@@ -8,17 +8,17 @@
         {{-- <span class="font-bold">FPL Galaxy</span> --}}
     </a>
 
-       <!-- Clock -->
+    <!-- Clock -->
     <div class="hidden md:flex items-center space-x-2 bg-navgradient rounded-lg px-3 py-2 ml-4">
         <i data-lucide="clock" class="w-4 h-4 text-white"></i>
         <div class="text-sm font-medium text-white" id="clockDisplay">--:--:--</div>
     </div>
 
     @guest
-        
+
 
     <div class="flex items-center space-x-2 p-2">
-        <a href="/#join-steps" class="text-sm  text-white hover:underline " >How it works?</a>
+        <a href="/#join-steps" class="text-sm  text-white hover:underline ">How it works?</a>
     </div>
     @endguest
 
@@ -28,13 +28,11 @@
 
         @guest
         <!-- SHOW THIS WHEN USER IS NOT LOGGED IN -->
-        <a href="{{ route('login') }}"
-            class="btn-sm">
+        <a href="{{ route('login') }}" class="btn-sm">
             Login
         </a>
 
-        <a href="{{ route('register') }}"
-            class="btn-success-sm">
+        <a href="{{ route('register') }}" class="btn-success-sm">
             Get Started
         </a>
         @endguest
