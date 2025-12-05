@@ -57,9 +57,12 @@ class SeoService
         OpenGraph::setDescription($description);
         OpenGraph::setUrl(route('public.leagues.show', $league->slug));
         OpenGraph::addProperty('type', 'article');
+        OpenGraph::addImage(asset('assets/img/logo.webp'));
 
         TwitterCard::setTitle($title);
         TwitterCard::setDescription($description);
+        TwitterCard::setImage(asset('assets/img/logo.webp'));
+
 
         JsonLd::setTitle($league->name);
         JsonLd::setDescription($description);
@@ -78,9 +81,12 @@ class SeoService
         OpenGraph::setTitle($title);
         OpenGraph::setDescription($description);
         OpenGraph::setUrl(route('find'));
+        OpenGraph::addImage(asset('assets/img/logo.webp'));
 
         TwitterCard::setTitle($title);
         TwitterCard::setDescription($description);
+        TwitterCard::setImage(asset('assets/img/logo.webp'));
+
 
         JsonLd::setTitle('How to Find FPL League ID');
         JsonLd::setType('HowTo');
@@ -98,9 +104,12 @@ class SeoService
         OpenGraph::setTitle($title);
         OpenGraph::setDescription($description);
         OpenGraph::setUrl(url()->current());
+        OpenGraph::addImage(asset('assets/img/logo.webp'));
 
         TwitterCard::setTitle($title);
         TwitterCard::setDescription($description);
+        TwitterCard::setImage(asset('assets/img/logo.webp'));
+
     }
 
         public function setLeagues(): void
@@ -115,8 +124,11 @@ class SeoService
         OpenGraph::setTitle($title);
         OpenGraph::setDescription($description);
         OpenGraph::setUrl(url()->current());
+        OpenGraph::addImage(asset('assets/img/logo.webp'));
 
         TwitterCard::setTitle($title);
         TwitterCard::setDescription($description);
+        TwitterCard::setImage(asset('assets/img/logo.webp'));
+
     }
 }
