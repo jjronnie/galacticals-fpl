@@ -104,7 +104,11 @@
                     @endif
                 </x-gw-stat-card> --}}
             </div>
+
+            <section>
             <x-adsense />
+
+            </section>
 
 
 
