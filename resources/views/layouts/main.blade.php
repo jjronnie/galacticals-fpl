@@ -10,10 +10,10 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
 
-<link rel="icon" href="{{ asset('assets/img/logo-light.webp?v=2') }}">
-<link rel="apple-touch-icon" href="{{ asset('assets/img/logo-light.webp?v=2') }}">
+    <link rel="icon" href="{{ asset('assets/img/logo-light.webp?v=2') }}">
+    <link rel="apple-touch-icon" href="{{ asset('assets/img/logo-light.webp?v=2') }}">
 
- 
+
 
     <link rel="manifest" href="/manifest.json?v=2">
 
@@ -51,13 +51,18 @@
 
 
 
+
+
+    @if(auth()->guest() || (auth()->check() && !auth()->user()->isAdmin()))
     <!--adsense script auto ads-->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1640926658118061"
         crossorigin="anonymous"></script>
+    @endif
 
 
 
- {!! SEO::generate() !!}
+
+    {!! SEO::generate() !!}
 
 
 
@@ -71,10 +76,10 @@
     @include('layouts.preloader')
 
     @guest
-          <x-cta-reg/>
+    <x-cta-reg />
     @endguest
 
-  
+
     @endif
 
 
