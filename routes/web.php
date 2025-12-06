@@ -5,6 +5,8 @@ use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\LeagueController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SystemController;
+
 
 //public routes
 Route::get('/', [FrontendController::class, 'home'])->name('home');
@@ -45,8 +47,15 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware(['auth',  'admin'])->group(function () {
+Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('admin', AdminController::class);
+
+    Route::post('/run-league-update', [SystemController::class, 'runLeagueUpdate'])
+        ->name('run.league.update');
+
+     
+
+
 });
 
 
