@@ -229,7 +229,7 @@ class LeagueController extends Controller
             FetchLeagueStandings::dispatch($league->id);
 
 
-            return back()->with('status', 'League update started! Data is being refreshed in the background. This may take a few minutes. Refresh the page to see progress.');
+            return back()->with('status', 'League update started! Data is being refreshed in the background. This may take a few minutes. See progress in Dashboard');
 
         } catch (\Exception $e) {
             \Log::error('League Update Error: ' . $e->getMessage());
