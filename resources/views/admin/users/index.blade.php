@@ -80,7 +80,7 @@
 
                     <div class="text-sm font-medium">
                         Last Sync:
-                        {{ optional($user->league?->last_synced_at)->format('Y-m-d h:i:s A') ?? 'Never' }}
+                        {{ optional($user->league?->last_synced_at)->diffForHumans() ?? 'Never' }}
                     </div>
                 </div>
             </div>
@@ -113,12 +113,12 @@
             <div class="flex flex-col">
                 <span class="text-sm font-medium">
                     Created:
-                    {{ optional($user->created_at)->format('Y-m-d h:i:s A') ?? 'Unknown' }}
+                    {{ optional($user->created_at)->diffForHumans() ?? 'Unknown' }}
                 </span>
 
                 <span class="text-sm font-medium">
                     Verified:
-                    {{ optional($user->email_verified_at)->format('Y-m-d h:i:s A') ?? 'Not verified' }}
+                    {{ optional($user->email_verified_at)->diffForHumans() ?? 'Not verified' }}
                 </span>
             </div>
         </x-table.cell>
