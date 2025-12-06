@@ -300,12 +300,15 @@ public function managers()
             ->paginate($perPage);
 
         // Gameweeks should come from all managers to keep columns stable
-        $allManagers = $league->managers()->with('gameweekScores')->get();
+        $allManagers = $league->managers()->with('gameweekScores')
+        ->get();
 
-        $gameweeks = $allManagers
+       
+
+             $gameweeks = $allManagers
             ->flatMap(fn($m) => $m->gameweekScores->pluck('gameweek'))
             ->unique()
-            ->sort()
+            ->sortDesc()
             ->values()
             ->toArray();
 
