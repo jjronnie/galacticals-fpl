@@ -18,6 +18,8 @@ Route::get('/sitemap.xml', function () {
 });
 
 Route::get('/leagues', [FrontendController::class, 'index'])->name('public.leagues.list');
+ Route::get('/leagues/managers/history', [LeagueController::class, 'managers'])
+    ->name('table');
 
 
 
@@ -29,7 +31,6 @@ Route::get('/leagues', [FrontendController::class, 'index'])->name('public.leagu
 Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/dashboard', [LeagueController::class, 'index'])->name('dashboard');
-    Route::get('/standings', [LeagueController::class, 'table'])->name('table');
     Route::get('/leagues/setup', [LeagueController::class, 'create'])->name('league.create');
 
     Route::post('/leagues/setup', [LeagueController::class, 'store'])->name('league.store');
@@ -73,3 +74,7 @@ Route::get('/s/{code}', [FrontendController::class, 'shortCode'])
 Route::get('/leagues/{slug}/{gameweek?}', [LeagueController::class, 'show'])
     ->where('gameweek', '[0-9]+')
     ->name('public.leagues.show');
+
+
+
+   

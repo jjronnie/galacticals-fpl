@@ -1,37 +1,45 @@
 <x-app-layout>
 
-    <x-adsense />
 
+    @if($managers->isEmpty())
+    <p class="text-center text-gray-500">No managers found in your league.</p>
+    @else
 
+    <x-table :headers="array_merge(['#','Manager'], array_map(fn($gw) => 'GW '.$gw, $gameweeks))">
+        @foreach ($managers as $index => $manager)
+        @php
+        // Calculate the actual row number across pages
+        $rowNumber = ($managers->currentPage() - 1) * $managers->perPage() + $index + 1;
+        @endphp
+        <x-table.row>
 
-    <x-page-title title="Season Standings" />
-    @if($standings->count() > 0)
-    <x-table :headers="['#', 'Team', 'Total ']">
-        @foreach($standings as $index => $standing)
-        <x-table.row class="{{ $index === 0 ? 'bg-green-100 ' : '' }}">
-            <x-table.cell class="font-bold">{{ $index + 1 }}</x-table.cell>
-
-
+            <x-table.cell>
+                {{ $rowNumber }}
+            </x-table.cell>
 
             <x-table.cell>
                 <div class="flex items-center">
                     <div class="ml-4">
-                        <div class="text-sm font-medium text-white">{{ $standing['team'] }}</div>
-                        <div class="text-sm text-gray-500">{{ $standing['name'] }}</div>
+                        <div class="text-sm font-medium text-white">{{ $manager->player_name }}</div>
+                        <div class="text-sm text-gray-500">{{ $manager->team_name }}</div>
                     </div>
                 </div>
             </x-table.cell>
 
-
-            <x-table.cell class="text-lg font-extrabold">{{ $standing['total_points'] }}</x-table.cell>
+            @foreach ($gameweeks as $gw)
+            @php
+            $score = $manager->gameweekScores->firstWhere('gameweek', $gw);
+            @endphp
+            <x-table.cell>{{ $score->points ?? 0 }}</x-table.cell>
+            @endforeach
         </x-table.row>
+        </span>
         @endforeach
     </x-table>
-    @else
-    <x-empty-state message="No scores recorded yet. Add managers and their GW scores!" />
+
     @endif
 
-    <x-adsense />
-     <x-back-to-top/>
-
+    <div class="mt-4">
+        {{ $managers->links() }}
+    </div>
 </x-app-layout>

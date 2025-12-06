@@ -8,9 +8,9 @@
 
         <section class="mt-8">
 
-            <h1 class=" text-xl font-extrabold gap-2 text-center">
+            <h2 class=" text-xl font-extrabold gap-2 text-center">
                 {{ $league->name }}
-            </h1>
+            </h2>
 
             <h2 class="mb-6 p-2 text-2xl font-bold text-center"> {{ $league->season }}/{{ $league->season +1 }} Season
                 Stats </h2>
@@ -27,6 +27,9 @@
                 </a>
 
             </div>
+
+     
+
 
 
 

@@ -11,7 +11,7 @@ class SeoService
 {
     public function setDefault(): void
     {
-        SEOMeta::setTitle('FPL Galaxy - Advanced Fantasy Premier League Stats');
+        SEOMeta::setTitle('Advanced Fantasy Premier League Stats');
         SEOMeta::setDescription('Get deeper mini league statistics for FPL. Track best performers, worst points, Hall of Shame, Only Men Standing, and more fun stats beyond what FPL provides.');
         SEOMeta::setCanonical(url()->current());
         SEOMeta::addKeyword(['FPL', 'Fantasy Premier League', 'FPL Stats', 'Mini League', 'FPL Galaxy', 'FPL Analytics']);
@@ -34,8 +34,28 @@ class SeoService
 
     public function setHome(): void
     {
-        $this->setDefault();
-        
+
+        SEOMeta::setTitle('Get more  Fantasy Premier League mini-league centered stats');
+        SEOMeta::setDescription('Get deeper mini league statistics for FPL. Track best performers, worst points, Hall of Shame, Only Men Standing, and more fun stats beyond what FPL provides.');
+        SEOMeta::setCanonical(route('home'));
+
+        SEOMeta::addKeyword(['FPL', 'Fantasy Premier League', 'FPL Stats', 'Mini League', 'FPL Galaxy', 'FPL Analytics']);
+
+        OpenGraph::setTitle('Advanced Fantasy Premier League Stats');
+        OpenGraph::setDescription('Get deeper mini league statistics for FPL. Track best performers, worst points, Hall of Shame, Only Men Standing, and more fun stats.');
+        OpenGraph::setUrl(route('home'));
+        OpenGraph::addProperty('type', 'website');
+        OpenGraph::addImage(asset('assets/img/logo.webp'));
+
+        TwitterCard::setType('summary_large_image');
+        TwitterCard::setTitle('Advanced Fantasy Premier League Stats');
+        TwitterCard::setDescription('Get deeper mini league statistics for FPL.');
+        TwitterCard::setImage(asset('assets/img/logo.webp'));
+
+        JsonLd::setTitle('FPL Galaxy');
+        JsonLd::setDescription('Advanced Fantasy Premier League statistics and analytics');
+        JsonLd::setType('WebApplication');
+
         JsonLd::addValue('applicationCategory', 'Sports Analytics');
         JsonLd::addValue('offers', [
             '@type' => 'Offer',
@@ -94,7 +114,7 @@ class SeoService
 
     public function setStandings(): void
     {
-        $title = 'League Standings - FPL Galaxy';
+        $title = 'Gameweek History';
         $description = 'View and compare FPL mini league standings with advanced statistics and gameweek-by-gameweek analysis.';
 
         SEOMeta::setTitle($title);
@@ -112,7 +132,7 @@ class SeoService
 
     }
 
-        public function setLeagues(): void
+    public function setLeagues(): void
     {
         $title = 'Al Leagues- FPL Galaxy';
         $description = 'View all leagues that are already using FPL Galaxy and see thier stats.';

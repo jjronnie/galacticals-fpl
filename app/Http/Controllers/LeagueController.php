@@ -10,6 +10,7 @@ use App\Jobs\FetchLeagueStandings;
 use App\Jobs\UpdateLeagueStandings;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 use App\Services\LeagueStatsService;
 use App\Services\SeoService;
@@ -222,6 +223,7 @@ class LeagueController extends Controller
             ]);
 
             $this->statsService->flushLeagueStats($league);
+            
 
               SitemapService::update();
 
@@ -267,47 +269,63 @@ class LeagueController extends Controller
     }
 
 
-       public function table()
-    {
-        // 1. Get the logged-in user's league
-        $league = League::where('user_id', Auth::id())->first();
+    
 
-        // 2. Redirect if no league exists
-        if (is_null($league)) {
-            return redirect()->route('league.create')
-                ->with('info', 'Please complete your league setup first.');
+
+
+
+
+public function managers()
+{
+
+    
+
+   $user = auth()->user();
+        $league = League::where('user_id', $user->id)->first();
+
+        if (!$league) {
+            return back()->with('error' ,'You do not have any league registered yet.');
         }
 
-        // Use the correct DB field
-        $seasonYear = $league->season; // Updated from current_season_year
+    $page = request()->get('page', 1); // current page
+    $perPage = 50;
 
-        // Fetch all managers for this league and their scores for the current season
-        $managers = Manager::where('league_id', $league->id)
-            ->with([
-                'scores' => function ($query) use ($seasonYear) {
-                    $query->where('season_year', $seasonYear)->orderBy('gameweek');
-                }
-            ])
-            ->get();
+    // Cache key per league and page
+    $cacheKey = "league_{$league->id}_managers_page_{$page}";
 
-        // Fetch all gameweek scores for this league and season
-        $allScores = $league->gameweekScores()
-            ->where('season_year', $seasonYear)
-            ->orderBy('gameweek')
-            ->get();
+    $data = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($league, $perPage) {
+        $managers = $league->managers()
+            ->with('gameweekScores')
+            ->orderBy('total_points', 'desc')
+            ->paginate($perPage);
 
-        // --- 1. Season Standings (Total Points) ---
-        $standings = $managers->map(function ($manager) {
-            return [
-                'name' => $manager->player_name,
-                'team' => $manager->team_name,
-                'total_points' => $manager->total_points,
-            ];
-        })->sortByDesc('total_points')->values();
+        // Gameweeks should come from all managers to keep columns stable
+        $allManagers = $league->managers()->with('gameweekScores')->get();
 
-        $this->seoService->setStandings();
+        $gameweeks = $allManagers
+            ->flatMap(fn($m) => $m->gameweekScores->pluck('gameweek'))
+            ->unique()
+            ->sort()
+            ->values()
+            ->toArray();
 
+        return [
+            'managers' => $managers,
+            'gameweeks' => $gameweeks
+        ];
+    });
 
-        return view('leagues.table', compact('standings', ));
-    }
+   $this->seoService->setStandings();
+
+    return view('leagues.table', [
+        'league' => $league,
+        'managers' => $data['managers'],
+        'gameweeks' => $data['gameweeks'],
+    ]);
 }
+}
+
+
+
+
+

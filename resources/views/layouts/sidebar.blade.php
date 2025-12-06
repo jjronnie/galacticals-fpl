@@ -54,7 +54,7 @@
         <a href="{{ route('table') }}" class="flex flex-col items-center justify-center w-full p-2 text-gray-400 transition-colors duration-200 
                   {{ request()->routeIs('table') ? 'text-white' : 'hover:text-white' }}">
             <i data-lucide="list" class="w-5 h-5"></i>
-            <span class="text-xs font-medium mt-1">Standings</span>
+            <span class="text-xs font-medium mt-1">History</span>
         </a>
         @endauth
         @guest

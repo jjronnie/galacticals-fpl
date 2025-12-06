@@ -35,4 +35,5 @@ class Manager extends Model
     return $this->hasMany(GameweekScore::class);
 }
 
+
 }

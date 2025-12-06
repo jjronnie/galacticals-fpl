@@ -6,9 +6,9 @@
 
         <!-- 1. Hero Section: Explanation, CTA, and Focus -->
         <section class="mt-12 text-center">
-            <h2 class="text-5xl md:text-6xl font-extrabold text-white leading-tight mb-4">
+            <h1 class="text-5xl md:text-6xl font-extrabold text-white leading-tight mb-4">
                 Make Your<span class="text-indigo-400"> FPL Mini-League</span> More Fun
-            </h2>
+            </h1>
             <p class="text-xl text-gray-400 mb-8 max-w-3xl mx-auto">
                 Go beyond total points. This platform provides advanced, gameweek-by-gameweek statistics to track
                 manager performance, consistency, and rivalry history within your private FPL mini-leagues.

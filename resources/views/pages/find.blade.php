@@ -3,7 +3,7 @@
     <main class="max-w-5xl mx-auto p-4 space-y-10">
         <x-adsense />
 
-        <h1 class="text-4xl font-extrabold text-white text-center">How to Find Your League ID</h1>
+        <h2 class="text-4xl font-extrabold text-white text-center">How to Find Your League ID</h2>
         <p class="text-center text-gray-400">
             Follow the steps below to get your FPL League ID and add it to FPL Galaxy.
         </p>
