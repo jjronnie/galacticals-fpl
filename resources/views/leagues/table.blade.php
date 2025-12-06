@@ -1,4 +1,6 @@
 <x-app-layout>
+    <x-adsense />
+
 
     <x-page-title title="Manager History per Gameweek" />
 
