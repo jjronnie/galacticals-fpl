@@ -1,7 +1,7 @@
 <x-app-layout>
     <main class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
         <x-adsense />
-      
+
 
 
 
@@ -40,9 +40,6 @@
                     <p class="text-sm">No 100+ scores yet!</p>
                     @endforelse
                 </x-gw-stat-card>
-
-
-
 
 
                 <x-gw-stat-card title="MOST GW LEADS" color="green">
@@ -106,9 +103,12 @@
                     <p class="text-sm">Not enough data yet.</p>
                     @endif
                 </x-gw-stat-card> --}}
+            </div>
+            <x-adsense />
 
 
 
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-4">
 
 
 
