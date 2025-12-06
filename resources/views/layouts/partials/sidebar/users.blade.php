@@ -22,6 +22,25 @@
             <span class="text-xs font-medium mt-1">Dashboard</span>
         </a>
 
+
+
+        @if(auth()->user()->isAdmin())
+
+
+        <a href="{{ route('admin.index') }}" class="flex flex-col items-center justify-center w-full p-2 text-gray-400 transition-colors duration-200 
+                  {{ request()->routeIs('admin.index') ? 'text-white' : 'hover:text-white' }}">
+            <i data-lucide="user" class="w-5 h-5"></i>
+            <span class="text-xs font-medium mt-1">Users</span>
+        </a>
+
+
+
+        @endif
+
+
+
+
+
         @endauth
 
 
@@ -39,7 +58,7 @@
         </a>
         @endauth
         @guest
-        
+
         {{-- Login link --}}
         @if (!request()->routeIs('login'))
         <a href="{{ route('login') }}" class="flex flex-col items-center justify-center w-full p-2 text-gray-400 transition-colors duration-200
