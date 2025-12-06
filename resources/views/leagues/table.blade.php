@@ -1,5 +1,7 @@
 <x-app-layout>
 
+    <x-page-title title="Manager History per Gameweek" />
+
 
     @if($managers->isEmpty())
     <p class="text-center text-gray-500">No managers found in your league.</p>
