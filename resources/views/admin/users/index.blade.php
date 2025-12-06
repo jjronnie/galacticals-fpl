@@ -80,6 +80,10 @@
                         </div>
 
                         <div class="text-sm font-medium">
+                            ID: {{ $user->league->league_id ?? 'N/A' }}
+                        </div>
+
+                        <div class="text-sm font-medium">
                             Short Code: {{ $user->league->shortcode ?? '-' }}
                         </div>
 
