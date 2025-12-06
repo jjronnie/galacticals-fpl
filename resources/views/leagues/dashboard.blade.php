@@ -5,18 +5,12 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
 
-            @if (session('status'))
-            <div class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50" role="alert">
-                {{ session('status') }}
-            </div>
-            @endif
-            @if (session('error'))
-            <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
-                {{ session('error') }}
-            </div>
-            @endif
+      
 
-            @include('dash-header')
+            {{-- @include('leagues.partials.progress') --}}
+
+
+            @include('leagues.partials.dash-header') 
 
             <!-- Season Highlights -->
             <div>

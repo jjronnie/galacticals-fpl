@@ -3,6 +3,16 @@
 <x-page-title />
 
 
+@auth
+    @if(auth()->user()->isAdmin())
+        <a href="{{ route('admin.index') }}" class="px-4 py-2 bg-blue-600 text-white rounded">
+            Admin Dashboard
+        </a>
+    @endif
+@endauth
+
+
+
 <x-logo /> <!-- default size -->
 
 <x-logo width="120" height="120" /> <!-- custom size -->

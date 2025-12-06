@@ -1,6 +1,6 @@
 @layer components {
     .label {
-        @apply block text-sm font-medium text-gray-600
+        @apply block text-sm font-medium text-gray-200
     }
 
     .input {

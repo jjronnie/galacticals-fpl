@@ -49,6 +49,23 @@
   .glass{
     @apply rounded-3xl border-2 border-gray-700 bg-card
   }
+
+
+    .toggle-checkbox {
+    @apply relative w-12 h-6 rounded-full bg-gray-300 appearance-none cursor-pointer;
+}
+.toggle-checkbox:checked {
+    @apply bg-green-500;
+}
+.toggle-checkbox::before {
+    content: '';
+    @apply absolute w-6 h-6 bg-white rounded-full top-0 left-0 transition-all;
+}
+.toggle-checkbox:checked::before {
+    @apply translate-x-6;
+}
+
+
 }
 
 html {

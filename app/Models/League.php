@@ -4,18 +4,46 @@ namespace App\Models;
 use Illuminate\Support\Str;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class League extends Model
 {
 
-     protected $fillable = [
-        'user_id',
-        'league_id',       // FPL league ID
-        'name',
-        'admin_name',
-        'current_gameweek',
-        'season',
-    ];
+         use HasFactory;
+    protected $fillable = [
+    'user_id',
+    'league_id',
+    'name',
+    'admin_name',
+    'current_gameweek',
+    'season',
+
+    'sync_status',
+    'sync_message',
+    'total_managers',
+    'synced_managers',
+    'last_synced_at',
+];
+
+protected $casts = [
+    'last_synced_at' => 'datetime',
+];
+
+public function isProcessing()
+{
+    return $this->sync_status === 'processing';
+}
+
+public function hasFailed()
+{
+    return $this->sync_status === 'failed';
+}
+
+public function getSyncProgress()
+{
+    if ($this->total_managers === 0) return 0;
+    return round(($this->synced_managers / $this->total_managers) * 100);
+}
 
     public function managers()
     {

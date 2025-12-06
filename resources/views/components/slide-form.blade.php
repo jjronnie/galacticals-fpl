@@ -18,7 +18,7 @@
         x-transition:leave="transform transition ease-in-out duration-300" 
         x-transition:leave-start="translate-x-0"
         x-transition:leave-end="translate-x-full"
-        class="fixed top-0 right-0 w-full sm:max-w-[70%] h-full bg-white shadow-xl z-[9998] flex flex-col">
+        class="fixed top-0 right-0 w-full sm:max-w-[70%] h-full bg-card shadow-xl z-[9998] flex flex-col">
 
         <!-- Header Row (fixed at top of drawer) -->
         <div class="flex items-center space-x-3 p-6 border-b">

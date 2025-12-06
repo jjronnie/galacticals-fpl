@@ -16,7 +16,7 @@
                 Stats </h2>
 
 
-            @include('share')
+            @include('leagues.partials.share')
 
 
 
@@ -249,7 +249,7 @@
 
         <span id="current" class="">
         </span>
-        @include('share')
+        @include('leagues.partials.share')
 
 
 

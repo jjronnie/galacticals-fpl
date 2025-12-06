@@ -1,5 +1,4 @@
 <x-app-layout>
-    {{-- A container for a light background --}}
     <x-adsense/>
 
         {{-- Main Card Container --}}
@@ -31,7 +30,7 @@
             @endif
             
             {{-- Form --}}
-            <form method="POST" action="{{ route('admin.league.store') }}" x-data="{ loading: false }"
+            <form method="POST" action="{{ route('league.store') }}" x-data="{ loading: false }"
                 @submit="loading = true" class="space-y-6 ">
                 @csrf
                 

@@ -3,59 +3,38 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\AdminController;
-use App\Models\League;
-
-
+use App\Http\Controllers\LeagueController;
 use Illuminate\Support\Facades\Route;
 
 //public routes
-
-
 Route::get('/', [FrontendController::class, 'home'])->name('home');
 Route::get('/how-to-find-fpl-league-id', [FrontendController::class, 'findLeagueID'])->name('find');
-
-
-Route::get('/privacy-policy', function () {
-    return view('privacy_policy');
-})->name('privacy.policy');
-
-Route::get('/terms-and-conditions', function () {
-    return view('terms');
-})->name('terms');
-
+Route::get('/privacy-policy', [FrontendController::class, 'policy'])->name('privacy.policy');
+Route::get('/terms-and-conditions', [FrontendController::class, 'terms'])->name('terms');
 Route::get('/sitemap.xml', function () {
     return response()->file(public_path('sitemap.xml'));
 });
 
+Route::get('/leagues', [FrontendController::class, 'index'])->name('public.leagues.list');
 
 
 
-Route::get('/leagues', [FrontendController::class, 'listLeagues'])->name('public.leagues.list');
-
-Route::get('/leagues/{slug}/{gameweek?}', [FrontendController::class, 'showStats'])
-    ->where('gameweek', '[0-9]+')
-    ->name('public.leagues.show');
 
 
-
-Route::get('/s/{code}', function ($code) {
-    $league = League::where('shortcode', $code)->firstOrFail();
-    return redirect()->route('public.leagues.show', ['slug' => $league->slug]);
-})->name('short.league');
 
 
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
-    Route::get('/standings', [AdminController::class, 'table'])->name('table');
+    Route::get('/dashboard', [LeagueController::class, 'index'])->name('dashboard');
+    Route::get('/standings', [LeagueController::class, 'table'])->name('table');
+    Route::get('/leagues/setup', [LeagueController::class, 'create'])->name('league.create');
 
-    // --- League Setup/Management ---
-    Route::get('/dashboard/setup', [AdminController::class, 'createLeague'])->name('admin.league.create');
-    Route::post('/dashboard/setup', [AdminController::class, 'storeLeague'])->name('admin.league.store');
-    Route::post('/leaugue/update', [AdminController::class, 'updateUserLeague'])->name('admin.league.update');
+    Route::post('/leagues/setup', [LeagueController::class, 'store'])->name('league.store');
+    Route::post('/leagues/update', [LeagueController::class, 'update'])->name('league.update');
 
 
+    Route::get('/api/league/{leagueId}/status', [LeagueController::class, 'getLeagueStatus']);
 
 
 });
@@ -66,6 +45,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+Route::middleware(['auth',  'admin'])->group(function () {
+    Route::resource('admin', AdminController::class);
+});
+
 
 
 
@@ -73,3 +56,11 @@ Route::middleware('auth')->group(function () {
 
 
 require __DIR__ . '/auth.php';
+
+
+Route::get('/s/{code}', [FrontendController::class, 'shortCode'])
+    ->name('short.league');
+
+Route::get('/leagues/{slug}/{gameweek?}', [LeagueController::class, 'show'])
+    ->where('gameweek', '[0-9]+')
+    ->name('public.leagues.show');

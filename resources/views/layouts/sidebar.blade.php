@@ -1,7 +1,9 @@
-{{-- @if(auth()->check() && auth()->user()->hasRole('superadmin'))
-    @include('layouts.partials.sidebar.admin')
+@auth
 
-@elseif(auth()->check() && auth()->user()->hasAnyRole(['admin', 'user']))
-    @include('layouts.partials.sidebar.users')
-@endif --}}
-    @include('layouts.partials.sidebar.users')
+@if(auth()->user()->isAdmin())
+@include('layouts.partials.sidebar.admin')
+@endauth
+
+@else
+@include('layouts.partials.sidebar.users')
+@endif

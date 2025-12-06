@@ -1,0 +1,313 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\League;
+use App\Models\Manager;
+
+use App\Jobs\FetchLeagueStandings;
+use App\Jobs\UpdateLeagueStandings;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Auth;
+
+use App\Services\LeagueStatsService;
+use App\Services\SeoService;
+use App\Services\SitemapService;
+class LeagueController extends Controller
+{
+
+    protected $seoService;
+
+    protected $statsService;
+
+    public function __construct(LeagueStatsService $statsService, SEOService $seoService) 
+    {
+        $this->statsService = $statsService;
+        $this->seoService = $seoService;
+    }
+    /**
+     * Display a listing of the resource.
+     */
+    
+
+
+        public function index()
+    {
+        // 1. Get the logged-in user's league
+        $league = League::where('user_id', Auth::id())->first();
+
+        // 2. Redirect if no league exists
+        if (is_null($league)) {
+            return redirect()->route('league.create')
+                ->with('info', 'Please complete your league setup first.');
+        }
+
+        $seasonYear = $league->season;
+
+        $totalManagers = Manager::where('league_id', $league->id)->count();
+
+
+
+        $lastUpdated = $league->gameweekScores()
+            ->orderBy('gameweek_scores.updated_at', 'desc')
+            ->value('gameweek_scores.updated_at');
+
+
+
+
+        return view('leagues.dashboard', compact('league', 'totalManagers', 'lastUpdated', ));
+    }
+
+
+    /**
+     * Show the form for creating a new resource.
+     */
+      public function create()
+    {
+        if (auth()->user()->league) {
+            return redirect()->route('dashboard')
+             ->with('info', 'Your League was setup already.');
+        }
+        return view('leagues.create');
+    }
+
+
+    /**
+     * Store a newly created resource in storage.
+     */
+     public function store(Request $request)
+    {
+        $request->validate([
+            'league_id' => 'required|numeric'
+        ]);
+
+        $leagueId = $request->league_id;
+
+        // Check if league already exists
+        $existingLeague = League::where('league_id', $leagueId)->first();
+        if ($existingLeague) {
+            if ($existingLeague->user_id === auth()->id()) {
+                return back()->withErrors(['league_exists' => 'You already added this league.']);
+            }
+            return back()->withErrors(['league_taken' => 'This league is already registered by another user, please go to Leagues page to view it']);
+        }
+
+        try {
+            // Fetch ONLY basic league info first (no standings)
+            $response = Http::timeout(10)->get("https://fantasy.premierleague.com/api/leagues-classic/{$leagueId}/standings/", [
+                'page_standings' => 1,
+                'page_new_entries' => 1
+            ]);
+
+            if ($response->failed()) {
+                return back()->withErrors(['api_error' => 'Failed to connect to Fantasy Premier League API. Please check the league ID and try again.']);
+            }
+
+            $data = $response->json();
+
+            if (!isset($data['league'])) {
+                return back()->withErrors(['invalid_league' => 'Invalid league ID. Please verify the league ID from your FPL mini-league page.']);
+            }
+
+            $leagueInfo = $data['league'];
+
+            // Create league with processing status
+            $league = League::create([
+                'user_id' => auth()->id(),
+                'league_id' => $leagueInfo['id'],
+                'name' => $leagueInfo['name'],
+                'admin_name' => $leagueInfo['admin_entry'] ?? null,
+                'current_gameweek' => 0,
+                'season' => date('Y'),
+                'sync_status' => 'processing',
+                'sync_message' => 'Fetching league data...',
+                'total_managers' => 0,
+                'synced_managers' => 0,
+            ]);
+
+              SitemapService::update();
+
+            // Dispatch background job to fetch all data
+            FetchLeagueStandings::dispatch($league->id);
+
+            return redirect()->route('dashboard')->with('status', 'League added successfully! Data is being imported in the background. This may take a few minutes for large leagues. See progress in dashboard.');
+
+        } catch (\Exception $e) {
+            \Log::error('League Store Error: ' . $e->getMessage());
+            return back()->withErrors(['system_error' => 'An unexpected error occurred. Please try again or contact support if the problem persists.']);
+        }
+    }
+
+    /**
+     * Display the specified resource.
+     */
+        public function show(string $slug, int $gameweek = null)
+    {
+        // 1. Fetch League (Lightweight query)
+        $league = League::where('slug', $slug)->firstOrFail();
+
+        // 2. Determine View State (Target GW)
+        $currentGW = $league->gameweek_current;
+        $targetGW = $gameweek ?: $currentGW;
+
+        if ($targetGW > $currentGW || $targetGW < 1) {
+            $targetGW = $currentGW;
+        }
+
+        // 3. Get Heavy Data from Service (Cached)
+        $data = $this->statsService->getLeagueStats($league);
+
+        // 4. Handle SEO (Assuming you have this service)
+        if (property_exists($this, 'seoService')) {
+            $this->seoService->setLeague($league);
+        }
+
+        return view('leagues.show', [
+            'league' => $league,
+            'targetGW' => $targetGW,
+            'currentGW' => $currentGW,
+            'standings' => $data['standings'],
+            'gwPerformance' => $data['gwPerformance'],
+            'stats' => $data['stats']
+        ]);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(string $id)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+   public function update()
+    {
+        $user = auth()->user();
+        $league = League::where('user_id', $user->id)->first();
+
+        if (!$league) {
+            return back()->withErrors(['no_league' => 'You do not have any league registered yet.']);
+        }
+
+        // Check if already syncing
+        if ($league->sync_status === 'processing') {
+            return back()->withErrors(['already_syncing' => 'League update is already in progress. Please wait for it to complete.']);
+        }
+
+        try {
+            // Quick API check to ensure league is still accessible
+            $response = Http::timeout(10)->get("https://fantasy.premierleague.com/api/leagues-classic/{$league->league_id}/standings/", [
+                'page_standings' => 1
+            ]);
+
+            if ($response->failed()) {
+                return back()->withErrors(['api_error' => 'Failed to connect to Fantasy Premier League API. Please try again later.']);
+            }
+
+            $data = $response->json();
+
+            if (!isset($data['league'])) {
+                return back()->withErrors(['invalid_league' => 'League no longer accessible. It may have been deleted or made private.']);
+            }
+
+            // Update status
+            $league->update([
+                'sync_status' => 'processing',
+                'sync_message' => 'Updating league data...',
+                'synced_managers' => 0,
+            ]);
+
+            $this->statsService->flushLeagueStats($league);
+
+              SitemapService::update();
+
+            // Dispatch background job
+            FetchLeagueStandings::dispatch($league->id);
+
+
+            return back()->with('status', 'League update started! Data is being refreshed in the background. This may take a few minutes. Refresh the page to see progress.');
+
+        } catch (\Exception $e) {
+            \Log::error('League Update Error: ' . $e->getMessage());
+            return back()->withErrors(['system_error' => 'An unexpected error occurred. Please try again later.']);
+        }
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
+    {
+        //
+    }
+
+    public function getLeagueStatus($leagueId)
+    {
+        $league = League::where('id', $leagueId)
+            ->where('user_id', auth()->id())
+            ->first();
+
+        if (!$league) {
+            return response()->json(['error' => 'League not found'], 404);
+        }
+
+        return response()->json([
+            'status' => $league->sync_status,
+            'message' => $league->sync_message,
+            'progress' => $league->total_managers > 0 
+                ? round(($league->synced_managers / $league->total_managers) * 100) 
+                : 0,
+            'synced_managers' => $league->synced_managers,
+            'total_managers' => $league->total_managers,
+        ]);
+    }
+
+
+       public function table()
+    {
+        // 1. Get the logged-in user's league
+        $league = League::where('user_id', Auth::id())->first();
+
+        // 2. Redirect if no league exists
+        if (is_null($league)) {
+            return redirect()->route('league.create')
+                ->with('info', 'Please complete your league setup first.');
+        }
+
+        // Use the correct DB field
+        $seasonYear = $league->season; // Updated from current_season_year
+
+        // Fetch all managers for this league and their scores for the current season
+        $managers = Manager::where('league_id', $league->id)
+            ->with([
+                'scores' => function ($query) use ($seasonYear) {
+                    $query->where('season_year', $seasonYear)->orderBy('gameweek');
+                }
+            ])
+            ->get();
+
+        // Fetch all gameweek scores for this league and season
+        $allScores = $league->gameweekScores()
+            ->where('season_year', $seasonYear)
+            ->orderBy('gameweek')
+            ->get();
+
+        // --- 1. Season Standings (Total Points) ---
+        $standings = $managers->map(function ($manager) {
+            return [
+                'name' => $manager->player_name,
+                'team' => $manager->team_name,
+                'total_points' => $manager->total_points,
+            ];
+        })->sortByDesc('total_points')->values();
+
+        $this->seoService->setStandings();
+
+
+        return view('leagues.table', compact('standings', ));
+    }
+}
