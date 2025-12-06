@@ -15,14 +15,15 @@ class AdminController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        $users = User::with('league')
-            ->paginate(50);
+   public function index()
+{
+    $users = User::with('league')
+        ->orderBy('id', 'desc')
+        ->paginate(50);
 
-        return view('admin.users.index', compact('users'));
+    return view('admin.users.index', compact('users'));
+}
 
-    }
 
     /**
      * Show the form for creating a new resource.
