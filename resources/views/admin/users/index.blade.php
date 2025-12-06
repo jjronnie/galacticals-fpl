@@ -19,7 +19,7 @@
         </div>
         <div class="flex gap-3">
 
-           @if(auth()->user()->isAdmin())
+            @if(auth()->user()->isAdmin())
 
             <form action="{{ route('run.league.update') }}" method="POST">
                 @csrf
@@ -88,8 +88,21 @@
                         </div>
 
                         <div class="text-sm font-medium">
-                            Last Sync:
-                            {{ optional($user->league?->last_synced_at)->diffForHumans() ?? 'Never' }}
+                            Last Sync: {{ optional($user->league?->last_synced_at)->diffForHumans() ?? 'Never' }}
+                        </div>
+
+                        <div class="text-sm font-medium">
+                            Sync Status: {{ $user->league->sync_status ?? '-' }}
+                        </div>
+
+                        <div class="text-sm font-medium">
+                            Sync Msg:
+                            {{ $user->league->sync_message ?? '-' }}
+                        </div>
+
+                        <div class="text-sm font-medium">
+                            Synced: {{ $user->league->synced_managers ?? '-' }}/
+                            {{ $user->league->total_managers ?? '-' }} Managers
                         </div>
                     </div>
                 </div>
