@@ -1,4 +1,4 @@
-const STATIC_CACHE = 'fplGalaxyV3';
+const STATIC_CACHE = 'fplGalaxyV2';
 const LEAGUE_CACHE = 'league-cache';
 
 self.addEventListener('install', event => {
@@ -13,6 +13,7 @@ self.addEventListener('install', event => {
         '/standings',
         '/dashboard',
         '/profile',
+        '/admin',
         '/privacy-policy',
         '/terms-and-conditions',
         '/how-to-find-fpl-league-id',
