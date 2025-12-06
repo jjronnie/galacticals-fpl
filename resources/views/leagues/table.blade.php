@@ -21,7 +21,7 @@
                 <div class="flex items-center">
                     <div class="ml-4">
                         <div class="text-sm font-medium text-white">{{ $manager->player_name }}</div>
-                        <div class="text-sm text-gray-500">{{ $manager->team_name }}</div>
+                        <div class="text-sm text-gray-400">{{ $manager->team_name }}</div>
                     </div>
                 </div>
             </x-table.cell>
