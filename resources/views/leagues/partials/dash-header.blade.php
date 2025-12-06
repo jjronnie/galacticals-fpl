@@ -179,6 +179,8 @@ $userLeague = auth()->user()->league;
     </div>
     @endif
 
+           @if(auth()->user()->isAdmin())
+
     @if($league->sync_status === 'failed')
     <div
         class="bg-gradient-to-r from-red-900/40 to-red-800/20 border border-red-700/50 rounded-xl shadow-lg p-4 backdrop-blur-sm">
@@ -202,6 +204,7 @@ $userLeague = auth()->user()->league;
             </div>
         </div>
     </div>
+    @endif
     @endif
 
     <!-- Main Header Card -->
