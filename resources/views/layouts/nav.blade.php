@@ -27,7 +27,6 @@
     <div class="ml-auto flex items-center space-x-4 relative">
 
         @guest
-        <!-- SHOW THIS WHEN USER IS NOT LOGGED IN -->
         <a href="{{ route('login') }}" class="btn-sm">
             Login
         </a>
