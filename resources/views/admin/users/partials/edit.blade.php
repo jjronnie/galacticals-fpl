@@ -59,22 +59,22 @@
 
                {{-- sync_status --}}
 
-               @if ($user->league->sync_status)
-                   
-            
-            <div>
-                <label for="sync_status" class="label"> Sync Status
-                </label>
-                <input type="text" name="sync_status" placeholder="sync_status" value="{{ old('sync_status', $user->league->sync_status) }}"
-                     class="input @error('sync_status') border-red-500 @enderror" />
+        @if(optional($user->league)->sync_status)
+    <div>
+        <label for="sync_status" class="label">Sync Status</label>
 
-                @error('sync_status')
-                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                @enderror
+        <input type="text"
+               name="sync_status"
+               placeholder="sync_status"
+               value="{{ old('sync_status', optional($user->league)->sync_status) }}"
+               class="input @error('sync_status') border-red-500 @enderror">
 
-            </div>
+        @error('sync_status')
+            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+        @enderror
+    </div>
+@endif
 
-               @endif
         </div>
 
 
