@@ -56,6 +56,20 @@
                     </option>
                 </select>
             </div>
+
+               {{-- sync_status --}}
+            <div>
+                <label for="sync_status" class="label"> Sync Status
+                </label>
+
+                <input type="text" name="sync_status" placeholder="sync_status" value="{{ old('sync_status', $user->league->sync_status) }}"
+                    required class="input @error('sync_status') border-red-500 @enderror" />
+
+                @error('sync_status')
+                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+
+            </div>
         </div>
 
 

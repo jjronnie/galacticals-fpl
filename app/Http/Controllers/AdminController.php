@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\League;
+
 
 use Illuminate\Validation\Rule;
 
@@ -64,6 +66,8 @@ class AdminController extends Controller
     {
 
    $user = User::findOrFail($id);
+        $league = League::where('user_id', $user->id)->first();
+
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -71,8 +75,15 @@ class AdminController extends Controller
             'status' => 'required|string|in:active,suspended',
             'role' => 'required|string|in:user,admin',
             'profile_photo_path' => 'nullable|image|max:2048',
+            'sync_status' => 'nullable|string|max:255',
+
 
         ]);
+
+             $league->update([
+                'sync_status' => $validated['sync_status'],
+             
+            ]);
 
         // Handle avatar upload
         if ($request->hasFile('profile_photo_path')) {
@@ -87,8 +98,6 @@ class AdminController extends Controller
 
 
 
-
-
         $user->update($validated);
 
         // Handle email verification switch
@@ -99,6 +108,8 @@ class AdminController extends Controller
         }
 
         $user->save();
+
+        
 
 
 

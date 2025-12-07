@@ -15,7 +15,7 @@ class LeagueStatsService
     {
         $cacheKey = $this->getCacheKey($league->id);
 
-        return Cache::remember($cacheKey, now()->addHours(24), function () use ($league) {
+        return Cache::remember($cacheKey, now()->addHours(2), function () use ($league) {
 
             
 

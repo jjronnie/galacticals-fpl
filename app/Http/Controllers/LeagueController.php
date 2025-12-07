@@ -222,7 +222,6 @@ class LeagueController extends Controller
                 'synced_managers' => 0,
             ]);
 
-            $this->statsService->flushLeagueStats($league);
             
 
               SitemapService::update();
@@ -230,6 +229,7 @@ class LeagueController extends Controller
             // Dispatch background job
             FetchLeagueStandings::dispatch($league->id);
 
+            $this->statsService->flushLeagueStats($league);
 
             return back()->with('status', 'League update started! Data is being refreshed in the background. This may take a few minutes. See progress in Dashboard');
 

@@ -15,9 +15,9 @@ return new class extends Migration {
         Schema::create('leagues', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->unsignedBigInteger('league_id')->unique(); 
+            $table->unsignedBigInteger('league_id')->unique();
             $table->string('name');
-              $table->string('slug')->unique();
+            $table->string('slug')->unique();
             $table->string('admin_name')->nullable();
             $table->integer('current_gameweek')->default(0);
             $table->integer('season')->nullable();
