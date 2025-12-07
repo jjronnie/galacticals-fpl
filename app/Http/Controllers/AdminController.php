@@ -66,7 +66,7 @@ class AdminController extends Controller
     {
 
         $user = User::findOrFail($id);
-        $league =$user->league;
+        $league = $user->league;
 
 
         $validated = $request->validate([
@@ -76,14 +76,17 @@ class AdminController extends Controller
             'role' => 'required|string|in:user,admin',
             'profile_photo_path' => 'nullable|image|max:2048',
             'sync_status' => 'nullable|string|max:255',
+            'email_verified_at' => ['nullable', 'date'],
 
 
         ]);
 
-        $league->update([
-            'sync_status' => $validated['sync_status'],
+        if ($user->league) {
+            $user->league->update([
+                'sync_status' => $validated['sync_status'] ?? null,
+            ]);
+        }
 
-        ]);
 
         // Handle avatar upload
         if ($request->hasFile('profile_photo_path')) {
@@ -100,9 +103,9 @@ class AdminController extends Controller
 
         $user->update($validated);
 
-        // Handle email verification switch
-        if ($request->has('email_verified')) {
-            $user->email_verified_at = now();
+        // Handle email_verified_at datetime
+        if ($request->filled('email_verified_at')) {
+            $user->email_verified_at = $request->email_verified_at;
         } else {
             $user->email_verified_at = null;
         }

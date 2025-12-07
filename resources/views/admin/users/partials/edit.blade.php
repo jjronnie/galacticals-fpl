@@ -78,15 +78,25 @@
         </div>
 
 
-        {{-- Email Verified Switch --}}
-        <div class="flex items-center gap-3 mt-4">
-            <label for="email_verified" class="label cursor-pointer flex items-center gap-2">
-                <span>Email Verified</span>
-                <input type="checkbox" name="email_verified" id="email_verified" class="toggle-checkbox" {{
-                    $user->hasVerifiedEmail() ? 'checked' : '' }}
-                />
-            </label>
-        </div>
+     {{-- Email Verified At (Datetime Picker) --}}
+<div class="mt-4">
+    <label for="email_verified_at" class="label">
+        Email Verified At
+    </label>
+
+    <input
+        type="datetime-local"
+        name="email_verified_at"
+        id="email_verified_at"
+        value="{{ old('email_verified_at', $user->email_verified_at ? $user->email_verified_at->format('Y-m-d\TH:i') : '') }}"
+        class="input @error('email_verified_at') border-red-500 @enderror"
+    >
+
+    @error('email_verified_at')
+        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+    @enderror
+</div>
+
 
 
 
