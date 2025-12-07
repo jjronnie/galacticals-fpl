@@ -17,14 +17,14 @@ class AdminController extends Controller
     /**
      * Display a listing of the resource.
      */
-   public function index()
-{
-    $users = User::with('league')
-        ->orderBy('id', 'desc')
-        ->paginate(50);
+    public function index()
+    {
+        $users = User::with('league')
+            ->orderBy('id', 'desc')
+            ->paginate(50);
 
-    return view('admin.users.index', compact('users'));
-}
+        return view('admin.users.index', compact('users'));
+    }
 
 
     /**
@@ -62,11 +62,11 @@ class AdminController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request,  $id)
+    public function update(Request $request, $id)
     {
 
-   $user = User::findOrFail($id);
-        $league = League::where('user_id', $user->id)->first();
+        $user = User::findOrFail($id);
+        $league =$user->league;
 
 
         $validated = $request->validate([
@@ -80,10 +80,10 @@ class AdminController extends Controller
 
         ]);
 
-             $league->update([
-                'sync_status' => $validated['sync_status'],
-             
-            ]);
+        $league->update([
+            'sync_status' => $validated['sync_status'],
+
+        ]);
 
         // Handle avatar upload
         if ($request->hasFile('profile_photo_path')) {
@@ -109,7 +109,7 @@ class AdminController extends Controller
 
         $user->save();
 
-        
+
 
 
 
@@ -119,18 +119,18 @@ class AdminController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-public function destroy( $id)
-{
+    public function destroy($id)
+    {
 
-    $user = User::findOrFail($id);
-    // Prevent deleting admin users
-    if ($user->role === 'admin') {
-        return back()->with('error', 'Admin users cannot be deleted.');
+        $user = User::findOrFail($id);
+        // Prevent deleting admin users
+        if ($user->role === 'admin') {
+            return back()->with('error', 'Admin users cannot be deleted.');
+        }
+
+        $user->delete();
+
+        return back()->with('status', 'User deleted successfully.');
     }
-
-    $user->delete();
-
-    return back()->with('status', 'User deleted successfully.');
-}
 
 }
