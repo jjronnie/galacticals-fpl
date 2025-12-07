@@ -260,6 +260,8 @@ $userLeague = auth()->user()->league;
                         <span>Updating...</span>
                     </button>
                     @else
+
+                    
                     @if(auth()->user()->isAdmin())
 
                     <form action="{{ route('league.update') }}" method="POST"

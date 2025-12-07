@@ -27,6 +27,9 @@
                             View League
                         </a>
                     </x-table.cell>
+
+
+                    
                 </x-table.row>
 
                 @empty

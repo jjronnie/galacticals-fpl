@@ -26,9 +26,22 @@
                     Go to Current GW
                 </a>
 
+                @auth
+                @if(auth()->user()->isAdmin())
+                <form action="{{ route('league.update') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="btn mt-2">
+                        Update <i class="fa-solid fa-sync"></i>
+                    </button>
+                </form>
+                @endif
+                @endauth
+
             </div>
 
-     
+
+
+
 
 
 
@@ -109,7 +122,7 @@
             </div>
 
             <section>
-            <x-adsense />
+                <x-adsense />
 
             </section>
 
