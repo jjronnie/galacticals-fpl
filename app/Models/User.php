@@ -30,7 +30,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'google_id',
         'profile_photo_path',
         'role',
-        'league_reminder_sent_at'
+        'league_reminder_sent_at',
     ];
 
     /**
@@ -52,11 +52,12 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return [
             'email_verified_at' => 'datetime',
+            'league_reminder_sent_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
 
-    
+
 
     public function league()
     {
@@ -64,14 +65,14 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     public function isAdmin(): bool
-{
-    return $this->role === 'admin';
-}
+    {
+        return $this->role === 'admin';
+    }
 
 
-public function isUser(): bool
-{
-    return $this->role === 'user';
-}
+    public function isUser(): bool
+    {
+        return $this->role === 'user';
+    }
 
 }
