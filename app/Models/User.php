@@ -29,7 +29,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_verified_at',
         'google_id',
         'profile_photo_path',
-        'role'
+        'role',
+        'league_reminder_sent_at'
     ];
 
     /**

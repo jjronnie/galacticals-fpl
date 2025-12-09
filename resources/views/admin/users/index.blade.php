@@ -27,6 +27,14 @@
                     Run League Update <i data-lucide="calendar-sync" class="w-4 h-4 ml-2 "></i>
                 </button>
             </form>
+
+            <form action="{{ route('admin.send.league.reminders') }}" method="POST">
+                @csrf
+                <button type="submit" class="btn">
+                    Send  Reminder Emails <i data-lucide="calendar-sync" class="w-4 h-4 ml-2 "></i>
+                </button>
+            </form>
+
             @endif
 
 
@@ -145,6 +153,11 @@
                     <span class="text-sm font-medium">
                         Verified:
                         {{ optional($user->email_verified_at)->diffForHumans() ?? 'Not verified' }}
+                    </span>
+
+                     <span class="text-sm font-medium">
+                        Reminder:
+                        {{ optional($user->league_reminder_sent_at)->diffForHumans() ?? 'Null' }}
                     </span>
                 </div>
             </x-table.cell>

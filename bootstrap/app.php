@@ -9,7 +9,6 @@ use App\Http\Middleware\BlockSuspendedUsers;
 
 
 
-use Spatie\Permission\Exceptions\UnauthorizedException;
 
 
 
@@ -33,10 +32,12 @@ return Application::configure(basePath: dirname(__DIR__))
     })
 
 
-    ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->render(function (UnauthorizedException $e, $request) {
-            return redirect()->route('dashboard')
-                ->with('error', 'You are not authorized to perform this action. Please Contact Admin for authorization.');
-        });
-    })->create();
+->withExceptions(function (Exceptions $exceptions): void {
+    $exceptions->render(function (\Illuminate\Auth\Access\AuthorizationException $e, $request) {
+        return redirect()->route('dashboard')
+            ->with('error', 'You are not authorized to perform this action. Please contact admin for help.');
+    });
+})
+->create();
+
 

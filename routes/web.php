@@ -51,6 +51,11 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('admin', AdminController::class);
 
+    Route::post('/admin/send-league-reminders', [AdminController::class, 'sendMissingLeagueReminders'])
+    ->name('admin.send.league.reminders');
+
+
+
     Route::post('/run-league-update', [SystemController::class, 'runLeagueUpdate'])
         ->name('run.league.update');
 

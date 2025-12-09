@@ -7,12 +7,13 @@ use Illuminate\Http\Request;
 
 class AdminRole
 {
-    public function handle(Request $request, Closure $next)
-    {
-        if (!auth()->check() || auth()->user()->role !== 'admin') {
-            abort(403, 'Unauthorized.'); // or redirect('/'); if you prefer
-        }
-
-        return $next($request);
+public function handle(Request $request, Closure $next)
+{
+    if (!auth()->check() || auth()->user()->role !== 'admin') {
+        return redirect('/dashboard');
     }
+
+    return $next($request);
+}
+
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\League;
+use App\Jobs\SendLeagueReminderJob;
 
 
 use Illuminate\Validation\Rule;
@@ -24,6 +25,13 @@ class AdminController extends Controller
             ->paginate(50);
 
         return view('admin.users.index', compact('users'));
+    }
+
+     public function sendMissingLeagueReminders()
+    {
+        SendLeagueReminderJob::dispatch();
+
+        return back()->with('success', 'League reminder emails are being sent.');
     }
 
 
