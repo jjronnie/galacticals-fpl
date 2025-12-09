@@ -1,5 +1,4 @@
 import './bootstrap'
-import './custom.js';
 
 import Alpine from 'alpinejs'
 import { createIcons, icons } from 'lucide'

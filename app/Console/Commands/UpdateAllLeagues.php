@@ -15,7 +15,6 @@ class UpdateAllLeagues extends Command
 
     public function handle()
     {
-        Mail::to('ronaldjjuuko7@gmail.com')->send(new LeagueUpdateStarted());
 
         $this->info('Starting league updates...');
         

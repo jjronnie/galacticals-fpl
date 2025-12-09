@@ -7,7 +7,9 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Socialite\Facades\Socialite;
-use Spatie\Permission\Models\Role;
+use App\Mail\NewUserAdminNotificationMail;
+use App\Mail\WelcomeUserMail;
+use Illuminate\Support\Facades\Mail;
 
 class GoogleLoginController extends Controller
 {
@@ -66,6 +68,17 @@ class GoogleLoginController extends Controller
                     'status' => 'active',
                     'email_verified_at' => now(),
                 ]);
+
+                // --- EMAIL LOGIC STARTS HERE ---
+
+    // 1. Send Welcome Email to the User (QUEUED)
+    Mail::to($user->email)->queue(new WelcomeUserMail($user));
+
+    // 2. Send Admin Notification Email (QUEUED)
+    // The admin's email is specified directly as requested
+    Mail::to('ronaldjjuuko7@gmail.com')->queue(new NewUserAdminNotificationMail($user));
+
+    // --- EMAIL LOGIC ENDS HERE ---
 
               
             }

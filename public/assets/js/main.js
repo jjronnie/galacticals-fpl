@@ -29,10 +29,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-
-
-
-
 function togglePassword() {
     const input = document.getElementById('password');
     const icon = document.getElementById('eye-icon');
