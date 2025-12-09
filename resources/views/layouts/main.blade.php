@@ -30,8 +30,7 @@
   gtag('config', 'G-36Z6T6DYQ4');
     </script>
 
-    {{-- CLARITY --}}
-
+    <!-- CLARITY -->
     <script type="text/javascript">
     (function(c,l,a,r,i,t,y){
         c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
