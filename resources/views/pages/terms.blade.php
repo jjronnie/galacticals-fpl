@@ -60,7 +60,7 @@
                     tracking technologies to determine the popularity of products/services and online activity.
                     Additionally, we use this information for site optimization, fraud/security purposes, and
                     advertising. For more information about how Microsoft collects and uses your data, visit the
-                    <a href="https://www.microsoft.com/en-us/privacy/privacystatement">Microsoft Privacy Statement </a>.
+                    <a  class="text-indigo-400 hover:text-indigo-300" href="https://www.microsoft.com/en-us/privacy/privacystatement">Microsoft Privacy Statement </a>.
                 </p>
             </section>
 
