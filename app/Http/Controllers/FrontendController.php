@@ -58,6 +58,11 @@ class FrontendController extends Controller
         return view('pages.terms');
     }
 
+         public function more()
+    {
+        $this->seoService->setDefault();
+        return view('pages.more');
+    }
     public function shortCode($code): RedirectResponse
     {
         $league = League::where('shortcode', $code)->firstOrFail();

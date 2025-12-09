@@ -79,6 +79,16 @@
 
 
         @endguest
+@guest
+    
+
+          <a href="{{ route('more') }}" class="flex flex-col items-center justify-center w-full p-2 text-gray-400 transition-colors duration-200 
+                  {{ request()->routeIs('profile.*') ? 'text-white' : 'hover:text-white' }}">
+            <i data-lucide="ellipsis" class="w-5 h-5"></i>
+            <span class="text-xs font-medium mt-1">More</span>
+        </a>
+
+        @endguest
 
         @auth
 

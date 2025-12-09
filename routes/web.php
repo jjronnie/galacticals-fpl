@@ -10,6 +10,7 @@ use App\Http\Controllers\SystemController;
 
 //public routes
 Route::get('/', [FrontendController::class, 'home'])->name('home');
+Route::get('/more', [FrontendController::class, 'more'])->name('more');
 Route::get('/how-to-find-fpl-league-id', [FrontendController::class, 'findLeagueID'])->name('find');
 Route::get('/privacy-policy', [FrontendController::class, 'policy'])->name('privacy.policy');
 Route::get('/terms-and-conditions', [FrontendController::class, 'terms'])->name('terms');

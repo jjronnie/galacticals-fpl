@@ -16,10 +16,10 @@ How to Find my League ID
 @endcomponent
 @endcomponent
 
-{{-- ### Watch the Instruction Video
+### Watch the Instruction Video
 
 
-[![Video](https://img.youtube.com/vi/{{ substr($youtubeLink, strrpos($youtubeLink, '/') + 1) }}/hqdefault.jpg)]({{ str_replace('/embed/', '/watch?v=', $youtubeLink) }}) --}}
+[![Video](https://img.youtube.com/vi/{{ substr($youtubeLink, strrpos($youtubeLink, '/') + 1) }}/hqdefault.jpg)]({{ str_replace('/embed/', '/watch?v=', $youtubeLink) }})
 
 If you have any questions, feel free to reply to this email.
 

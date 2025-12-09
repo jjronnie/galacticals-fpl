@@ -97,8 +97,8 @@
                 <nav class="py-2">
                     <a href="{{ route('profile.edit') }}"
                         class="flex items-center px-4 py-2 text-sm hover:bg-secondary hover:text-white transition">
-                        <i data-lucide="settings" class="w-4 h-4 mr-2"></i>
-                        Settings
+                        <i data-lucide="user" class="w-4 h-4 mr-2"></i>
+                        Profile
                     </a>
                 </nav>
 

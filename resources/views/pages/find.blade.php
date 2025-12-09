@@ -3,10 +3,31 @@
     <main class="max-w-5xl mx-auto p-4 space-y-10">
         <x-adsense />
 
-        <h2 class="text-4xl font-extrabold text-white text-center">How to Find Your League ID</h2>
-        <p class="text-center text-gray-400">
-            Follow the steps below to get your FPL League ID and add it to FPL Galaxy.
+        <h2 class="text-4xl font-extrabold text-white text-center">How to Find Your Fantasy Premier League, League ID
+            Quickly & Easily</h2>
+
+
+        <p class="text-center text-gray-400 mb-4">
+            Watch the step by step video below to get your FPL League ID and add it to FPL Galaxy:
         </p>
+        <br>
+        
+            <div class="text-center mt-4">
+                <center>
+                <iframe width="560" height="400" src="https://www.youtube.com/embed/Rlp772BoxIw?si=thEhSN20xqdiiGfa"
+                    title="YouTube video player" frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                     </center>
+            </div>
+       
+
+        <hr class="border-t border-gray-200 my-4">
+
+        <p class="text-center mt-2">OR</p>
+
+        <p class="text-center text-gray-400">
+            Follow the steps below:
 
         <div class="space-y-6">
 
