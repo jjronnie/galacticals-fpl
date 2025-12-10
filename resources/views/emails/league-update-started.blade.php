@@ -9,7 +9,7 @@ Your league update command has just started running.
 **Started:** {{ now()->toDayDateTimeString() }}
 @endcomponent
 
-Regards,  
+Regards,
 {{ config('app.name') }} Team
 
 @component('mail::subcopy')
