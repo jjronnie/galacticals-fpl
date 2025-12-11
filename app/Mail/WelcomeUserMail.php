@@ -16,7 +16,7 @@ class WelcomeUserMail extends Mailable implements ShouldQueue
 
     public User $user;
     public string $appName;
-    public string $youtubeLink = 'https://www.youtube.com/embed/Rlp772BoxIw?si=thEhSN20xqdiiGfa'; 
+    public string $youtubeLink = 'https://www.youtube.com/embed/Rlp772BoxIw'; 
 
     /**
      * Create a new message instance.
