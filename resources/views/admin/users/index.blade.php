@@ -31,7 +31,7 @@
             <form action="{{ route('admin.send.league.reminders') }}" method="POST">
                 @csrf
                 <button type="submit" class="btn">
-                    Send  Reminder Emails <i data-lucide="calendar-sync" class="w-4 h-4 ml-2 "></i>
+                    Send  Reminders <i data-lucide="calendar-sync" class="w-4 h-4 ml-2 "></i>
                 </button>
             </form>
 
@@ -39,10 +39,7 @@
 
 
 
-            <!-- Export to Excel Button -->
-            <button class="btn">
-                <i data-lucide="sheet" class="w-4 h-4 "></i>
-            </button>
+        
         </div>
 
     </div>
