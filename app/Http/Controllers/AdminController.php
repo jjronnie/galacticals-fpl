@@ -51,8 +51,9 @@ public function index()
     // safest and fastest
     $totalManagers = Manager::count();
 
-    // alternative via relationship, slightly heavier
-    // $totalManagers = League::withCount('managers')->get()->sum('managers_count');
+    $managersPerLeague = League::withCount('managers')
+    ->orderBy('name')
+    ->get(['id', 'name']);
 
     return view('admin.users.index', compact(
         'users',
@@ -61,7 +62,8 @@ public function index()
         'unverifiedUsers',
         'usersBySignupMethod',
         'totalLeagues',
-        'totalManagers'
+        'totalManagers',
+           'managersPerLeague'
     ));
 }
 

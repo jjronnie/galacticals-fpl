@@ -45,6 +45,20 @@
 </div>
 
 
+<div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+
+    @foreach ($managersPerLeague as $league)
+        <x-stat-card
+            title="{{ $league->name }}"
+            value="{{ $league->managers_count }}"
+            icon="users-round"
+        />
+    @endforeach
+
+</div>
+
+
+
     <!-- Controls -->
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
         <div class="flex flex-col sm:flex-row gap-4">
