@@ -10,12 +10,12 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
 
-    <link rel="icon" href="{{ asset('assets/img/logo-light.webp?v=2') }}">
-    <link rel="apple-touch-icon" href="{{ asset('assets/img/logo-light.webp?v=2') }}">
+    <link rel="icon" href="{{ asset('assets/img/logo-light.webp') }}">
+    <link rel="apple-touch-icon" href="{{ asset('assets/img/logo-light.webp') }}">
 
 
 
-    <link rel="manifest" href="/manifest.json?v=2">
+    <link rel="manifest" href="/manifest.json">
 
     <meta name="mobile-web-app-capable" content="yes">
 

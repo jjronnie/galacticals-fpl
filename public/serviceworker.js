@@ -1,4 +1,4 @@
-const STATIC_CACHE = 'fplGalaxyV2';
+const STATIC_CACHE = 'fplGalaxyV1';
 const LEAGUE_CACHE = 'league-cache';
 
 self.addEventListener('install', event => {
