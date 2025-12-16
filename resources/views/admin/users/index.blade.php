@@ -42,10 +42,7 @@
         />
     @endforeach
 
-</div>
 
-
-<div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
 
     @foreach ($managersPerLeague as $league)
         <x-stat-card
