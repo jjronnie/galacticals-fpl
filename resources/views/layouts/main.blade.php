@@ -84,9 +84,9 @@
     @if (!request()->routeIs(['login', 'register', 'dashboard']))
     @include('layouts.preloader')
 
-    @guest
+    {{-- @guest
     <x-cta-reg />
-    @endguest
+    @endguest --}}
 
 
     @endif

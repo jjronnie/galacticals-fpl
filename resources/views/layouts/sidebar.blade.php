@@ -69,13 +69,13 @@
         @endif
 
         {{-- Register link --}}
-        @if (!request()->routeIs('register'))
+        {{-- @if (!request()->routeIs('register'))
         <a href="{{ route('register') }}" class="flex flex-col items-center justify-center w-full p-2 text-gray-400 transition-colors duration-200
        {{ request()->routeIs('register') ? 'text-white' : 'hover:text-white' }}">
             <i data-lucide="user-plus" class="w-5 h-5"></i>
             <span class="text-xs font-medium mt-1">Register</span>
         </a>
-        @endif
+        @endif --}}
 
 
         @endguest

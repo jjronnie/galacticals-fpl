@@ -15,7 +15,7 @@ Here are the details:
 | **Role** | {{ ucfirst($user->role) }} |
 @endcomponent
 
-@component('mail::button', ['url' => route('dashboard', $user->id)])
+@component('mail::button', ['url' => route('dashboard')])
 View User Profile
 @endcomponent
 
