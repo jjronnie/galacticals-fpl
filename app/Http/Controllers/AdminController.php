@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\League;
+
+use App\Models\Manager;
+use Illuminate\Support\Facades\DB;
 use App\Jobs\SendLeagueReminderJob;
 
 
@@ -18,14 +21,50 @@ class AdminController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        $users = User::with('league')
-            ->orderBy('id', 'desc')
-            ->paginate(50);
 
-        return view('admin.users.index', compact('users'));
-    }
+
+public function index()
+{
+    // Users list
+    $users = User::with('league')
+        ->orderByDesc('id')
+        ->paginate(50);
+
+    // User counts
+    $totalUsers = User::count();
+
+    $verifiedUsers = User::whereNotNull('email_verified_at')->count();
+
+    $unverifiedUsers = User::whereNull('email_verified_at')->count();
+
+    // Signup method breakdown
+    // assumes `signup_method` column exists on users table
+    $usersBySignupMethod = User::select('signup_method', DB::raw('COUNT(*) as total'))
+        ->groupBy('signup_method')
+        ->pluck('total', 'signup_method');
+        // result: ['email' => 120, 'google' => 45, ...]
+
+    // Leagues
+    $totalLeagues = League::count();
+
+    // Managers overall
+    // safest and fastest
+    $totalManagers = Manager::count();
+
+    // alternative via relationship, slightly heavier
+    // $totalManagers = League::withCount('managers')->get()->sum('managers_count');
+
+    return view('admin.users.index', compact(
+        'users',
+        'totalUsers',
+        'verifiedUsers',
+        'unverifiedUsers',
+        'usersBySignupMethod',
+        'totalLeagues',
+        'totalManagers'
+    ));
+}
+
 
      public function sendMissingLeagueReminders()
     {

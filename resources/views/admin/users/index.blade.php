@@ -2,11 +2,48 @@
     <x-page-title title="Users" />
 
 
-    <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
-    <!-- card -->
-    <x-stat-card title="Total" value="{{ $users->count() }}" icon="users"  />
+  <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+
+    <x-stat-card
+        title="Total Users"
+        value="{{ $totalUsers }}"
+        icon="users"
+    />
+
+    <x-stat-card
+        title="Verified Users"
+        value="{{ $verifiedUsers }}"
+        icon="user-check"
+    />
+
+    <x-stat-card
+        title="Unverified Users"
+        value="{{ $unverifiedUsers }}"
+        icon="user-x"
+    />
+
+    <x-stat-card
+        title="Total Leagues"
+        value="{{ $totalLeagues }}"
+        icon="trophy"
+    />
+
+    <x-stat-card
+        title="Total Managers"
+        value="{{ $totalManagers }}"
+        icon="briefcase"
+    />
+
+    @foreach ($usersBySignupMethod as $method => $count)
+        <x-stat-card
+            title="{{ ucfirst($method) }} Signups"
+            value="{{ $count }}"
+            icon="log-in"
+        />
+    @endforeach
 
 </div>
+
 
     <!-- Controls -->
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
