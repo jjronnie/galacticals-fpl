@@ -28,6 +28,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'status',
         'email_verified_at',
         'google_id',
+        'facebook_id',
+        'microsoft_id',
         'profile_photo_path',
         'role',
         'league_reminder_sent_at',

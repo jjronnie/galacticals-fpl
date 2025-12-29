@@ -1,32 +1,39 @@
+<div class="space-y-3 mt-4">
 
-<button id="google-login"
-    class="flex w-full py-3 mt-4 text-gray-700 font-medium bg-white border border-gray-300 rounded-full shadow-sm items-center justify-center gap-3 transition duration-300 select-none">
-    <img src="{{ asset('assets/img/google144.png') }}" alt="Google Logo" class="w-5 h-5" />
-    <span id="google-text">Continue with Google</span>
-    <svg id="google-spinner" class="hidden w-5 h-5 animate-spin text-gray-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-    </svg>
-</button>
+    <!-- Google -->
+    <button data-url="{{ route('social.login', ['provider' => 'google']) }}"
+        class="social-login-btn flex w-full py-3 text-gray-700 font-medium bg-white border border-gray-300 rounded-full shadow-sm items-center justify-center gap-3 transition duration-300 select-none">
+        <i class="fa-brands fa-google text-red-500 text-lg"></i>
+        <span class="social-text">Continue with Google</span>
+        <i class="fa-solid fa-spinner fa-spin hidden social-spinner"></i>
+    </button>
+
+    <!-- Facebook -->
+    <button data-url="{{ route('social.login', ['provider' => 'facebook']) }}"
+        class="social-login-btn flex w-full py-3 text-gray-700 font-medium bg-white border border-gray-300 rounded-full shadow-sm items-center justify-center gap-3 transition duration-300 select-none">
+        <i class="fa-brands fa-facebook text-blue-600 text-lg"></i>
+        <span class="social-text">Continue with Facebook</span>
+        <i class="fa-solid fa-spinner fa-spin hidden social-spinner"></i>
+    </button>
+
+</div>
 
 <hr class="border-t border-gray-200 my-4">
 
-<p class="text-center mt-2">OR</p>
+<p class="text-center mt-2 text-sm text-gray-500">OR</p>
+
 
 <script>
-document.getElementById('google-login').addEventListener('click', function () {
-    const btn = this;
-    const text = document.getElementById('google-text');
-    const spinner = document.getElementById('google-spinner');
+    document.querySelectorAll('.social-login-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const text = this.querySelector('.social-text');
+            const spinner = this.querySelector('.social-spinner');
 
-    // Disable the button
-    btn.disabled = true;
+            this.disabled = true;
+            text.classList.add('hidden');
+            spinner.classList.remove('hidden');
 
-    // Hide text, show spinner
-    text.classList.add('hidden');
-    spinner.classList.remove('hidden');
-
-    // Redirect to Google OAuth
-    window.location.href = "{{ route('google.login') }}";
-});
+            window.location.href = this.dataset.url;
+        });
+    });
 </script>

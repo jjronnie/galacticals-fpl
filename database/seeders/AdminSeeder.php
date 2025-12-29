@@ -22,7 +22,7 @@ class AdminSeeder extends Seeder
                 'email_verified_at' => now(),
                 'status' => 'active',
                 'role' => 'admin',
-                'signup_method' => 'seed',
+                'signup_method' => 'google',
 
             ]
         );
