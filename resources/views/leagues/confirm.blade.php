@@ -10,7 +10,7 @@
         {{-- Message with left border --}}
         <div class="bg-gray-800/60 text-gray-200 p-4 rounded-lg mb-6 border-l-4 border-white">
             <p class="text-sm mb-2">
-                The league ID you entered is associated with the following league:
+                The league ID  “{{ $preview['league_id'] }}” you entered is associated with the following league:
             </p>
 
             <p class="text-lg font-bold text-white">
