@@ -194,6 +194,7 @@ public function confirmAction(Request $request)
         'league_preview' => [
             'league_id' => $leagueInfo['id'],
             'name' => $leagueInfo['name'],
+              'admin_entry' => $leagueInfo['admin_entry'] ?? null,
         ],
         'league_preview_token' => $token,
     ]);
