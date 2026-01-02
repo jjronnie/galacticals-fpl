@@ -121,7 +121,7 @@ public function confirmAction(Request $request)
         'name' => $preview['name'],
         'admin_name' => $preview['admin_entry'],
         'current_gameweek' => 0,
-        'season' => date('Y'),
+        'season' => 2025,
         'sync_status' => 'processing',
         'sync_message' => 'Fetching league data...',
         'total_managers' => 0,
