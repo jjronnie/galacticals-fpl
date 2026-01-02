@@ -38,7 +38,7 @@
                     <label for="league_id" class="block text-sm font-bold text-gray-300 mb-2">
                         FPL Classic League ID:
                     </label>
-                    <input type="text" id="league_id" name="league_id" placeholder="Enter League ID"
+                    <input type="number" id="league_id" name="league_id" placeholder="Enter League ID"
                         class="w-full border-gray-300 text-primary p-3 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition duration-150" required>
                 </div>
 

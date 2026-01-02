@@ -34,7 +34,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [LeagueController::class, 'index'])->name('dashboard');
     Route::get('/leagues/setup', [LeagueController::class, 'create'])->name('league.create');
 
-    Route::post('/leagues/setup', [LeagueController::class, 'store'])->name('league.store');
+    Route::get('/leagues/confirm', [LeagueController::class, 'confirm'])
+    ->name('leagues.confirm');
+
+Route::post('/leagues/confirm', [LeagueController::class, 'confirmAction'])
+    ->name('leagues.confirm.action');
+
+
+    Route::post('/leagues/setup', [LeagueController::class, 'store'])->name('league.store')->middleware('throttle:5,1');
     Route::post('/leagues/update', [LeagueController::class, 'update'])->name('league.update');
 
 

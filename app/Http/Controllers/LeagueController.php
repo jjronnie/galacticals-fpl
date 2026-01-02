@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\League;
 use App\Models\Manager;
+use Illuminate\Support\Facades\Crypt;
 
 use App\Jobs\FetchLeagueStandings;
 use App\Jobs\UpdateLeagueStandings;
@@ -74,71 +75,136 @@ class LeagueController extends Controller
     }
 
 
+    public function confirm()
+{
+    $preview = session('league_preview');
+
+    if (!$preview) {
+        return redirect()->route('dashboard');
+    }
+
+    return view('leagues.confirm', compact('preview'));
+}
+
+
+public function confirmAction(Request $request)
+{
+    $request->validate([
+        'action' => 'required|in:yes,no'
+    ]);
+
+     $payload = Crypt::decrypt($request->token);
+
+    if (
+        $payload['user_id'] !== auth()->id() ||
+        now()->greaterThan($payload['expires_at'])
+    ) {
+        abort(403);
+    }
+
+    $preview = session('league_preview');
+
+    if (!$preview) {
+        return redirect()->route('dashboard');
+    }
+
+    if ($request->action === 'no') {
+        session()->forget('league_preview');
+        return redirect()->route('dashboard')
+            ->with('status', 'League creation cancelled.');
+    }
+
+    // YES: create league
+    $league = League::create([
+        'user_id' => auth()->id(),
+        'league_id' => $preview['league_id'],
+        'name' => $preview['name'],
+        'admin_name' => $preview['admin_entry'],
+        'current_gameweek' => 0,
+        'season' => date('Y'),
+        'sync_status' => 'processing',
+        'sync_message' => 'Fetching league data...',
+        'total_managers' => 0,
+        'synced_managers' => 0,
+    ]);
+
+    session()->forget('league_preview');
+
+    SitemapService::update();
+
+    FetchLeagueStandings::dispatch($league->id);
+
+    return redirect()->route('dashboard')
+        ->with('status', 'League confirmed. Import started.');
+}
+
+
+
     /**
      * Store a newly created resource in storage.
      */
-     public function store(Request $request)
-    {
-        $request->validate([
-            'league_id' => 'required|numeric'
+  public function store(Request $request)
+{
+    $request->validate([
+        'league_id' => 'required|numeric'
+    ]);
+
+    $leagueId = $request->league_id;
+
+    // Check existing league
+    $existingLeague = League::where('league_id', $leagueId)->first();
+    if ($existingLeague) {
+        if ($existingLeague->user_id === auth()->id()) {
+            return back()->withErrors(['league_exists' => 'You already added this league.']);
+        }
+
+        return back()->withErrors([
+            'league_taken' => 'This league is already registered by another user.'
         ]);
-
-        $leagueId = $request->league_id;
-
-        // Check if league already exists
-        $existingLeague = League::where('league_id', $leagueId)->first();
-        if ($existingLeague) {
-            if ($existingLeague->user_id === auth()->id()) {
-                return back()->withErrors(['league_exists' => 'You already added this league.']);
-            }
-            return back()->withErrors(['league_taken' => 'This league is already registered by another user, please go to Leagues page to view it']);
-        }
-
-        try {
-            // Fetch ONLY basic league info first (no standings)
-            $response = Http::timeout(10)->get("https://fantasy.premierleague.com/api/leagues-classic/{$leagueId}/standings/", [
-                'page_standings' => 1,
-                'page_new_entries' => 1
-            ]);
-
-            if ($response->failed()) {
-                return back()->withErrors(['api_error' => 'Failed to connect to Fantasy Premier League API. Please check the league ID and try again.']);
-            }
-
-            $data = $response->json();
-
-            if (!isset($data['league'])) {
-                return back()->withErrors(['invalid_league' => 'Invalid league ID. Please verify the league ID from your FPL mini-league page.']);
-            }
-
-            $leagueInfo = $data['league'];
-
-            // Create league with processing status
-            $league = League::create([
-                'user_id' => auth()->id(),
-                'league_id' => $leagueInfo['id'],
-                'name' => $leagueInfo['name'],
-                'admin_name' => $leagueInfo['admin_entry'] ?? null,
-                'current_gameweek' => 0,
-                'season' => date('Y'),
-                'sync_status' => 'processing',
-                'sync_message' => 'Fetching league data...',
-                'total_managers' => 0,
-                'synced_managers' => 0,
-            ]);
-
-              SitemapService::update();
-
-            // Dispatch background job to fetch all data
-            FetchLeagueStandings::dispatch($league->id);
-
-            return redirect()->route('dashboard')->with('status', 'League added successfully! Data is being imported in the background. This may take a few minutes for large leagues. See progress in dashboard.');
-
-        } catch (\Exception $e) {
-            \Log::error('League Store Error: ' . $e->getMessage());
-            return back()->withErrors(['system_error' => 'An unexpected error occurred. Please try again or contact support if the problem persists.']);
-        }
     }
+
+    try {
+        $response = Http::timeout(10)->get(
+            "https://fantasy.premierleague.com/api/leagues-classic/{$leagueId}/standings/",
+            ['page_standings' => 1]
+        );
+
+        if ($response->failed()) {
+            return back()->withErrors(['api_error' => 'Unable to fetch league details.']);
+        }
+
+        $data = $response->json();
+
+        if (!isset($data['league'])) {
+            return back()->withErrors(['invalid_league' => 'Unable to fetch league details. Please verify the league ID.']);
+        }
+
+        $leagueInfo = $data['league'];
+
+        // Store temp data in session, NOT database
+       $payload = [
+        'league_id' => $leagueInfo['id'],
+        'user_id' => auth()->id(),
+        'expires_at' => now()->addMinutes(10),
+    ];
+
+    $token = Crypt::encrypt($payload);
+
+    session([
+        'league_preview' => [
+            'league_id' => $leagueInfo['id'],
+            'name' => $leagueInfo['name'],
+        ],
+        'league_preview_token' => $token,
+    ]);
+
+        return redirect()->route('leagues.confirm');
+
+    } catch (\Throwable $e) {
+        \Log::error('League preview error', ['error' => $e->getMessage()]);
+        return back()->withErrors(['system_error' => 'Something went wrong.']);
+    }
+}
 
     /**
      * Display the specified resource.
@@ -206,7 +272,7 @@ class LeagueController extends Controller
             ]);
 
             if ($response->failed()) {
-                return back()->withErrors(['api_error' => 'Failed to connect to Fantasy Premier League API. Please try again later.']);
+                return back()->withErrors(['api_error' => 'Failed to connect to Fantasy Premier League . Please try again later.']);
             }
 
             $data = $response->json();

@@ -65,7 +65,7 @@ class FetchLeagueStandings implements ShouldQueue
                     $processedCount++;
 
                     // Update progress every 5 managers
-                    if ($processedCount % 25 === 0) {
+                    if ($processedCount % 5 === 0) {
                         $league->update([
                             'synced_managers' => $processedCount,
                             'sync_message' => "Processed {$processedCount} of {$totalManagers} managers...",
