@@ -143,7 +143,7 @@ public function confirmAction(Request $request)
     /**
      * Store a newly created resource in storage.
      */
-  public function store(Request $request)
+public function store(Request $request)
 {
     $request->validate([
         'league_id' => 'required|numeric'
@@ -163,10 +163,15 @@ public function confirmAction(Request $request)
         ]);
     }
 
-    try {
+try {
+    $page = 1;
+    $allEntries = [];
+    $MAX_MANAGERS = 1000;
+
+    do {
         $response = Http::timeout(10)->get(
             "https://fantasy.premierleague.com/api/leagues-classic/{$leagueId}/standings/",
-            ['page_standings' => 1]
+            ['page_standings' => $page]
         );
 
         if ($response->failed()) {
@@ -175,14 +180,33 @@ public function confirmAction(Request $request)
 
         $data = $response->json();
 
-        if (!isset($data['league'])) {
+        if (!isset($data['standings']['results'])) {
             return back()->withErrors(['invalid_league' => 'Unable to fetch league details. Please verify the league ID.']);
         }
 
-        $leagueInfo = $data['league'];
+        $entries = $data['standings']['results'];
+        $allEntries = array_merge($allEntries, $entries);
 
-        // Store temp data in session, NOT database
-       $payload = [
+        // Stop fetching more pages if max managers exceeded
+        if (count($allEntries) > $MAX_MANAGERS) {
+            return back()->withErrors([
+                'league_too_large' => "This league has more than {$MAX_MANAGERS} managers. For performance and reliability, leagues above {$MAX_MANAGERS} managers are not supported."
+            ]);
+        }
+
+        $page++;
+    } while (!empty($entries));
+
+    $totalManagers = count($allEntries);
+
+    if ($totalManagers < 10) {
+        return back()->withErrors(['small_league' => 'Leagues must have at least 10 managers to be registered.']);
+    }
+
+    $leagueInfo = $data['league'] ?? ['id' => $leagueId, 'name' => 'Unknown', 'admin_entry' => null];
+
+    // Store temp data in session
+    $payload = [
         'league_id' => $leagueInfo['id'],
         'user_id' => auth()->id(),
         'expires_at' => now()->addMinutes(10),
@@ -194,18 +218,19 @@ public function confirmAction(Request $request)
         'league_preview' => [
             'league_id' => $leagueInfo['id'],
             'name' => $leagueInfo['name'],
-              'admin_entry' => $leagueInfo['admin_entry'] ?? null,
+            'admin_entry' => $leagueInfo['admin_entry'] ?? null,
         ],
         'league_preview_token' => $token,
     ]);
 
-        return redirect()->route('leagues.confirm');
+    return redirect()->route('leagues.confirm');
 
-    } catch (\Throwable $e) {
-        \Log::error('League preview error', ['error' => $e->getMessage()]);
-        return back()->withErrors(['system_error' => 'Something went wrong.']);
-    }
+} catch (\Throwable $e) {
+    \Log::error('League preview error', ['error' => $e->getMessage()]);
+    return back()->withErrors(['system_error' => 'Something went wrong.']);
 }
+}
+
 
     /**
      * Display the specified resource.
