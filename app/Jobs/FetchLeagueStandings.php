@@ -77,6 +77,16 @@ class FetchLeagueStandings implements ShouldQueue
                 }
             }
 
+               // Delete managers that no longer exist in FPL
+        $managersToDelete = Manager::where('league_id', $league->id)
+            ->whereNotIn('entry_id', $existingEntryIds)
+            ->get();
+
+        foreach ($managersToDelete as $manager) {
+            GameweekScore::where('manager_id', $manager->id)->delete();
+            $manager->delete();
+        }
+
             // Mark as completed
             $league->update([
                 'sync_status' => 'completed',

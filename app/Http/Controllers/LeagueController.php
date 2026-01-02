@@ -175,7 +175,7 @@ try {
         );
 
         if ($response->failed()) {
-            return back()->withErrors(['api_error' => 'Unable to fetch league details.']);
+            return back()->withErrors(['api_error' => 'Unable to fetch league details, Please verify the league ID and ensure it is a Classic League.']);
         }
 
         $data = $response->json();
