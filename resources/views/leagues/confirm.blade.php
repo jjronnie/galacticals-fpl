@@ -1,5 +1,5 @@
 <x-app-layout>
-    <x-adsense/>
+    <x-adsense />
 
     <div class="max-w-md mx-auto bg-card rounded-md shadow-xl overflow-hidden sm:rounded-xl p-8">
 
@@ -29,18 +29,12 @@
             <input type="hidden" name="token" value="{{ session('league_preview_token') }}">
 
 
-            <button
-                type="submit"
-                name="action"
-                value="yes"
+            <button type="submit" name="action" value="yes"
                 class="w-full px-4 py-3 bg-primary hover:bg-secondary text-white font-bold rounded-lg shadow-md transition duration-200">
                 Yes, proceed
             </button>
 
-            <button
-                type="submit"
-                name="action"
-                value="no"
+            <button type="submit" name="action" value="no"
                 class="w-full px-4 py-3 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-lg shadow-sm transition duration-200">
                 No, cancel
             </button>
