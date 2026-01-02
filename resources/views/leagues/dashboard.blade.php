@@ -21,7 +21,7 @@
                     <x-stat-card title="Joined {{ config('app.name') }}"
                         value="{{ $league->created_at->diffForHumans() ?? '-' }}" icon="calendar-clock" />
                     <x-stat-card title="Season" value="{{ $league->season ?? '-' }}/{{ $league->season +1 }} " icon="calendar-range" />
-                    <x-stat-card title="Total Managers" value="{{ $league->total_managers ?? '-' }}" icon="users" />
+                    <x-stat-card title="Total Managers" value="{{ $totalManagers ?? '-' }}" icon="users" />
 
 
                 </div>
