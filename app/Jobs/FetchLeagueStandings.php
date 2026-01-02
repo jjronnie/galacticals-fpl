@@ -28,56 +28,59 @@ class FetchLeagueStandings implements ShouldQueue
         $this->leagueId = $leagueId;
     }
 
-    public function handle()
-    {
-        $league = League::find($this->leagueId);
+  public function handle()
+{
+    $league = League::find($this->leagueId);
 
-        if (!$league) {
-            Log::error("League not found: {$this->leagueId}");
+    if (!$league) {
+        Log::error("League not found: {$this->leagueId}");
+        return;
+    }
+
+    try {
+        // Fetch all standings pages
+        $allStandings = $this->fetchAllStandings($league);
+        
+        if (empty($allStandings)) {
+            $league->update([
+                'sync_status' => 'failed',
+                'sync_message' => 'No managers found in this league. The league may be empty or invalid.',
+            ]);
             return;
         }
 
-        try {
-            // Fetch all standings pages
-            $allStandings = $this->fetchAllStandings($league);
-            
-            if (empty($allStandings)) {
-                $league->update([
-                    'sync_status' => 'failed',
-                    'sync_message' => 'No managers found in this league. The league may be empty or invalid.',
-                ]);
-                return;
-            }
+        $totalManagers = count($allStandings);
+        $league->update([
+            'total_managers' => $totalManagers,
+            'sync_message' => "Processing {$totalManagers} managers...",
+        ]);
 
-            $totalManagers = count($allStandings);
-            $league->update([
-                'total_managers' => $totalManagers,
-                'sync_message' => "Processing {$totalManagers} managers...",
-            ]);
+        $existingEntryIds = []; // track fetched FPL entries
 
-            // Process managers in chunks to avoid memory issues
-            $chunks = array_chunk($allStandings, 10);
-            $processedCount = 0;
+        // Process managers in chunks to avoid memory issues
+        $chunks = array_chunk($allStandings, 10);
+        $processedCount = 0;
 
-            foreach ($chunks as $chunk) {
-                foreach ($chunk as $entry) {
-                    $this->processManager($league, $entry);
-                    $processedCount++;
+        foreach ($chunks as $chunk) {
+            foreach ($chunk as $entry) {
+                $this->processManager($league, $entry);
+                $existingEntryIds[] = $entry['entry']; // store valid entry id
+                $processedCount++;
 
-                    // Update progress every 5 managers
-                    if ($processedCount % 5 === 0) {
-                        $league->update([
-                            'synced_managers' => $processedCount,
-                            'sync_message' => "Processed {$processedCount} of {$totalManagers} managers...",
-                        ]);
-                    }
-
-                    // Rate limiting - 0.3 seconds per manager
-                    usleep(300000);
+                // Update progress every 5 managers
+                if ($processedCount % 5 === 0) {
+                    $league->update([
+                        'synced_managers' => $processedCount,
+                        'sync_message' => "Processed {$processedCount} of {$totalManagers} managers...",
+                    ]);
                 }
-            }
 
-               // Delete managers that no longer exist in FPL
+                // Rate limiting - 0.3 seconds per manager
+                usleep(300000);
+            }
+        }
+
+        // Delete managers that no longer exist in FPL
         $managersToDelete = Manager::where('league_id', $league->id)
             ->whereNotIn('entry_id', $existingEntryIds)
             ->get();
@@ -87,25 +90,26 @@ class FetchLeagueStandings implements ShouldQueue
             $manager->delete();
         }
 
-            // Mark as completed
-            $league->update([
-                'sync_status' => 'completed',
-                'sync_message' => "Successfully imported {$totalManagers} managers!",
-                'synced_managers' => $totalManagers,
-                'last_synced_at' => now(),
-            ]);
+        // Mark as completed
+        $league->update([
+            'sync_status' => 'completed',
+            'sync_message' => "Successfully imported {$totalManagers} managers!",
+            'synced_managers' => $totalManagers,
+            'last_synced_at' => now(),
+        ]);
 
-        } catch (\Exception $e) {
-            Log::error("FetchLeagueStandings failed for league {$this->leagueId}: " . $e->getMessage());
-            
-            $league->update([
-                'sync_status' => 'failed',
-                'sync_message' => 'Failed to fetch league data. Please try updating the league again. If the problem persists, contact support.',
-            ]);
+    } catch (\Exception $e) {
+        Log::error("FetchLeagueStandings failed for league {$this->leagueId}: " . $e->getMessage());
+        
+        $league->update([
+            'sync_status' => 'failed',
+            'sync_message' => 'Failed to fetch league data. Please try updating the league again. If the problem persists, contact support.',
+        ]);
 
-            throw $e; // Re-throw to trigger job retry
-        }
+        throw $e; // Re-throw to trigger job retry
     }
+}
+
 
     private function fetchAllStandings($league)
     {
