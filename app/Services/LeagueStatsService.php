@@ -22,15 +22,13 @@ class LeagueStatsService
 
             // Eager load necessary relationships for calculation
             // We reload the league here to ensure relationships exist inside the cache closure
-          
-
             $league->load([
-    'managers',
-    'gameweekScores' => function ($query) {
-        $query->orderBy('gameweek');
-    }
-]);
-
+                'managers',
+                'gameweekScores' => function ($query) use ($league) {
+                    $query->where('season_year', $league->season)
+                        ->orderBy('gameweek');
+                }
+            ]);
 
             $allScores = $league->gameweekScores;
             $managers = $league->managers;

@@ -181,7 +181,7 @@ class FetchLeagueStandings implements ShouldQueue
                             [
                                 'manager_id' => $manager->id,
                                 'gameweek' => $week['event'],
-                                'season_year' => date('Y'),
+                                'season_year' => '2025',
                             ],
                             [
                                 'points' => $week['points'],
