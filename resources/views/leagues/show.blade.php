@@ -3,6 +3,11 @@
         <x-adsense />
 
         <section class="space-y-6">
+            @php
+                $sortedGameweeks = collect($availableGameweeks)->sortDesc()->values();
+                $sortedGwPerformance = collect($gwPerformance)->sortByDesc('gameweek')->values();
+            @endphp
+
             <div class="text-center">
                 <h1 class="text-2xl font-extrabold text-white">{{ $league->name }}</h1>
                 <p class="mt-2 text-sm text-gray-300">{{ $league->season }}/{{ $league->season + 1 }} Season Analytics</p>
@@ -28,7 +33,7 @@
                         onchange="if (this.value) { window.location.href = this.value; }"
                     >
                         <option value="" selected>Choose Gameweek</option>
-                        @foreach ($availableGameweeks as $gameweek)
+                        @foreach ($sortedGameweeks as $gameweek)
                             <option value="{{ route('public.leagues.gameweek.show', ['slug' => $league->slug, 'gameweek' => $gameweek]) }}">
                                 GW {{ $gameweek }}
                             </option>
@@ -163,7 +168,7 @@
         <section>
             <h2 id="performance" class="mb-4 text-center text-2xl font-bold text-white">Gameweek Performance</h2>
             <div class="grid gap-4 sm:grid-cols-1 lg:grid-cols-3">
-                @forelse ($gwPerformance as $gw)
+                @forelse ($sortedGwPerformance as $gw)
                     <x-gw-card :gw="$gw" :league="$league" />
                 @empty
                     <div class="rounded-xl border border-gray-700 bg-card p-6 text-center text-gray-400">No gameweek data available yet.</div>

@@ -39,12 +39,16 @@ class ProfileStatsService
                 ->map(fn (Collection $rows) => $rows->first())
                 ->values();
 
-            $historyRows = $scores->map(fn ($score): array => [
-                'gameweek' => (int) $score->gameweek,
-                'points' => (int) $score->points,
-                'total_points' => (int) ($score->total_points ?? 0),
-                'overall_rank' => (int) ($score->overall_rank ?? 0),
-            ])->values()->all();
+            $historyRows = $scores
+                ->sortByDesc('gameweek')
+                ->values()
+                ->map(fn ($score): array => [
+                    'gameweek' => (int) $score->gameweek,
+                    'points' => (int) $score->points,
+                    'total_points' => (int) ($score->total_points ?? 0),
+                    'overall_rank' => (int) ($score->overall_rank ?? 0),
+                ])
+                ->all();
 
             $picks = ManagerPick::query()
                 ->whereIn('manager_id', $relatedManagerIds)
@@ -183,7 +187,7 @@ class ProfileStatsService
                         'difference' => $whatIfPoints - $captainPoints,
                     ];
                 })
-                ->sortBy('gameweek')
+                ->sortByDesc('gameweek')
                 ->values()
                 ->all();
 
@@ -192,7 +196,7 @@ class ProfileStatsService
         }
 
         return [
-            'rows' => collect($rows)->sortBy('gameweek')->values()->all(),
+            'rows' => collect($rows)->sortByDesc('gameweek')->values()->all(),
             'total_captain_points' => $totalCaptainPoints,
             'total_what_if_points' => $totalWhatIfPoints,
             'missed_points' => $totalWhatIfPoints - $totalCaptainPoints,
@@ -208,7 +212,7 @@ class ProfileStatsService
                 'hit_cost' => (int) $score->event_transfers_cost,
                 'net_points' => (int) $score->points - (int) $score->event_transfers_cost,
             ];
-        })->values();
+        })->sortByDesc('gameweek')->values();
 
         return [
             'rows' => $rows->all(),
@@ -295,7 +299,7 @@ class ProfileStatsService
                 'points_after' => (int) ($pointsAfter ?? 0),
                 'points_gained' => (int) (($pointsAfter ?? 0) - ($pointsBefore ?? 0)),
             ];
-        })->values();
+        })->sortByDesc('gameweek')->values();
 
         $effectiveness = $rows->groupBy('chip')->map(fn (Collection $chipRows): float => round($chipRows->avg('points_gained'), 2));
 

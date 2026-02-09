@@ -8,7 +8,6 @@ use App\Services\LeagueStatsService;
 use App\Services\SeoService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
@@ -248,32 +247,14 @@ class LeagueController extends Controller
             return redirect()->route('public.leagues.show', ['slug' => $league->slug]);
         }
 
-        $allGameweekStandings = $this->statsService->getGameweekStandings($league, $gameweek);
-        $perPage = 50;
-        $page = max((int) request()->query('standings_page', 1), 1);
-        $total = $allGameweekStandings->count();
-        $items = $allGameweekStandings
-            ->slice(($page - 1) * $perPage, $perPage)
-            ->values();
-
-        $gameweekStandings = new LengthAwarePaginator(
-            $items,
-            $total,
-            $perPage,
-            $page,
-            [
-                'path' => route('public.leagues.gameweek.show', ['slug' => $league->slug, 'gameweek' => $gameweek]),
-                'pageName' => 'standings_page',
-            ]
-        );
-        $gameweekStandings->appends(request()->except('standings_page'));
+        $gameweekStandings = $this->statsService->getGameweekStandings($league, $gameweek)->values();
 
         $gameweekInsights = null;
-        if ($allGameweekStandings->isNotEmpty()) {
-            $bestPoints = $allGameweekStandings->max('points');
-            $worstPoints = $allGameweekStandings->min('points');
+        if ($gameweekStandings->isNotEmpty()) {
+            $bestPoints = $gameweekStandings->max('points');
+            $worstPoints = $gameweekStandings->min('points');
 
-            $bestManagers = $allGameweekStandings
+            $bestManagers = $gameweekStandings
                 ->where('points', $bestPoints)
                 ->filter(fn ($standing): bool => $standing->manager !== null)
                 ->map(fn ($standing): array => [
@@ -285,7 +266,7 @@ class LeagueController extends Controller
                 ->values()
                 ->all();
 
-            $worstManagers = $allGameweekStandings
+            $worstManagers = $gameweekStandings
                 ->where('points', $worstPoints)
                 ->filter(fn ($standing): bool => $standing->manager !== null)
                 ->map(fn ($standing): array => [

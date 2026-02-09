@@ -1,8 +1,13 @@
 <x-app-layout>
-    <main class="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
+    <main class="mx-auto max-w-7xl space-y-8 px-2 py-8 sm:px-6 lg:px-8">
         <x-adsense />
 
         <section class="space-y-6">
+            @php
+                $sortedGameweeks = collect($availableGameweeks)->sortDesc()->values();
+                $standingsRows = collect($gameweekStandings)->values();
+            @endphp
+
             <div class="text-center">
                 <h1 class="text-2xl font-extrabold text-white">{{ $league->name }}</h1>
                 <p class="mt-2 text-sm text-gray-300">Gameweek {{ $targetGW }} Overview</p>
@@ -20,7 +25,7 @@
                         class="w-full rounded-lg border border-gray-600 bg-primary px-3 py-2 text-sm text-white focus:border-accent focus:ring-accent"
                         onchange="if (this.value) { window.location.href = this.value; }"
                     >
-                        @foreach ($availableGameweeks as $gameweek)
+                        @foreach ($sortedGameweeks as $gameweek)
                             <option
                                 value="{{ route('public.leagues.gameweek.show', ['slug' => $league->slug, 'gameweek' => $gameweek]) }}"
                                 @selected($targetGW === $gameweek)
@@ -33,7 +38,7 @@
             </div>
         </section>
 
-        <section class="space-y-4 rounded-2xl border border-gray-700 bg-card p-5">
+        <section class="space-y-4">
             @if ($gameweekInsights)
                 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <x-gw-stat-card title="BEST MANAGER" color="green" tooltip="Manager(s) with the highest points in this gameweek.">
@@ -112,53 +117,59 @@
                 </x-gw-stat-card>
             </div>
 
-            <div class="overflow-x-auto rounded-xl border border-gray-700">
-                <table class="min-w-full text-sm text-gray-200">
-                    <thead>
-                        <tr class="border-b border-gray-700 text-xs uppercase tracking-wide text-gray-400">
-                            <th class="px-3 py-2 text-left">Rank</th>
-                            <th class="px-3 py-2 text-left">Manager</th>
-                            <th class="px-3 py-2 text-right">Points</th>
-                            <th class="px-3 py-2 text-right">Total</th>
-                            <th class="px-3 py-2 text-right">Diff to Avg</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($gameweekStandings as $standing)
-                            <tr class="border-b border-gray-800/80">
-                                <td class="px-3 py-2">{{ $standing->rank }}</td>
-                                <td class="px-3 py-2">
-                                    @if ($standing->manager)
-                                        <a href="{{ route('managers.show', $standing->manager->entry_id) }}" class="text-white hover:text-white">
-                                            {{ $standing->manager->player_name }}
-                                        </a>
-                                        <p class="text-xs text-gray-400">{{ $standing->manager->team_name }}</p>
-                                    @else
-                                        -
-                                    @endif
-                                </td>
-                                <td class="px-3 py-2 text-right">{{ $standing->points }}</td>
-                                <td class="px-3 py-2 text-right">{{ $standing->total_points }}</td>
-                                <td class="px-3 py-2 text-right {{ $standing->difference_to_average >= 0 ? 'text-green-300' : 'text-red-300' }}">
-                                    {{ $standing->difference_to_average >= 0 ? '+' : '' }}{{ $standing->difference_to_average }}
-                                </td>
+            <div x-data="{ visibleRows: 50, totalRows: {{ $standingsRows->count() }} }">
+                <div class="-mx-2 overflow-x-auto sm:mx-0">
+                    <table class="min-w-full text-sm text-gray-200">
+                        <thead>
+                            <tr class="border-b border-gray-700 text-xs uppercase tracking-wide text-gray-400">
+                                <th class="px-3 py-2 text-left">Rank</th>
+                                <th class="px-3 py-2 text-left">Manager</th>
+                                <th class="px-3 py-2 text-right">Points</th>
+                                <th class="px-3 py-2 text-right">Total</th>
+                                <th class="px-3 py-2 text-right">Diff to Avg</th>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="px-3 py-6 text-center text-gray-400">No gameweek standings found for this gameweek.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-
-            @if ($gameweekStandings->hasMorePages())
-                <div class="flex justify-center">
-                    <a href="{{ $gameweekStandings->nextPageUrl() }}" class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-secondary">
-                        Load More
-                    </a>
+                        </thead>
+                        <tbody>
+                            @forelse ($standingsRows as $index => $standing)
+                                <tr class="border-b border-gray-800/80" x-show="{{ $index }} < visibleRows" @if ($index >= 50) x-cloak @endif>
+                                    <td class="px-3 py-2">{{ $standing->rank }}</td>
+                                    <td class="px-3 py-2">
+                                        @if ($standing->manager)
+                                            <a href="{{ route('managers.show', $standing->manager->entry_id) }}" class="text-white hover:text-white">
+                                                {{ $standing->manager->player_name }}
+                                            </a>
+                                            <p class="text-xs text-gray-400">{{ $standing->manager->team_name }}</p>
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                    <td class="px-3 py-2 text-right">{{ $standing->points }}</td>
+                                    <td class="px-3 py-2 text-right">{{ $standing->total_points }}</td>
+                                    <td class="px-3 py-2 text-right {{ $standing->difference_to_average >= 0 ? 'text-green-300' : 'text-red-300' }}">
+                                        {{ $standing->difference_to_average >= 0 ? '+' : '' }}{{ $standing->difference_to_average }}
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="px-3 py-6 text-center text-gray-400">No gameweek standings found for this gameweek.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
-            @endif
+
+                @if ($standingsRows->count() > 50)
+                    <div class="mt-4 flex justify-center" x-show="visibleRows < totalRows">
+                        <button
+                            type="button"
+                            class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-secondary"
+                            @click="visibleRows += 50"
+                        >
+                            Load More
+                        </button>
+                    </div>
+                @endif
+            </div>
         </section>
 
         @include('leagues.partials.share')
