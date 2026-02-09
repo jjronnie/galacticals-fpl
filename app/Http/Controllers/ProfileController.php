@@ -6,6 +6,7 @@ use App\Http\Requests\ProfileUpdateRequest;
 use App\Jobs\FetchFplDataJob;
 use App\Jobs\FetchManagerProfilesJob;
 use App\Models\Manager;
+use App\Models\ProfileVerificationSubmission;
 use App\Services\ProfileStatsService;
 use App\Services\SeoService;
 use Illuminate\Http\JsonResponse;
@@ -42,9 +43,26 @@ class ProfileController extends Controller
 
         $stats = null;
         $profileSuspended = false;
+        $latestProfileVerificationSubmission = null;
+        $profileVerificationState = null;
 
         if ($selectedManager !== null) {
             $profileSuspended = $selectedManager->isSuspended();
+            $latestProfileVerificationSubmission = ProfileVerificationSubmission::query()
+                ->where('user_id', $user->id)
+                ->where('entry_id', $selectedManager->entry_id)
+                ->latest('id')
+                ->first();
+
+            if ($selectedManager->isVerified()) {
+                $profileVerificationState = 'verified';
+            } elseif ($latestProfileVerificationSubmission?->status === 'pending') {
+                $profileVerificationState = 'pending';
+            } elseif ($latestProfileVerificationSubmission?->status === 'rejected') {
+                $profileVerificationState = 'rejected';
+            } else {
+                $profileVerificationState = 'unverified';
+            }
 
             if (! $profileSuspended) {
                 $stats = $this->profileStatsService->getProfileStats($selectedManager);
@@ -56,6 +74,8 @@ class ProfileController extends Controller
             'selectedManager' => $selectedManager,
             'stats' => $stats,
             'profileSuspended' => $profileSuspended,
+            'profileVerificationState' => $profileVerificationState,
+            'latestProfileVerificationSubmission' => $latestProfileVerificationSubmission,
         ]);
     }
 
@@ -170,6 +190,8 @@ class ProfileController extends Controller
             ->update([
                 'user_id' => null,
                 'claimed_at' => null,
+                'verified_at' => null,
+                'verified_by' => null,
             ]);
 
         Manager::query()
@@ -177,6 +199,8 @@ class ProfileController extends Controller
             ->update([
                 'user_id' => $request->user()->id,
                 'claimed_at' => now(),
+                'verified_at' => null,
+                'verified_by' => null,
                 'sync_status' => 'processing',
                 'sync_message' => 'Queued profile sync...',
                 'suspended_at' => null,
@@ -203,6 +227,8 @@ class ProfileController extends Controller
             ->update([
                 'user_id' => null,
                 'claimed_at' => null,
+                'verified_at' => null,
+                'verified_by' => null,
                 'sync_status' => 'completed',
                 'sync_message' => null,
                 'suspended_at' => null,

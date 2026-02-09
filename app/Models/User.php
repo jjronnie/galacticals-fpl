@@ -57,6 +57,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(ClaimsComplaint::class, 'reporter_user_id');
     }
 
+    public function profileVerificationSubmissions(): HasMany
+    {
+        return $this->hasMany(ProfileVerificationSubmission::class);
+    }
+
     public function resolvedComplaints(): HasMany
     {
         return $this->hasMany(ClaimsComplaint::class, 'resolved_by');

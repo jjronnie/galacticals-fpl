@@ -167,6 +167,50 @@ class ClaimComplaintAdminTest extends TestCase
         $this->assertDatabaseCount('claims_complaints', 1);
     }
 
+    public function test_verified_profiles_cannot_receive_claim_complaints(): void
+    {
+        Mail::fake();
+
+        $reporter = User::factory()->create();
+        $claimer = User::factory()->create();
+        $leagueOwner = User::factory()->create();
+
+        $league = League::create([
+            'user_id' => $leagueOwner->id,
+            'league_id' => 6004,
+            'name' => 'Verified Complaint Block League',
+            'admin_name' => 'Admin',
+            'current_gameweek' => 1,
+            'season' => 2025,
+        ]);
+
+        $manager = Manager::create([
+            'league_id' => $league->id,
+            'entry_id' => 780,
+            'player_name' => 'Verified Manager',
+            'team_name' => 'Verified Team',
+            'rank' => 1,
+            'total_points' => 130,
+            'user_id' => $claimer->id,
+            'claimed_at' => now(),
+            'verified_at' => now(),
+        ]);
+
+        $response = $this
+            ->actingAs($reporter)
+            ->post(route('profile.complaint', $manager), [
+                'subject' => 'Wrong claim',
+                'message' => 'This should not be accepted because the profile is verified.',
+            ]);
+
+        $response
+            ->assertRedirect()
+            ->assertSessionHasErrors('complaint');
+
+        $this->assertDatabaseCount('claims_complaints', 0);
+        Mail::assertNothingQueued();
+    }
+
     public function test_admin_can_delete_complaint(): void
     {
         $admin = User::factory()->create([

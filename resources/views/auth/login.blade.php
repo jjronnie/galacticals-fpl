@@ -57,14 +57,14 @@
           </div>
 
           <!-- Password -->
-          <div class="relative">
+          <div class="relative" x-data="{ showPassword: false }">
             <input
-              type="password"
+              :type="showPassword ? 'text' : 'password'"
               id="password"
               name="password"
               required
               placeholder="Password"
-              class="w-full px-4 pt-6 pb-2 text-white placeholder-transparent bg-navgradient rounded-lg border border-gray-300 peer focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
+              class="w-full px-4 pt-6 pb-2 pr-12 text-white placeholder-transparent bg-navgradient rounded-lg border border-gray-300 peer focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
             />
             <label
               for="password"
@@ -76,10 +76,12 @@
             <!-- Toggle Eye Icon -->
             <button
               type="button"
-              onclick="togglePassword()"
+              @click="showPassword = !showPassword"
               class="text-white absolute right-4 top-4 focus:outline-none"
+              :aria-label="showPassword ? 'Hide password' : 'Show password'"
             >
-              <i data-lucide="eye" id="eye-icon" class="w-5 h-5"></i>
+              <i data-lucide="eye" x-show="!showPassword" class="w-5 h-5"></i>
+              <i data-lucide="eye-off" x-show="showPassword" x-cloak class="w-5 h-5"></i>
             </button>
 
             @error("password")
@@ -171,18 +173,5 @@
       button.disabled = true;
     });
 
-    // Password toggle
-    function togglePassword() {
-      const input = document.getElementById('password');
-      const icon = document.getElementById('eye-icon');
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.setAttribute('data-lucide', 'eye-off');
-      } else {
-        input.type = 'password';
-        icon.setAttribute('data-lucide', 'eye');
-      }
-      lucide.createIcons();
-    }
   </script>
 </x-app-layout>

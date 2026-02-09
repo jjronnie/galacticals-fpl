@@ -17,6 +17,18 @@
                 <div>
                     <h1 class="text-2xl font-bold text-white">Personal Profile Dashboard</h1>
                     <p class="mt-2 text-sm text-gray-300">Track your FPL performance with weekly analytics and trends.</p>
+
+                    @if ($selectedManager)
+                        <div class="mt-3 flex flex-wrap items-center gap-2">
+                            <p class="text-sm font-semibold text-white">{{ $selectedManager->team_name }}</p>
+                            @if ($selectedManager->isVerified())
+                                <x-verified-badge />
+                            @endif
+                        </div>
+                        <p class="mt-1 text-xs text-gray-400">
+                            {{ $selectedManager->player_name }} / Entry {{ $selectedManager->entry_id }}
+                        </p>
+                    @endif
                 </div>
 
                 @if ($claimedManagers->isNotEmpty())
@@ -38,6 +50,36 @@
                 @endif
             </div>
         </section>
+
+        @if ($selectedManager && ! $profileSuspended && $profileVerificationState !== null && $profileVerificationState !== 'verified')
+            <section class="rounded-2xl border p-5
+                {{ $profileVerificationState === 'pending' ? 'border-yellow-700 bg-yellow-900/20' : '' }}
+                {{ $profileVerificationState === 'rejected' ? 'border-red-700 bg-red-900/20' : '' }}
+                {{ $profileVerificationState === 'unverified' ? 'border-cyan-700/60 bg-cyan-900/20' : '' }}">
+                @if ($profileVerificationState === 'pending')
+                    <h2 class="text-lg font-semibold text-yellow-100">Verification Pending</h2>
+                    <p class="mt-2 text-sm text-yellow-100/90">
+                        Your verification evidence was submitted and is awaiting admin review.
+                    </p>
+                @elseif ($profileVerificationState === 'rejected')
+                    <h2 class="text-lg font-semibold text-red-200">Verification Rejected</h2>
+                    <p class="mt-2 text-sm text-red-100/90">
+                        {{ $latestProfileVerificationSubmission?->rejection_reason ?: 'Your previous submission was rejected. Please submit a clearer screenshot and retry.' }}
+                    </p>
+                    <a href="{{ route('profile.verification.create') }}" class="mt-4 inline-flex rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-primary hover:bg-cyan-300">
+                        Retry Verification
+                    </a>
+                @else
+                    <h2 class="text-lg font-semibold text-cyan-100">Get Your Profile Verified</h2>
+                    <p class="mt-2 text-sm text-cyan-100/90">
+                        Submit one screenshot from the official FPL app while logged in, with your team name clearly visible.
+                    </p>
+                    <a href="{{ route('profile.verification.create') }}" class="mt-4 inline-flex rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-primary hover:bg-cyan-300">
+                        Submit Verification Evidence
+                    </a>
+                @endif
+            </section>
+        @endif
 
         @if ($claimedManagers->isEmpty())
             <section class="rounded-2xl border border-dashed border-gray-600 bg-card p-8 text-center">

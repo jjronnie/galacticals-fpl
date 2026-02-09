@@ -25,6 +25,8 @@ class Manager extends Model
         'rank',
         'total_points',
         'claimed_at',
+        'verified_at',
+        'verified_by',
         'suspended_at',
         'notes',
         'sync_status',
@@ -36,6 +38,7 @@ class Manager extends Model
     {
         return [
             'claimed_at' => 'datetime',
+            'verified_at' => 'datetime',
             'suspended_at' => 'datetime',
             'last_synced_at' => 'datetime',
         ];
@@ -49,6 +52,11 @@ class Manager extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function verifiedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'verified_by');
     }
 
     public function favouriteTeam(): BelongsTo
@@ -101,5 +109,10 @@ class Manager extends Model
     public function isSuspended(): bool
     {
         return $this->suspended_at !== null;
+    }
+
+    public function isVerified(): bool
+    {
+        return $this->verified_at !== null;
     }
 }

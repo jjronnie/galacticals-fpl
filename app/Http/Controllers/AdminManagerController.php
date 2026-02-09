@@ -111,6 +111,8 @@ class AdminManagerController extends Controller
             ->update([
                 'user_id' => null,
                 'claimed_at' => null,
+                'verified_at' => null,
+                'verified_by' => null,
                 'suspended_at' => null,
                 'notes' => $request->validated('reason'),
             ]);

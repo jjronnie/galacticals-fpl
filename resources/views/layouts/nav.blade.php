@@ -205,6 +205,9 @@
                     <a href="{{ route('admin.complaints.index') }}" @click="adminMenuOpen = false" class="rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.complaints.*') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
                         Complaints
                     </a>
+                    <a href="{{ route('admin.verifications.index') }}" @click="adminMenuOpen = false" class="rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.verifications.*') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
+                        Verifications
+                    </a>
                 </nav>
             </div>
         @endif

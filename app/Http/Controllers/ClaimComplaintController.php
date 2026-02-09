@@ -19,6 +19,18 @@ class ClaimComplaintController extends Controller
     {
         $user = $request->user();
 
+        $isVerifiedClaimedProfile = Manager::query()
+            ->where('entry_id', $manager->entry_id)
+            ->whereNotNull('user_id')
+            ->whereNotNull('verified_at')
+            ->exists();
+
+        if ($isVerifiedClaimedProfile) {
+            return back()->withErrors([
+                'complaint' => 'This profile is verified and cannot receive claim complaints.',
+            ]);
+        }
+
         $dailyComplaints = ClaimsComplaint::query()
             ->where('reporter_user_id', $user->id)
             ->whereDate('created_at', today())

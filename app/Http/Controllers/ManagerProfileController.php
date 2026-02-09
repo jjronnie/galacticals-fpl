@@ -36,6 +36,7 @@ class ManagerProfileController extends Controller
             ->load(['favouriteTeam', 'league']);
 
         $isClaimed = $managerRows->contains(fn (Manager $candidate): bool => $candidate->user_id !== null);
+        $isVerified = $managerRows->contains(fn (Manager $candidate): bool => $candidate->user_id !== null && $candidate->verified_at !== null);
         $stats = $isClaimed ? $this->profileStatsService->getProfileStats($manager) : null;
 
         $leagueMemberships = Manager::query()
@@ -54,6 +55,7 @@ class ManagerProfileController extends Controller
             'manager' => $manager,
             'stats' => $stats,
             'isClaimed' => $isClaimed,
+            'isVerified' => $isVerified,
             'leagueMemberships' => $leagueMemberships,
         ]);
     }

@@ -3,11 +3,13 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminDataController;
 use App\Http\Controllers\AdminManagerController;
+use App\Http\Controllers\AdminProfileVerificationController;
 use App\Http\Controllers\ClaimComplaintController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\LeagueController;
 use App\Http\Controllers\ManagerProfileController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProfileVerificationController;
 use App\Http\Controllers\SystemController;
 use Illuminate\Support\Facades\Route;
 
@@ -53,6 +55,10 @@ Route::middleware('auth')->group(function (): void {
 
     Route::post('/profile/claim/{manager}', [ProfileController::class, 'claim'])->name('profile.claim');
     Route::post('/profile/unclaim/{manager}', [ProfileController::class, 'unclaim'])->name('profile.unclaim');
+    Route::get('/profile/verification', [ProfileVerificationController::class, 'create'])->name('profile.verification.create');
+    Route::post('/profile/verification', [ProfileVerificationController::class, 'store'])
+        ->middleware('throttle:2,10')
+        ->name('profile.verification.store');
     Route::post('/profile/complaint/{manager}', [ClaimComplaintController::class, 'store'])
         ->middleware('throttle:3,1440')
         ->name('profile.complaint');
@@ -84,6 +90,10 @@ Route::middleware(['auth', 'can:admin'])->group(function (): void {
     Route::get('/admin/complaints', [ClaimComplaintController::class, 'index'])->name('admin.complaints.index');
     Route::patch('/admin/complaints/{complaint}/resolve', [ClaimComplaintController::class, 'resolve'])->name('admin.complaints.resolve');
     Route::delete('/admin/complaints/{complaint}', [ClaimComplaintController::class, 'destroy'])->name('admin.complaints.destroy');
+
+    Route::get('/admin/verifications', [AdminProfileVerificationController::class, 'index'])->name('admin.verifications.index');
+    Route::patch('/admin/verifications/{submission}/resolve', [AdminProfileVerificationController::class, 'resolve'])->name('admin.verifications.resolve');
+    Route::get('/admin/verifications/{submission}/screenshot', [AdminProfileVerificationController::class, 'screenshot'])->name('admin.verifications.screenshot');
 });
 
 Route::get('/leagues/{slug}/gameweeks/{gameweek}', [LeagueController::class, 'showGameweek'])

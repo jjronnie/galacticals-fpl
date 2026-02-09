@@ -65,42 +65,75 @@
                     </div>              
 
                     <!-- Password -->
-                    <div class="relative">
-                        <input type="password" id="password" name="password" required placeholder="Password"
-                            class="peer w-full px-4 pt-6 pb-2 text-white placeholder-transparent bg-navgradient rounded-lg border border-gray-300 peer focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent" />
+                    <div class="relative" x-data="{ showPassword: false }">
+                        <input :type="showPassword ? 'text' : 'password'" id="password" name="password" required placeholder="Password"
+                            class="peer w-full px-4 pt-6 pb-2 pr-12 text-white placeholder-transparent bg-navgradient rounded-lg border border-gray-300 peer focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent" />
                         <label for="password"
                             class="absolute left-4 top-2 text-sm transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-2 peer-focus:text-sm peer-focus:text-white">
                             Password
                         </label>
+                        <button
+                            type="button"
+                            @click="showPassword = !showPassword"
+                            class="text-white absolute right-4 top-4 focus:outline-none"
+                            :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                        >
+                            <i data-lucide="eye" x-show="!showPassword" class="w-5 h-5"></i>
+                            <i data-lucide="eye-off" x-show="showPassword" x-cloak class="w-5 h-5"></i>
+                        </button>
                         @error('password')
                             <p class="text-white bg-primary rounded-xl p-2 text-centertext-sm mt-2">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <!-- Confirm Password -->
-                    <div class="relative">
-                        <input type="password" name="password_confirmation" required placeholder="Confirm Password"
-                            class="peer w-full px-4 pt-6 pb-2 text-white placeholder-transparent bg-navgradient rounded-lg border border-gray-300 peer focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent" />
+                    <div class="relative" x-data="{ showPasswordConfirmation: false }">
+                        <input :type="showPasswordConfirmation ? 'text' : 'password'" id="password_confirmation" name="password_confirmation" required placeholder="Confirm Password"
+                            class="peer w-full px-4 pt-6 pb-2 pr-12 text-white placeholder-transparent bg-navgradient rounded-lg border border-gray-300 peer focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent" />
                         <label for="password_confirmation"
                             class="absolute left-4 top-2 text-sm transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-2 peer-focus:text-sm peer-focus:text-white">
                             Confirm Password
                         </label>
+                        <button
+                            type="button"
+                            @click="showPasswordConfirmation = !showPasswordConfirmation"
+                            class="text-white absolute right-4 top-4 focus:outline-none"
+                            :aria-label="showPasswordConfirmation ? 'Hide password confirmation' : 'Show password confirmation'"
+                        >
+                            <i data-lucide="eye" x-show="!showPasswordConfirmation" class="w-5 h-5"></i>
+                            <i data-lucide="eye-off" x-show="showPasswordConfirmation" x-cloak class="w-5 h-5"></i>
+                        </button>
                         @error('password_confirmation')
                             <p class="text-white bg-primary rounded-xl p-2 text-centertext-sm mt-2">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <!-- Terms -->
-                    <div class="flex items-center space-x-2">
-                        <input type="checkbox" id="terms-and-conditions" name="terms-and-conditions" value="1"
-                            required class="rounded text-white focus:ring-purple-500 h-4 w-4" />
-                        <label for="terms-and-conditions" class="text-sm text-white">
+                    <div>
+                        <label for="terms-and-conditions" class="group inline-flex items-start gap-3 cursor-pointer">
+                            <span class="relative mt-0.5 flex h-5 w-5 items-center justify-center rounded border-2 border-cyan-300 bg-primary transition group-hover:border-cyan-200">
+                                <input
+                                    type="checkbox"
+                                    id="terms-and-conditions"
+                                    name="terms-and-conditions"
+                                    value="1"
+                                    @checked(old('terms-and-conditions'))
+                                    required
+                                    class="peer absolute inset-0 h-full w-full cursor-pointer appearance-none rounded checked:border-accent checked:bg-accent focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-0"
+                                />
+                                <i data-lucide="check" class="pointer-events-none h-3.5 w-3.5 text-primary opacity-0 transition peer-checked:opacity-100"></i>
+                            </span>
+                            <span class="text-sm text-white leading-5">
                             I agree to the
                             <a href="/terms-and-conditions" class="text-white underline">
                                Terms and Conditions of {{ config('app.name') }}
 
                             </a>
+                            </span>
                         </label>
+                        @error('terms-and-conditions')
+                            <p class="text-white bg-primary rounded-xl p-2 text-center text-sm mt-2">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <!-- Submit -->

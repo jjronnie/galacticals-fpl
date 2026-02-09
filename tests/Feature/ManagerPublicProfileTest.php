@@ -44,7 +44,42 @@ class ManagerPublicProfileTest extends TestCase
             ->assertSee('Public Team')
             ->assertSee((string) $manager->entry_id)
             ->assertSee('Claimed Profile')
-            ->assertSee('Login to Report');
+            ->assertSee('Login to Report')
+            ->assertDontSee('This profile is verified because they confirmed ownership of the team.');
+    }
+
+    public function test_verified_claimed_public_profile_shows_verified_badge_message(): void
+    {
+        $owner = User::factory()->create();
+        $claimer = User::factory()->create();
+
+        $league = League::create([
+            'user_id' => $owner->id,
+            'league_id' => 7006,
+            'name' => 'Verified Public Profile League',
+            'admin_name' => 'Admin',
+            'current_gameweek' => 1,
+            'season' => 2025,
+        ]);
+
+        $manager = Manager::create([
+            'league_id' => $league->id,
+            'entry_id' => 888222,
+            'player_name' => 'Verified Public Manager',
+            'team_name' => 'Verified Public Team',
+            'rank' => 2,
+            'total_points' => 140,
+            'user_id' => $claimer->id,
+            'claimed_at' => now(),
+            'verified_at' => now(),
+        ]);
+
+        $this->get(route('managers.show', ['entryId' => $manager->entry_id]))
+            ->assertOk()
+            ->assertSee('Verified Public Team')
+            ->assertSee('This profile is verified because they confirmed ownership of the team.')
+            ->assertDontSee('Claim Complaint')
+            ->assertDontSee('Login to Report');
     }
 
     public function test_short_profile_code_redirects_to_entry_id_url(): void
@@ -168,5 +203,42 @@ class ManagerPublicProfileTest extends TestCase
         $response
             ->assertOk()
             ->assertSee('Report Claimed Profile');
+    }
+
+    public function test_authenticated_user_does_not_see_complaint_button_on_verified_claimed_public_profile(): void
+    {
+        $owner = User::factory()->create();
+        $viewer = User::factory()->create();
+        $claimer = User::factory()->create();
+
+        $league = League::create([
+            'user_id' => $owner->id,
+            'league_id' => 7007,
+            'name' => 'Verified Complaint Hidden League',
+            'admin_name' => 'Admin',
+            'current_gameweek' => 1,
+            'season' => 2025,
+        ]);
+
+        $manager = Manager::create([
+            'league_id' => $league->id,
+            'entry_id' => 777124,
+            'player_name' => 'Verified Claimed Manager',
+            'team_name' => 'Verified Claimed Team',
+            'rank' => 4,
+            'total_points' => 88,
+            'user_id' => $claimer->id,
+            'claimed_at' => now(),
+            'verified_at' => now(),
+        ]);
+
+        $response = $this
+            ->actingAs($viewer)
+            ->get(route('managers.show', ['entryId' => $manager->entry_id]));
+
+        $response
+            ->assertOk()
+            ->assertDontSee('Report Claimed Profile')
+            ->assertDontSee('Claim Complaint');
     }
 }
