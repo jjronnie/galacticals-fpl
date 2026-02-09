@@ -190,11 +190,17 @@
                     <a href="{{ route('admin.index') }}" @click="adminMenuOpen = false" class="rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.index') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
                         Users
                     </a>
-                    <a href="{{ route('admin.data') }}" @click="adminMenuOpen = false" class="rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.data*') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
+                    <a href="{{ route('admin.data') }}" @click="adminMenuOpen = false" class="rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.data') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
                         Data Sync
                     </a>
-                    <a href="{{ route('admin.managers.index') }}" @click="adminMenuOpen = false" class="rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.managers.*') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
+                    <a href="{{ route('admin.data.observer') }}" @click="adminMenuOpen = false" class="rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.data.observer') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
+                        DB Observer
+                    </a>
+                    <a href="{{ route('admin.managers.index') }}" @click="adminMenuOpen = false" class="rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.managers.index') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
                         Claimed Profiles
+                    </a>
+                    <a href="{{ route('admin.managers.all') }}" @click="adminMenuOpen = false" class="rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.managers.all*') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
+                        All Managers
                     </a>
                     <a href="{{ route('admin.complaints.index') }}" @click="adminMenuOpen = false" class="rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.complaints.*') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
                         Complaints

@@ -6,8 +6,11 @@ use App\Jobs\ComputeLeagueGameweekStandingsJob;
 use App\Jobs\FetchFplDataJob;
 use App\Jobs\FetchLeagueStandings;
 use App\Jobs\FetchManagerProfilesJob;
+use App\Models\FplPlayer;
+use App\Models\FplTeam;
 use App\Models\League;
 use App\Models\Manager;
+use App\Models\ManagerChip;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -29,6 +32,40 @@ class AdminDataController extends Controller
         return view('admin.data.index', [
             'leagues' => $leagues,
             'claimedManagers' => $claimedManagers,
+        ]);
+    }
+
+    public function observer(): View
+    {
+        $teams = FplTeam::query()
+            ->withCount('players')
+            ->orderBy('name')
+            ->paginate(25, ['*'], 'teams_page')
+            ->withQueryString();
+
+        $players = FplPlayer::query()
+            ->with('team:id,name,short_name')
+            ->orderByDesc('total_points')
+            ->orderBy('web_name')
+            ->paginate(50, ['*'], 'players_page')
+            ->withQueryString();
+
+        $chipRecordsCount = ManagerChip::query()->count();
+
+        $chipNames = ManagerChip::query()
+            ->select('chip_name')
+            ->distinct()
+            ->orderBy('chip_name')
+            ->pluck('chip_name')
+            ->map(fn (string $chipName): string => $this->formatChipName($chipName))
+            ->unique()
+            ->values();
+
+        return view('admin.data.observer', [
+            'teams' => $teams,
+            'players' => $players,
+            'chipRecordsCount' => $chipRecordsCount,
+            'chipNames' => $chipNames,
         ]);
     }
 
@@ -96,5 +133,16 @@ class AdminDataController extends Controller
         FetchLeagueStandings::dispatch($league->id);
 
         return back()->with('status', "League refresh queued for {$league->name}.");
+    }
+
+    private function formatChipName(string $chipName): string
+    {
+        return match (strtolower($chipName)) {
+            '3xc' => 'Tripple Captain',
+            'bboost' => 'Bench Boost',
+            'freehit' => 'Free Hit',
+            'wildcard' => 'Wildcard',
+            default => strtoupper($chipName),
+        };
     }
 }

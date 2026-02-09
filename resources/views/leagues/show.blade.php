@@ -106,9 +106,9 @@
                 </x-gw-stat-card>
 
                 <x-gw-stat-card title="CHIP INSIGHTS" color="purple" tooltip="Most used, least used, and best-performing chips so far.">
-                    <p class="text-sm">Most used: {{ $stats['most_used_chip'] ? (strtoupper($stats['most_used_chip']) === '3XC' ? 'Tripple Captain' : strtoupper($stats['most_used_chip'])) : 'N/A' }}</p>
-                    <p class="text-sm">Least used: {{ $stats['least_used_chip'] ? (strtoupper($stats['least_used_chip']) === '3XC' ? 'Tripple Captain' : strtoupper($stats['least_used_chip'])) : 'N/A' }}</p>
-                    <p class="text-sm">Most effective: {{ $stats['most_effective_chip'] ? (strtoupper($stats['most_effective_chip']) === '3XC' ? 'Tripple Captain' : strtoupper($stats['most_effective_chip'])) : 'N/A' }}</p>
+                    <p class="text-sm">Most used: {{ $stats['most_used_chip'] ?? 'N/A' }}</p>
+                    <p class="text-sm">Least used: {{ $stats['least_used_chip'] ?? 'N/A' }}</p>
+                    <p class="text-sm">Most effective: {{ $stats['most_effective_chip'] ?? 'N/A' }}</p>
                 </x-gw-stat-card>
             </div>
 

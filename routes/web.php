@@ -68,12 +68,15 @@ Route::middleware(['auth', 'can:admin'])->group(function (): void {
         ->name('run.league.update');
 
     Route::get('/admin/data', [AdminDataController::class, 'index'])->name('admin.data');
+    Route::get('/admin/data/observer', [AdminDataController::class, 'observer'])->name('admin.data.observer');
     Route::post('/admin/data/fetch-fpl', [AdminDataController::class, 'fetchFpl'])->name('admin.data.fetchFpl');
     Route::post('/admin/data/fetch-managers', [AdminDataController::class, 'fetchManagers'])->name('admin.data.fetchManagers');
     Route::post('/admin/data/compute-gameweeks', [AdminDataController::class, 'computeGameweeks'])->name('admin.data.computeGameweeks');
     Route::post('/admin/data/refresh-league/{league}', [AdminDataController::class, 'refreshLeague'])->name('admin.data.refreshLeague');
 
     Route::get('/admin/managers', [AdminManagerController::class, 'index'])->name('admin.managers.index');
+    Route::get('/admin/managers/all', [AdminManagerController::class, 'all'])->name('admin.managers.all');
+    Route::get('/admin/managers/all/results', [AdminManagerController::class, 'allResults'])->name('admin.managers.all.results');
     Route::patch('/admin/managers/{manager}/suspend', [AdminManagerController::class, 'suspend'])->name('admin.managers.suspend');
     Route::patch('/admin/managers/{manager}/unsuspend', [AdminManagerController::class, 'unsuspend'])->name('admin.managers.unsuspend');
     Route::patch('/admin/managers/{manager}/disband', [AdminManagerController::class, 'disband'])->name('admin.managers.disband');

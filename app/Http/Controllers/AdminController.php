@@ -19,7 +19,43 @@ class AdminController extends Controller
     public function index(): View
     {
         $users = User::query()
-            ->with(['league', 'claimedManagers'])
+            ->with(['league' => function ($query): void {
+                $query->withCount('managers');
+            }])
+            ->addSelect([
+                'claimed_profile_entry_id' => Manager::query()
+                    ->select('entry_id')
+                    ->whereColumn('managers.user_id', 'users.id')
+                    ->whereNotNull('managers.user_id')
+                    ->orderByDesc('claimed_at')
+                    ->orderByDesc('id')
+                    ->limit(1),
+                'claimed_profile_team_name' => Manager::query()
+                    ->select('team_name')
+                    ->whereColumn('managers.user_id', 'users.id')
+                    ->whereNotNull('managers.user_id')
+                    ->orderByDesc('claimed_at')
+                    ->orderByDesc('id')
+                    ->limit(1),
+                'claimed_profile_player_name' => Manager::query()
+                    ->select('player_name')
+                    ->whereColumn('managers.user_id', 'users.id')
+                    ->whereNotNull('managers.user_id')
+                    ->orderByDesc('claimed_at')
+                    ->orderByDesc('id')
+                    ->limit(1),
+                'claimed_profile_claimed_at' => Manager::query()
+                    ->select('claimed_at')
+                    ->whereColumn('managers.user_id', 'users.id')
+                    ->whereNotNull('managers.user_id')
+                    ->orderByDesc('claimed_at')
+                    ->orderByDesc('id')
+                    ->limit(1),
+                'claimed_profiles_count' => Manager::query()
+                    ->selectRaw('COUNT(DISTINCT entry_id)')
+                    ->whereColumn('managers.user_id', 'users.id')
+                    ->whereNotNull('managers.user_id'),
+            ])
             ->orderByDesc('id')
             ->paginate(50);
 

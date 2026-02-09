@@ -42,13 +42,17 @@
                     Data Sync Panel
                 </a>
 
-                <a href="{{ route('admin.managers.index') }}" class="rounded-lg bg-secondary px-4 py-3 text-center text-sm font-semibold text-white hover:opacity-90">
-                    Claimed Profiles
+                <a href="{{ route('admin.data.observer') }}" class="rounded-lg bg-primary px-4 py-3 text-center text-sm font-semibold text-white hover:bg-secondary">
+                    DB Observer
                 </a>
 
-                <a href="{{ route('admin.complaints.index') }}" class="rounded-lg bg-red-700 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-red-600">
-                    Complaints
+               
+
+                <a href="{{ route('admin.managers.all') }}" class="rounded-lg bg-primary px-4 py-3 text-center text-sm font-semibold text-white hover:bg-secondary">
+                    All Managers
                 </a>
+
+              
 
                 <form action="{{ route('run.league.update') }}" method="POST">
                     @csrf
@@ -84,6 +88,7 @@
                             <th class="px-3 py-2 text-left">User</th>
                             <th class="px-3 py-2 text-left">League</th>
                             <th class="px-3 py-2 text-left">Account</th>
+                            <th class="px-3 py-2 text-left">Profile</th>
                             <th class="px-3 py-2 text-left">Dates</th>
                             <th class="px-3 py-2 text-left">Actions</th>
                         </tr>
@@ -108,7 +113,18 @@
                                         @endif
 
                                         <div>
-                                            <p class="font-semibold text-white">{{ ucfirst($user->name ?? 'Unknown') }}</p>
+                                            @if ($user->claimed_profile_entry_id)
+                                                <a
+                                                    href="{{ route('managers.show', ['entryId' => (int) $user->claimed_profile_entry_id]) }}"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    class="font-semibold text-white hover:text-accent hover:underline"
+                                                >
+                                                    {{ ucfirst($user->name ?? 'Unknown') }}
+                                                </a>
+                                            @else
+                                                <p class="font-semibold text-white">{{ ucfirst($user->name ?? 'Unknown') }}</p>
+                                            @endif
                                             <p class="text-xs text-gray-400">{{ $user->email ?? 'No email' }}</p>
                                         </div>
                                     </div>
@@ -117,14 +133,33 @@
                                     <p>{{ $user->league->name ?? 'No League' }}</p>
                                     <p>ID: {{ $user->league->league_id ?? 'N/A' }}</p>
                                     <p>Short Code: {{ $user->league->shortcode ?? '-' }}</p>
-                                    <p>Managers: {{ $user->league?->managers?->count() ?? 0 }}</p>
+                                    <p>Managers: {{ $user->league?->managers_count ?? 0 }}</p>
                                     <p>Sync: {{ $user->league->sync_status ?? '-' }}</p>
                                 </td>
                                 <td class="px-3 py-3 text-xs text-gray-300">
                                     <p>Role: {{ ucfirst($user->role ?? 'user') }}</p>
                                     <p>Status: {{ ucfirst($user->status ?? 'unknown') }}</p>
                                     <p>Signup: {{ ucfirst($user->signup_method ?? 'unknown') }}</p>
-                                    <p>Claims: {{ $user->claimedManagers->unique('entry_id')->count() }}</p>
+                                    <p>Claims: {{ (int) ($user->claimed_profiles_count ?? 0) }}</p>
+                                </td>
+                                <td class="px-3 py-3 text-xs text-gray-300">
+                                    @if ($user->claimed_profile_entry_id)
+                                        <a
+                                            href="{{ route('managers.show', ['entryId' => (int) $user->claimed_profile_entry_id]) }}"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="font-semibold text-accent hover:underline"
+                                        >
+                                            {{ $user->claimed_profile_team_name }}
+                                        </a>
+                                        <p>{{ $user->claimed_profile_player_name }}</p>
+                                        <p class="text-gray-500">
+                                            Claimed
+                                            {{ $user->claimed_profile_claimed_at ? \Illuminate\Support\Carbon::parse($user->claimed_profile_claimed_at)->diffForHumans() : '-' }}
+                                        </p>
+                                    @else
+                                        <p>-</p>
+                                    @endif
                                 </td>
                                 <td class="px-3 py-3 text-xs text-gray-300">
                                     <p>Created: {{ optional($user->created_at)->diffForHumans() ?? '-' }}</p>

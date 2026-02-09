@@ -254,6 +254,19 @@ class LeagueStatsService
                     return round($rows->avg(fn ($chip): int => (int) (($chip->points_after ?? 0) - ($chip->points_before ?? 0))), 2);
                 });
 
+            $leastUsedChip = $chipUsage->isNotEmpty()
+                ? $this->formatChipName((string) $chipUsage->sort()->keys()->first())
+                : null;
+            $mostUsedChip = $chipUsage->isNotEmpty()
+                ? $this->formatChipName((string) $chipUsage->sortDesc()->keys()->first())
+                : null;
+            $mostEffectiveChip = $chipEffectiveness->isNotEmpty()
+                ? $this->formatChipName((string) $chipEffectiveness->sortDesc()->keys()->first())
+                : null;
+            $pointsGainedByChip = $chipEffectiveness
+                ->mapWithKeys(fn (float $value, string $chip): array => [$this->formatChipName($chip) => $value])
+                ->toArray();
+
             return [
                 'isEmpty' => false,
                 'standings' => $standings,
@@ -283,10 +296,10 @@ class LeagueStatsService
                         ->values()
                         ->all(),
                     'country_distribution' => $countryDistribution,
-                    'least_used_chip' => $chipUsage->isNotEmpty() ? $chipUsage->sort()->keys()->first() : null,
-                    'most_used_chip' => $chipUsage->isNotEmpty() ? $chipUsage->sortDesc()->keys()->first() : null,
-                    'most_effective_chip' => $chipEffectiveness->isNotEmpty() ? $chipEffectiveness->sortDesc()->keys()->first() : null,
-                    'points_gained_by_chip' => $chipEffectiveness->toArray(),
+                    'least_used_chip' => $leastUsedChip,
+                    'most_used_chip' => $mostUsedChip,
+                    'most_effective_chip' => $mostEffectiveChip,
+                    'points_gained_by_chip' => $pointsGainedByChip,
                     'favourite_team_totals' => $favouriteTeamTotals,
                 ],
             ];
@@ -461,7 +474,7 @@ class LeagueStatsService
                 ->map(fn (Collection $chips): int => $chips->count())
                 ->filter(fn (int $count): bool => $count > 0)
                 ->mapWithKeys(fn (int $count, string $chip): array => [
-                    strtoupper($chip) === '3XC' ? 'Tripple Captain' : strtoupper($chip) => $count,
+                    $this->formatChipName($chip) => $count,
                 ])
                 ->toArray();
 
@@ -548,5 +561,16 @@ class LeagueStatsService
                 'count' => $count,
             ];
         })->values()->all();
+    }
+
+    private function formatChipName(string $chipName): string
+    {
+        return match (strtolower($chipName)) {
+            '3xc' => 'Tripple Captain',
+            'bboost' => 'Bench Boost',
+            'freehit' => 'Free Hit',
+            'wildcard' => 'Wildcard',
+            default => strtoupper($chipName),
+        };
     }
 }

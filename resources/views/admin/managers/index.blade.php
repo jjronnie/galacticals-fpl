@@ -2,6 +2,15 @@
     <div class="space-y-6">
         <x-page-title title="Claimed Manager Profiles" />
 
+        <div class="flex justify-end">
+            <a
+                href="{{ route('admin.managers.all') }}"
+                class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-secondary"
+            >
+                View All Managers
+            </a>
+        </div>
+
         @if (session('status'))
             <div class="rounded-xl border border-green-700 bg-green-900/30 px-4 py-3 text-sm text-green-200">
                 {{ session('status') }}

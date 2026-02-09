@@ -352,8 +352,12 @@ class ProfileStatsService
 
     private function formatChipName(string $chipName): string
     {
-        $upper = strtoupper($chipName);
-
-        return $upper === '3XC' ? 'Tripple Captain' : $upper;
+        return match (strtolower($chipName)) {
+            '3xc' => 'Tripple Captain',
+            'bboost' => 'Bench Boost',
+            'freehit' => 'Free Hit',
+            'wildcard' => 'Wildcard',
+            default => strtoupper($chipName),
+        };
     }
 }

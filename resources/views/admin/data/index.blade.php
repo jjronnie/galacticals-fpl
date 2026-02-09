@@ -23,7 +23,7 @@
 
         <section class="rounded-2xl border border-gray-700 bg-card p-5">
             <h2 class="text-lg font-semibold text-white">Queue Actions</h2>
-            <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
                 <form method="POST" action="{{ route('admin.data.fetchFpl') }}">
                     @csrf
                     <button type="submit" class="w-full rounded-lg bg-accent px-4 py-3 text-sm font-semibold text-primary hover:bg-cyan-300">
@@ -44,6 +44,10 @@
                         Compute All GW Tables
                     </button>
                 </form>
+
+                <a href="{{ route('admin.data.observer') }}" class="flex items-center justify-center rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-white hover:bg-secondary">
+                    Open DB Observer
+                </a>
 
                 <label class="flex items-center justify-center gap-2 rounded-lg border border-gray-600 px-4 py-3 text-sm text-gray-300">
                     <input type="checkbox" x-model="autoRefresh" class="rounded border-gray-600 bg-primary text-accent focus:ring-accent">
