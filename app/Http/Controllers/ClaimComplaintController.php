@@ -94,4 +94,11 @@ class ClaimComplaintController extends Controller
 
         return back()->with('status', 'Complaint updated successfully.');
     }
+
+    public function destroy(ClaimsComplaint $complaint): RedirectResponse
+    {
+        $complaint->delete();
+
+        return back()->with('status', 'Complaint deleted successfully.');
+    }
 }

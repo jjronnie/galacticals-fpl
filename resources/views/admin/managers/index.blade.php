@@ -69,54 +69,146 @@
                                 </td>
                                 <td class="px-3 py-3 text-xs text-gray-300">{{ $manager->notes ?: '-' }}</td>
                                 <td class="px-3 py-3">
-                                    <div class="space-y-2">
+                                    <div class="flex flex-wrap gap-2">
+                                        <a
+                                            href="{{ route('managers.show', ['entryId' => $manager->entry_id]) }}"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white hover:bg-secondary"
+                                        >
+                                            Show Profile
+                                        </a>
+
                                         @if ($manager->suspended_at)
-                                            <form method="POST" action="{{ route('admin.managers.unsuspend', $manager) }}" class="space-y-2">
-                                                @csrf
-                                                @method('PATCH')
-                                                <textarea
-                                                    name="reason"
-                                                    rows="2"
-                                                    placeholder="Unsuspend reason"
-                                                    class="w-full rounded-lg border border-gray-600 bg-primary px-3 py-2 text-xs text-white placeholder:text-gray-400"
-                                                    required
-                                                ></textarea>
-                                                <button type="submit" class="w-full rounded-lg bg-green-700 px-3 py-2 text-xs font-semibold text-white hover:bg-green-600">
-                                                    Unsuspend
-                                                </button>
-                                            </form>
+                                            <button
+                                                x-data=""
+                                                x-on:click.prevent="$dispatch('open-modal', 'unsuspend-manager-{{ $manager->id }}')"
+                                                type="button"
+                                                class="rounded-lg bg-green-700 px-3 py-2 text-xs font-semibold text-white hover:bg-green-600"
+                                            >
+                                                Unsuspend
+                                            </button>
                                         @else
-                                            <form method="POST" action="{{ route('admin.managers.suspend', $manager) }}" class="space-y-2">
-                                                @csrf
-                                                @method('PATCH')
-                                                <textarea
-                                                    name="reason"
-                                                    rows="2"
-                                                    placeholder="Suspension reason"
-                                                    class="w-full rounded-lg border border-gray-600 bg-primary px-3 py-2 text-xs text-white placeholder:text-gray-400"
-                                                    required
-                                                ></textarea>
-                                                <button type="submit" class="w-full rounded-lg bg-red-700 px-3 py-2 text-xs font-semibold text-white hover:bg-red-600">
-                                                    Suspend
-                                                </button>
-                                            </form>
+                                            <button
+                                                x-data=""
+                                                x-on:click.prevent="$dispatch('open-modal', 'suspend-manager-{{ $manager->id }}')"
+                                                type="button"
+                                                class="rounded-lg bg-red-700 px-3 py-2 text-xs font-semibold text-white hover:bg-red-600"
+                                            >
+                                                Suspend
+                                            </button>
                                         @endif
 
-                                        <form method="POST" action="{{ route('admin.managers.disband', $manager) }}" class="space-y-2">
+                                        <button
+                                            x-data=""
+                                            x-on:click.prevent="$dispatch('open-modal', 'disband-manager-{{ $manager->id }}')"
+                                            type="button"
+                                            class="rounded-lg bg-yellow-700 px-3 py-2 text-xs font-semibold text-white hover:bg-yellow-600"
+                                        >
+                                            Disband
+                                        </button>
+                                    </div>
+
+                                    @if ($manager->suspended_at)
+                                        <x-modal name="unsuspend-manager-{{ $manager->id }}" focusable>
+                                            <form method="POST" action="{{ route('admin.managers.unsuspend', $manager) }}" class="space-y-4 p-6">
+                                                @csrf
+                                                @method('PATCH')
+
+                                                <h3 class="text-lg font-semibold text-white">Unsuspend Claimed Profile</h3>
+                                                <p class="text-sm text-gray-300">
+                                                    Unsuspend <span class="font-semibold text-white">{{ $manager->team_name }}</span>.
+                                                </p>
+
+                                                <div>
+                                                    <label for="unsuspend-reason-{{ $manager->id }}" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-400">Reason</label>
+                                                    <textarea
+                                                        id="unsuspend-reason-{{ $manager->id }}"
+                                                        name="reason"
+                                                        rows="3"
+                                                        placeholder="Why is this profile being unsuspended?"
+                                                        class="w-full rounded-lg border border-gray-600 bg-primary px-3 py-2 text-sm text-white placeholder:text-gray-400"
+                                                        required
+                                                    ></textarea>
+                                                </div>
+
+                                                <div class="flex justify-end gap-2">
+                                                    <button type="button" x-on:click="$dispatch('close')" class="rounded-lg bg-gray-700 px-4 py-2 text-sm font-semibold text-gray-200 hover:bg-gray-600">
+                                                        Cancel
+                                                    </button>
+                                                    <button type="submit" class="rounded-lg bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-600">
+                                                        Confirm Unsuspend
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </x-modal>
+                                    @else
+                                        <x-modal name="suspend-manager-{{ $manager->id }}" focusable>
+                                            <form method="POST" action="{{ route('admin.managers.suspend', $manager) }}" class="space-y-4 p-6">
+                                                @csrf
+                                                @method('PATCH')
+
+                                                <h3 class="text-lg font-semibold text-white">Suspend Claimed Profile</h3>
+                                                <p class="text-sm text-gray-300">
+                                                    Suspend <span class="font-semibold text-white">{{ $manager->team_name }}</span>.
+                                                </p>
+
+                                                <div>
+                                                    <label for="suspend-reason-{{ $manager->id }}" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-400">Reason</label>
+                                                    <textarea
+                                                        id="suspend-reason-{{ $manager->id }}"
+                                                        name="reason"
+                                                        rows="3"
+                                                        placeholder="Why is this profile being suspended?"
+                                                        class="w-full rounded-lg border border-gray-600 bg-primary px-3 py-2 text-sm text-white placeholder:text-gray-400"
+                                                        required
+                                                    ></textarea>
+                                                </div>
+
+                                                <div class="flex justify-end gap-2">
+                                                    <button type="button" x-on:click="$dispatch('close')" class="rounded-lg bg-gray-700 px-4 py-2 text-sm font-semibold text-gray-200 hover:bg-gray-600">
+                                                        Cancel
+                                                    </button>
+                                                    <button type="submit" class="rounded-lg bg-red-700 px-4 py-2 text-sm font-semibold text-white hover:bg-red-600">
+                                                        Confirm Suspend
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </x-modal>
+                                    @endif
+
+                                    <x-modal name="disband-manager-{{ $manager->id }}" focusable>
+                                        <form method="POST" action="{{ route('admin.managers.disband', $manager) }}" class="space-y-4 p-6">
                                             @csrf
                                             @method('PATCH')
-                                            <textarea
-                                                name="reason"
-                                                rows="2"
-                                                placeholder="Disband reason"
-                                                class="w-full rounded-lg border border-gray-600 bg-primary px-3 py-2 text-xs text-white placeholder:text-gray-400"
-                                                required
-                                            ></textarea>
-                                            <button type="submit" class="w-full rounded-lg bg-yellow-700 px-3 py-2 text-xs font-semibold text-white hover:bg-yellow-600">
-                                                Disband Claim
-                                            </button>
+
+                                            <h3 class="text-lg font-semibold text-white">Disband Claim</h3>
+                                            <p class="text-sm text-gray-300">
+                                                Remove this claim from <span class="font-semibold text-white">{{ $manager->team_name }}</span>.
+                                            </p>
+
+                                            <div>
+                                                <label for="disband-reason-{{ $manager->id }}" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-400">Reason</label>
+                                                <textarea
+                                                    id="disband-reason-{{ $manager->id }}"
+                                                    name="reason"
+                                                    rows="3"
+                                                    placeholder="Why is this claim being disbanded?"
+                                                    class="w-full rounded-lg border border-gray-600 bg-primary px-3 py-2 text-sm text-white placeholder:text-gray-400"
+                                                    required
+                                                ></textarea>
+                                            </div>
+
+                                            <div class="flex justify-end gap-2">
+                                                <button type="button" x-on:click="$dispatch('close')" class="rounded-lg bg-gray-700 px-4 py-2 text-sm font-semibold text-gray-200 hover:bg-gray-600">
+                                                    Cancel
+                                                </button>
+                                                <button type="submit" class="rounded-lg bg-yellow-700 px-4 py-2 text-sm font-semibold text-white hover:bg-yellow-600">
+                                                    Confirm Disband
+                                                </button>
+                                            </div>
                                         </form>
-                                    </div>
+                                    </x-modal>
                                 </td>
                             </tr>
                         @empty

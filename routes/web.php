@@ -80,6 +80,7 @@ Route::middleware(['auth', 'can:admin'])->group(function (): void {
 
     Route::get('/admin/complaints', [ClaimComplaintController::class, 'index'])->name('admin.complaints.index');
     Route::patch('/admin/complaints/{complaint}/resolve', [ClaimComplaintController::class, 'resolve'])->name('admin.complaints.resolve');
+    Route::delete('/admin/complaints/{complaint}', [ClaimComplaintController::class, 'destroy'])->name('admin.complaints.destroy');
 });
 
 Route::get('/leagues/{slug}/gameweeks/{gameweek}', [LeagueController::class, 'showGameweek'])

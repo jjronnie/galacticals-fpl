@@ -67,17 +67,27 @@
                                     </span>
                                 </td>
                                 <td class="px-3 py-3">
-                                    <form method="POST" action="{{ route('admin.complaints.resolve', $complaint) }}" class="flex gap-2">
-                                        @csrf
-                                        @method('PATCH')
-                                        <select name="status" class="rounded-lg border border-gray-600 bg-primary px-2 py-1 text-xs text-white">
-                                            <option value="in_progress">In progress</option>
-                                            <option value="resolved">Resolved</option>
-                                        </select>
-                                        <button type="submit" class="rounded-lg bg-green-700 px-3 py-1 text-xs font-semibold text-white hover:bg-green-600">
-                                            Save
-                                        </button>
-                                    </form>
+                                    <div class="space-y-2">
+                                        <form method="POST" action="{{ route('admin.complaints.resolve', $complaint) }}" class="flex gap-2">
+                                            @csrf
+                                            @method('PATCH')
+                                            <select name="status" class="rounded-lg border border-gray-600 bg-primary px-2 py-1 text-xs text-white">
+                                                <option value="in_progress">In progress</option>
+                                                <option value="resolved">Resolved</option>
+                                            </select>
+                                            <button type="submit" class="rounded-lg bg-green-700 px-3 py-1 text-xs font-semibold text-white hover:bg-green-600">
+                                                Save
+                                            </button>
+                                        </form>
+
+                                        <form method="POST" action="{{ route('admin.complaints.destroy', $complaint) }}" onsubmit="return confirm('Delete this complaint permanently?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="rounded-lg bg-red-700 px-3 py-1 text-xs font-semibold text-white hover:bg-red-600">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         @empty

@@ -166,4 +166,50 @@ class ClaimComplaintAdminTest extends TestCase
 
         $this->assertDatabaseCount('claims_complaints', 1);
     }
+
+    public function test_admin_can_delete_complaint(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin',
+        ]);
+
+        $reporter = User::factory()->create();
+        $leagueOwner = User::factory()->create();
+
+        $league = League::create([
+            'user_id' => $leagueOwner->id,
+            'league_id' => 6003,
+            'name' => 'Delete Complaints League',
+            'admin_name' => 'Admin',
+            'current_gameweek' => 1,
+            'season' => 2025,
+        ]);
+
+        $manager = Manager::create([
+            'league_id' => $league->id,
+            'entry_id' => 779,
+            'player_name' => 'Delete Manager',
+            'team_name' => 'Delete Team',
+            'rank' => 2,
+            'total_points' => 105,
+        ]);
+
+        $complaint = ClaimsComplaint::create([
+            'manager_id' => $manager->id,
+            'reporter_user_id' => $reporter->id,
+            'subject' => 'Delete me',
+            'message' => 'Complaint should be removed by admin.',
+            'status' => 'open',
+        ]);
+
+        $response = $this
+            ->actingAs($admin)
+            ->delete(route('admin.complaints.destroy', $complaint));
+
+        $response->assertRedirect();
+
+        $this->assertDatabaseMissing('claims_complaints', [
+            'id' => $complaint->id,
+        ]);
+    }
 }
