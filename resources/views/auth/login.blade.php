@@ -132,7 +132,6 @@
           </span>
         </p>
 
-         <x-adsense/>
       </div>
     </div>
 

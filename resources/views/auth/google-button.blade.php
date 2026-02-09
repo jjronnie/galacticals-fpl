@@ -9,12 +9,12 @@
     </button>
 
     <!-- Facebook -->
-    <button data-url="{{ route('social.login', ['provider' => 'facebook']) }}"
+    {{-- <button data-url="{{ route('social.login', ['provider' => 'facebook']) }}"
         class="social-login-btn flex w-full py-3 text-gray-700 font-medium bg-white border border-gray-300 rounded-full shadow-sm items-center justify-center gap-3 transition duration-300 select-none">
         <i class="fa-brands fa-facebook text-blue-600 text-lg"></i>
         <span class="social-text">Continue with Facebook</span>
         <i class="fa-solid fa-spinner fa-spin hidden social-spinner"></i>
-    </button>
+    </button> --}}
 
 </div>
 
