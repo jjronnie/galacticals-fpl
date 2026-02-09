@@ -14,7 +14,7 @@
 
                 <div>
                     @if ($isClaimed)
-                        <span class="rounded-full bg-green-500/20 px-3 py-1 text-xs font-semibold text-green-200">Claimed Profile</span>
+                        <span class=""> </span>
                     @else
                         <span class="rounded-full bg-yellow-500/20 px-3 py-1 text-xs font-semibold text-yellow-200">Unclaimed Profile</span>
                     @endif

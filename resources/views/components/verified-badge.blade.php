@@ -2,35 +2,23 @@
     'message' => 'This profile is verified because they confirmed ownership of the team.',
 ])
 
-<span x-data="{ open: false }" class="inline-flex">
+<span x-data="{ open: false }" class="relative inline-flex">
     <button
         type="button"
-        class="inline-flex items-center gap-1 rounded-full border border-sky-400/60 bg-sky-500/20 px-1 py-1 text-xs font-semibold text-sky-200 hover:bg-sky-500/30"
-        @click="open = true"
-        :aria-expanded="open.toString()"
-        aria-label="Show verification details"
+        class="inline-flex items-center gap-1 rounded-full border border-sky-400/60 bg-sky-500/20 px-2.5 py-1 text-xs font-semibold text-sky-200 hover:bg-sky-500/30"
+        @click="open = !open"
+        @click.away="open = false"
     >
-        <i data-lucide="badge-check" class="h-4 w-4"></i>
-        
+        <i data-lucide="badge-check" class="h-3.5 w-3.5"></i>
+        Verified
     </button>
 
-    <div
+    <span
         x-show="open"
         x-transition
         x-cloak
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
-        @click.self="open = false"
-        @keydown.escape.window="open = false"
+        class="absolute left-0 top-full z-20 mt-2 w-72 rounded-lg border border-sky-500/40 bg-primary px-3 py-2 text-center text-xs text-sky-100 shadow-xl"
     >
-        <div class="w-full max-w-md rounded-xl border border-sky-500/50 bg-primary px-5 py-4 text-center shadow-2xl">
-            <p class="text-sm text-sky-100">{{ $message }}</p>
-            <button
-                type="button"
-                class="mt-4 rounded-lg bg-sky-600 px-4 py-2 text-xs font-semibold text-white hover:bg-sky-500"
-                @click="open = false"
-            >
-                Close
-            </button>
-        </div>
-    </div>
+        {{ $message }}
+    </span>
 </span>
