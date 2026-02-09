@@ -1,19 +1,13 @@
 @extends('layouts.main')
 @section('content')
     <div class="flex min-h-screen">
-        <!-- Sidebar -->
         @include('layouts.sidebar')
-        <!-- Main content -->
-        <div class="flex-1 flex flex-col min-w-0 ">
-            <!-- Header -->
+        <div class="flex min-w-0 flex-1 flex-col">
             @include('layouts.nav')
-            <!-- Page content -->
-            <main class="flex-1 p-4 sm:p-6 lg:p-8">
-              
-
+            <main class="flex-1 p-4 pb-24 sm:p-6 sm:pb-24 lg:p-8 lg:pb-10">
+                @include('layouts.profile-intro-banner')
                 {{ $slot }}
             </main>
-            <!-- Footer -->
             @include('layouts.footer')
         </div>
     </div>

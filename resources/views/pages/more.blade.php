@@ -55,7 +55,7 @@
                         <p>&copy; {{ date('Y') }} <a href="http://techtowerinc.com" target="_blank"
                                 rel="noopener noreferrer"> TechTower Inc. </a>| All rights reserved.</p>
 
-                        <p class="text-end">Version 1.0.0</p>
+                        <p class="text-end">Version 2.0.0</p>
                     </div>
                 </div>
             </div>

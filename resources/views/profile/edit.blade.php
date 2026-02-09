@@ -8,6 +8,8 @@
 
                     @php
                     $links = [
+                    ['action' => 'Profile dashboard', 'route' => 'profile.index'],
+                    ['action' => 'Search and claim team', 'route' => 'profile.search'],
                     ['action' => 'How to find your league ID', 'route' => 'find'],
                     ['action' => 'FPL Galaxy Terms and conditions', 'route' => 'terms'],
                     ['action' => 'Privacy Policy', 'route' => 'privacy.policy'],
@@ -58,7 +60,7 @@
                         <p>&copy; {{ date('Y') }} <a href="http://techtowerinc.com" target="_blank"
                                 rel="noopener noreferrer"> TechTower Inc. </a>| All rights reserved.</p>
 
-                        <p class="text-end">Version 1.0.0</p>
+                        <p class="text-end">Version 2.0.0</p>
                     </div>
                 </div>
             </div>

@@ -4,22 +4,15 @@ namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-// use Illuminate\Support\Facades\Session;
-// use Jenssegers\Agent\Agent;
-
 class User extends Authenticatable implements MustVerifyEmail
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'email',
@@ -35,21 +28,11 @@ class User extends Authenticatable implements MustVerifyEmail
         'league_reminder_sent_at',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -59,11 +42,24 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
-
-
-    public function league()
+    public function league(): HasOne
     {
         return $this->hasOne(League::class);
+    }
+
+    public function claimedManagers(): HasMany
+    {
+        return $this->hasMany(Manager::class);
+    }
+
+    public function complaints(): HasMany
+    {
+        return $this->hasMany(ClaimsComplaint::class, 'reporter_user_id');
+    }
+
+    public function resolvedComplaints(): HasMany
+    {
+        return $this->hasMany(ClaimsComplaint::class, 'resolved_by');
     }
 
     public function isAdmin(): bool
@@ -71,10 +67,20 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->role === 'admin';
     }
 
-
     public function isUser(): bool
     {
         return $this->role === 'user';
     }
 
+    public function hasClaimedProfile(): bool
+    {
+        return $this->claimedManagers()->whereNotNull('user_id')->exists();
+    }
+
+    public function claimedEntryId(): ?int
+    {
+        return $this->claimedManagers()
+            ->whereNotNull('user_id')
+            ->value('entry_id');
+    }
 }

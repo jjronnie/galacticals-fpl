@@ -2,39 +2,25 @@
 
 namespace App\Services;
 
+use App\Models\FplPlayer;
+use App\Models\GameweekScore;
 use App\Models\League;
+use App\Models\LeagueGameweekStanding;
+use App\Models\ManagerChip;
+use App\Models\ManagerPick;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
 class LeagueStatsService
 {
-    /**
-     * Calculate and retrieve league statistics with caching.
-     * Cache duration: 5 days.
-     */
-    public function getLeagueStats(League $league)
+    public function getLeagueStats(League $league): array
     {
         $cacheKey = $this->getCacheKey($league->id);
 
-        return Cache::remember($cacheKey, now()->addHours(2), function () use ($league) {
+        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($league): array {
+            $managers = $league->managers()->with('favouriteTeam')->get();
 
-            
-
-
-            // Eager load necessary relationships for calculation
-            // We reload the league here to ensure relationships exist inside the cache closure
-            $league->load([
-                'managers',
-                'gameweekScores' => function ($query) use ($league) {
-                    $query->where('season_year', $league->season)
-                        ->orderBy('gameweek');
-                }
-            ]);
-
-            $allScores = $league->gameweekScores;
-            $managers = $league->managers;
-
-            // Handle Empty Data
-            if ($allScores->isEmpty()) {
+            if ($managers->isEmpty()) {
                 return [
                     'isEmpty' => true,
                     'standings' => collect(),
@@ -43,8 +29,26 @@ class LeagueStatsService
                 ];
             }
 
-            // 1. Calculate Initial Standings
-            $standings = $managers->map(function ($manager) {
+            $managerIds = $managers->pluck('id')->all();
+            $seasonYear = (int) ($league->season ?? now()->year);
+
+            $allScores = GameweekScore::query()
+                ->whereIn('manager_id', $managerIds)
+                ->where('season_year', $seasonYear)
+                ->with('manager')
+                ->orderBy('gameweek')
+                ->get();
+
+            if ($allScores->isEmpty()) {
+                return [
+                    'isEmpty' => true,
+                    'standings' => $managers->sortByDesc('total_points')->values(),
+                    'gwPerformance' => collect(),
+                    'stats' => $this->getEmptyStats(),
+                ];
+            }
+
+            $standings = $managers->map(function ($manager): array {
                 return [
                     'name' => $manager->player_name,
                     'team' => $manager->team_name,
@@ -52,7 +56,6 @@ class LeagueStatsService
                 ];
             })->sortByDesc('total_points')->values();
 
-            // 2. League Zone Logic
             $topManagers = $standings->take(5);
             $relegationManagers = $standings->slice(-3)->values();
 
@@ -62,11 +65,9 @@ class LeagueStatsService
                 'relegation_zone' => $relegationManagers->pluck('name')->all(),
             ];
 
-            // 3. Initialize Loop Variables
             $gameweeks = $allScores->groupBy('gameweek');
-            $managerTotalPoints = $managers->pluck('id', 'player_name')->map(fn() => 0)->toArray();
+            $managerTotalPoints = $managers->pluck('id', 'player_name')->map(fn () => 0)->toArray();
 
-            // Streak Tracking
             $currentTopStreak = 0;
             $currentTopManager = null;
             $longestTopStreak = 0;
@@ -74,7 +75,6 @@ class LeagueStatsService
             $longestStreakStartGW = null;
             $streakStartGW = null;
 
-            // Stat Containers
             $theBlowout = ['difference' => 0, 'gw' => null];
             $gwPerformance = [];
             $managerLeads = [];
@@ -82,25 +82,45 @@ class LeagueStatsService
             $highestGwScore = ['manager' => null, 'points' => 0, 'gw' => null];
             $lowestGwScore = ['manager' => null, 'points' => 9999, 'gw' => null];
 
-            // 4. Main Calculation Loop
             foreach ($gameweeks as $gw => $scores) {
-                if ($scores->isEmpty() || $gw == 0)
+                if ($scores->isEmpty() || (int) $gw === 0) {
                     continue;
+                }
 
-                // --- Best/Worst Calculations ---
-                $bestScore = $scores->max('points');
-                $worstScore = $scores->min('points');
+                $bestScore = (int) $scores->max('points');
+                $worstScore = (int) $scores->min('points');
                 $scoreDifference = $bestScore - $worstScore;
 
-                // We filter the collection memory instead of querying DB again
                 $bestManagers = $scores->where('points', $bestScore)->pluck('manager.player_name')->unique()->values()->all();
                 $worstManagers = $scores->where('points', $worstScore)->pluck('manager.player_name')->unique()->values()->all();
+                $bestManagersMeta = $scores
+                    ->where('points', $bestScore)
+                    ->filter(fn ($score): bool => $score->manager !== null)
+                    ->map(fn ($score): array => [
+                        'name' => $score->manager->player_name,
+                        'team_name' => $score->manager->team_name,
+                        'entry_id' => $score->manager->entry_id,
+                    ])
+                    ->unique('entry_id')
+                    ->values()
+                    ->all();
 
-                // Check for The Blowout
+                $worstManagersMeta = $scores
+                    ->where('points', $worstScore)
+                    ->filter(fn ($score): bool => $score->manager !== null)
+                    ->map(fn ($score): array => [
+                        'name' => $score->manager->player_name,
+                        'team_name' => $score->manager->team_name,
+                        'entry_id' => $score->manager->entry_id,
+                    ])
+                    ->unique('entry_id')
+                    ->values()
+                    ->all();
+
                 if ($scoreDifference > $theBlowout['difference']) {
                     $theBlowout = [
                         'difference' => $scoreDifference,
-                        'gw' => $gw,
+                        'gw' => (int) $gw,
                         'highest_scorer' => $bestManagers[0] ?? null,
                         'lowest_scorer' => $worstManagers[0] ?? null,
                         'highest_points' => $bestScore,
@@ -109,52 +129,63 @@ class LeagueStatsService
                 }
 
                 $gwPerformance[] = [
-                    'gameweek' => $gw,
+                    'gameweek' => (int) $gw,
                     'best_managers' => $bestManagers,
+                    'best_managers_meta' => $bestManagersMeta,
                     'best_points' => $bestScore,
                     'worst_managers' => $worstManagers,
+                    'worst_managers_meta' => $worstManagersMeta,
                     'worst_points' => $worstScore,
                 ];
 
-                // Update Counters
                 foreach ($bestManagers as $managerName) {
                     $managerLeads[$managerName] = ($managerLeads[$managerName] ?? 0) + 1;
                 }
+
                 foreach ($worstManagers as $managerName) {
                     $managerLasts[$managerName] = ($managerLasts[$managerName] ?? 0) + 1;
                 }
 
-                // Records
                 if ($bestScore > $highestGwScore['points']) {
-                    $highestGwScore = ['points' => $bestScore, 'manager' => $bestManagers[0] ?? null, 'gw' => $gw];
-                }
-                if ($worstScore < $lowestGwScore['points']) {
-                    $lowestGwScore = ['points' => $worstScore, 'manager' => $worstManagers[0] ?? null, 'gw' => $gw];
+                    $highestGwScore = [
+                        'points' => $bestScore,
+                        'manager' => $bestManagers[0] ?? null,
+                        'gw' => (int) $gw,
+                    ];
                 }
 
-                // --- Streak Calculation ---
-                $currentGWManagersScores = $scores->keyBy('manager_id');
-                $currentStandingsTemp = [];
+                if ($worstScore < $lowestGwScore['points']) {
+                    $lowestGwScore = [
+                        'points' => $worstScore,
+                        'manager' => $worstManagers[0] ?? null,
+                        'gw' => (int) $gw,
+                    ];
+                }
+
+                $scoresByManager = $scores->keyBy('manager_id');
+                $currentStandings = [];
 
                 foreach ($managers as $manager) {
-                    $score = $currentGWManagersScores->get($manager->id);
-                    if ($score) {
-                        $managerTotalPoints[$manager->player_name] += $score->points;
+                    $score = $scoresByManager->get($manager->id);
+
+                    if ($score !== null) {
+                        $managerTotalPoints[$manager->player_name] += (int) $score->points;
                     }
-                    $currentStandingsTemp[] = [
+
+                    $currentStandings[] = [
                         'name' => $manager->player_name,
                         'total_points' => $managerTotalPoints[$manager->player_name],
                     ];
                 }
 
-                // Sort current iteration standings
-                usort($currentStandingsTemp, fn($a, $b) => $b['total_points'] <=> $a['total_points']);
+                usort($currentStandings, fn (array $a, array $b): int => $b['total_points'] <=> $a['total_points']);
 
-                $leaderPoints = $currentStandingsTemp[0]['total_points'];
-                $leaders = array_filter($currentStandingsTemp, fn($m) => $m['total_points'] == $leaderPoints);
-                $leaderNames = array_column($leaders, 'name');
+                $leaderPoints = $currentStandings[0]['total_points'];
+                $leaderNames = array_column(
+                    array_filter($currentStandings, fn (array $manager): bool => $manager['total_points'] === $leaderPoints),
+                    'name'
+                );
 
-                // Streak Logic
                 if (count($leaderNames) === 1 && $leaderNames[0] === $currentTopManager) {
                     $currentTopStreak++;
                 } else {
@@ -167,33 +198,62 @@ class LeagueStatsService
                     if (count($leaderNames) === 1) {
                         $currentTopManager = $leaderNames[0];
                         $currentTopStreak = 1;
-                        $streakStartGW = $gw;
+                        $streakStartGW = (int) $gw;
                     } else {
                         $currentTopManager = null;
                         $currentTopStreak = 0;
                         $streakStartGW = null;
                     }
                 }
-            } // End Loop
+            }
 
-            // Final Streak Check
             if ($currentTopStreak > $longestTopStreak) {
                 $longestTopStreak = $currentTopStreak;
                 $longestStreakManager = $currentTopManager;
                 $longestStreakStartGW = $streakStartGW;
             }
 
-            // 5. Finalize Stats
             $maxLeadCount = collect($managerLeads)->max();
-            $mostGWLeads = collect($managerLeads)->filter(fn($c) => $c == $maxLeadCount && $maxLeadCount > 0)->sortDesc()->toArray();
+            $mostGWLeads = collect($managerLeads)
+                ->filter(fn (int $count): bool => $count === $maxLeadCount && $maxLeadCount > 0)
+                ->sortDesc()
+                ->toArray();
 
             $maxLastCount = collect($managerLasts)->max();
-            $mostGWLasts = collect($managerLasts)->filter(fn($c) => $c == $maxLastCount && $maxLastCount > 0)->sortDesc()->toArray();
+            $mostGWLasts = collect($managerLasts)
+                ->filter(fn (int $count): bool => $count === $maxLastCount && $maxLastCount > 0)
+                ->sortDesc()
+                ->toArray();
 
             $allManagerNames = $managers->pluck('player_name')->all();
             $bestOrWorstNames = array_keys($managerLeads + $managerLasts);
 
-            // Construct Result Array
+            $countryDistribution = $managers
+                ->groupBy(fn ($manager) => $manager->region_name ?: 'Unknown')
+                ->map(fn (Collection $group): int => $group->count())
+                ->sortDesc()
+                ->take(8)
+                ->toArray();
+
+            $favouriteTeamTotals = $managers
+                ->filter(fn ($manager): bool => $manager->favourite_team_id !== null)
+                ->groupBy(fn ($manager) => $manager->favouriteTeam?->name ?: 'Unknown')
+                ->map(fn (Collection $group): int => $group->count())
+                ->filter(fn (int $count): bool => $count > 0)
+                ->sortDesc()
+                ->toArray();
+
+            $chipStats = ManagerChip::query()
+                ->whereHas('manager', fn ($query) => $query->where('league_id', $league->id))
+                ->get();
+
+            $chipUsage = $chipStats->groupBy('chip_name')->map(fn (Collection $rows): int => $rows->count());
+            $chipEffectiveness = $chipStats
+                ->groupBy('chip_name')
+                ->map(function (Collection $rows): float {
+                    return round($rows->avg(fn ($chip): int => (int) (($chip->points_after ?? 0) - ($chip->points_before ?? 0))), 2);
+                });
+
             return [
                 'isEmpty' => false,
                 'standings' => $standings,
@@ -214,43 +274,279 @@ class LeagueStatsService
                     'league_zones' => $leagueZones,
                     'mediocres' => array_values(array_diff($allManagerNames, $bestOrWorstNames)),
                     'men_standing' => array_values(array_diff($allManagerNames, array_keys($managerLasts))),
-                    'hall_of_shame' => collect($managerLasts)->filter(fn($c) => $c >= 3)->sortDesc()->toArray(),
+                    'never_best_in_gw' => array_values(array_diff($allManagerNames, array_keys($managerLeads))),
+                    'hall_of_shame' => collect($managerLasts)->filter(fn (int $count): bool => $count >= 3)->sortDesc()->toArray(),
                     'hundred_plus_league' => $allScores
                         ->where('points', '>=', 100)
-                        ->map(fn($score) => $score->manager->player_name . ' (' . $score->points . ' pts in GW ' . $score->gameweek . ')')
+                        ->map(fn ($score): string => $score->manager->player_name.' ('.$score->points.' pts in GW '.$score->gameweek.')')
                         ->unique()
                         ->values()
                         ->all(),
-                ]
+                    'country_distribution' => $countryDistribution,
+                    'least_used_chip' => $chipUsage->isNotEmpty() ? $chipUsage->sort()->keys()->first() : null,
+                    'most_used_chip' => $chipUsage->isNotEmpty() ? $chipUsage->sortDesc()->keys()->first() : null,
+                    'most_effective_chip' => $chipEffectiveness->isNotEmpty() ? $chipEffectiveness->sortDesc()->keys()->first() : null,
+                    'points_gained_by_chip' => $chipEffectiveness->toArray(),
+                    'favourite_team_totals' => $favouriteTeamTotals,
+                ],
             ];
         });
     }
 
+    public function getGameweekStandings(League $league, int $gameweek): Collection
+    {
+        $cacheKey = "league_gameweek_standings_{$league->id}_{$gameweek}";
+
+        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($league, $gameweek): Collection {
+            return LeagueGameweekStanding::query()
+                ->where('league_id', $league->id)
+                ->where('gameweek', $gameweek)
+                ->with('manager')
+                ->orderBy('rank')
+                ->get();
+        });
+    }
+
     /**
-     * Flush the stats cache for a specific league.
-     * Call this in your update method.
+     * @return array<int>
      */
-    public function flushLeagueStats(League $league)
+    public function getAvailableGameweeks(League $league): array
+    {
+        $cacheKey = 'league_available_gameweeks_'.$league->id;
+
+        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($league): array {
+            $gameweeks = LeagueGameweekStanding::query()
+                ->where('league_id', $league->id)
+                ->select('gameweek')
+                ->distinct()
+                ->orderBy('gameweek')
+                ->pluck('gameweek')
+                ->map(fn ($gameweek): int => (int) $gameweek)
+                ->all();
+
+            if ($gameweeks !== []) {
+                return $gameweeks;
+            }
+
+            return GameweekScore::query()
+                ->whereHas('manager', fn ($query) => $query->where('league_id', $league->id))
+                ->select('gameweek')
+                ->distinct()
+                ->orderBy('gameweek')
+                ->pluck('gameweek')
+                ->map(fn ($gameweek): int => (int) $gameweek)
+                ->all();
+        });
+    }
+
+    public function getOwnershipAndCaptaincyTrends(League $league, int $gameweek): array
+    {
+        $cacheKey = "league_trends_{$league->id}_{$gameweek}";
+
+        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($league, $gameweek): array {
+            $query = ManagerPick::query()
+                ->where('gameweek', $gameweek)
+                ->whereHas('manager', fn ($builder) => $builder->where('league_id', $league->id));
+
+            $managerCount = max(1, $league->managers()->count());
+
+            $mostOwned = (clone $query)
+                ->selectRaw('player_id, COUNT(DISTINCT manager_id) as managers_count')
+                ->with('player')
+                ->groupBy('player_id')
+                ->orderByDesc('managers_count')
+                ->limit(5)
+                ->get()
+                ->map(function ($row) use ($managerCount): array {
+                    return [
+                        'player' => $row->player?->web_name ?? 'Unknown',
+                        'count' => (int) $row->managers_count,
+                        'percent' => round(((int) $row->managers_count / $managerCount) * 100, 2),
+                    ];
+                })
+                ->all();
+
+            $mostCaptained = (clone $query)
+                ->where('is_captain', true)
+                ->selectRaw('player_id, COUNT(*) as captain_count')
+                ->with('player')
+                ->groupBy('player_id')
+                ->orderByDesc('captain_count')
+                ->limit(5)
+                ->get()
+                ->map(fn ($row): array => [
+                    'player' => $row->player?->web_name ?? 'Unknown',
+                    'count' => (int) $row->captain_count,
+                ])
+                ->all();
+
+            $mostViceCaptained = (clone $query)
+                ->where('is_vice_captain', true)
+                ->selectRaw('player_id, COUNT(*) as vice_count')
+                ->with('player')
+                ->groupBy('player_id')
+                ->orderByDesc('vice_count')
+                ->limit(5)
+                ->get()
+                ->map(fn ($row): array => [
+                    'player' => $row->player?->web_name ?? 'Unknown',
+                    'count' => (int) $row->vice_count,
+                ])
+                ->all();
+
+            $differentials = (clone $query)
+                ->selectRaw('player_id, COUNT(DISTINCT manager_id) as managers_count, AVG(event_points) as average_points')
+                ->with('player')
+                ->groupBy('player_id')
+                ->havingRaw('COUNT(DISTINCT manager_id) / ? < 0.10', [$managerCount])
+                ->orderByDesc('average_points')
+                ->limit(5)
+                ->get()
+                ->map(fn ($row): array => [
+                    'player' => $row->player?->web_name ?? 'Unknown',
+                    'ownership_percent' => round(((int) $row->managers_count / $managerCount) * 100, 2),
+                    'average_points' => round((float) $row->average_points, 2),
+                ])
+                ->all();
+
+            $previousGameweek = ManagerPick::query()
+                ->whereHas('manager', fn ($builder) => $builder->where('league_id', $league->id))
+                ->where('gameweek', '<', $gameweek)
+                ->max('gameweek');
+
+            $mostTransferredIn = [];
+            $mostTransferredOut = [];
+
+            if ($previousGameweek !== null) {
+                $managerIds = $league->managers()->pluck('id')->all();
+
+                $currentByManager = ManagerPick::query()
+                    ->whereIn('manager_id', $managerIds)
+                    ->where('gameweek', $gameweek)
+                    ->get(['manager_id', 'player_id'])
+                    ->groupBy('manager_id')
+                    ->map(fn (Collection $rows): array => $rows->pluck('player_id')->all());
+
+                $previousByManager = ManagerPick::query()
+                    ->whereIn('manager_id', $managerIds)
+                    ->where('gameweek', $previousGameweek)
+                    ->get(['manager_id', 'player_id'])
+                    ->groupBy('manager_id')
+                    ->map(fn (Collection $rows): array => $rows->pluck('player_id')->all());
+
+                $transferInCounts = [];
+                $transferOutCounts = [];
+
+                foreach ($currentByManager as $managerId => $currentPlayers) {
+                    $previousPlayers = $previousByManager[$managerId] ?? [];
+
+                    foreach (array_diff($currentPlayers, $previousPlayers) as $playerId) {
+                        $transferInCounts[$playerId] = ($transferInCounts[$playerId] ?? 0) + 1;
+                    }
+
+                    foreach (array_diff($previousPlayers, $currentPlayers) as $playerId) {
+                        $transferOutCounts[$playerId] = ($transferOutCounts[$playerId] ?? 0) + 1;
+                    }
+                }
+
+                $mostTransferredIn = $this->mapTransferCountsToPlayers($transferInCounts);
+                $mostTransferredOut = $this->mapTransferCountsToPlayers($transferOutCounts);
+            }
+
+            $chipsPlayed = ManagerChip::query()
+                ->where('gameweek', $gameweek)
+                ->whereHas('manager', fn ($builder) => $builder->where('league_id', $league->id))
+                ->get()
+                ->groupBy('chip_name')
+                ->map(fn (Collection $chips): int => $chips->count())
+                ->filter(fn (int $count): bool => $count > 0)
+                ->mapWithKeys(fn (int $count, string $chip): array => [
+                    strtoupper($chip) === '3XC' ? 'Tripple Captain' : strtoupper($chip) => $count,
+                ])
+                ->toArray();
+
+            return [
+                'most_owned' => $mostOwned,
+                'most_captained' => $mostCaptained,
+                'most_vice_captained' => $mostViceCaptained,
+                'differentials' => $differentials,
+                'most_transferred_in' => $mostTransferredIn,
+                'most_transferred_out' => $mostTransferredOut,
+                'chips_played' => $chipsPlayed,
+            ];
+        });
+    }
+
+    public function flushLeagueStats(League $league): void
     {
         Cache::forget($this->getCacheKey($league->id));
+        Cache::forget('league_available_gameweeks_'.$league->id);
+
+        $gameweeks = $this->getAvailableGameweeks($league);
+
+        foreach ($gameweeks as $gameweek) {
+            Cache::forget("league_gameweek_standings_{$league->id}_{$gameweek}");
+            Cache::forget("league_trends_{$league->id}_{$gameweek}");
+        }
     }
 
-    private function getCacheKey($leagueId)
+    private function getCacheKey(int $leagueId): string
     {
-        return "league_stats_{$leagueId}";
+        return 'league_stats_'.$leagueId;
     }
 
-    private function getEmptyStats()
+    private function getEmptyStats(): array
     {
         return [
             'most_gw_leads' => [],
             'most_gw_last' => [],
             'highest_gw_score' => ['manager' => 'N/A', 'points' => 0, 'gw' => null],
             'lowest_gw_score' => ['manager' => 'N/A', 'points' => 0, 'gw' => null],
+            'longest_top_streak' => ['manager' => null, 'length' => 0, 'start_gw' => null, 'end_gw' => null],
+            'the_blowout' => ['difference' => 0, 'gw' => null],
+            'wooden_spoon_contenders' => [],
+            'league_zones' => [
+                'champions_league' => [],
+                'europa_league' => [],
+                'relegation_zone' => [],
+            ],
             'mediocres' => [],
             'men_standing' => [],
             'hall_of_shame' => [],
+            'never_best_in_gw' => [],
             'hundred_plus_league' => [],
+            'country_distribution' => [],
+            'least_used_chip' => null,
+            'most_used_chip' => null,
+            'most_effective_chip' => null,
+            'points_gained_by_chip' => [],
+            'favourite_team_totals' => [],
         ];
+    }
+
+    /**
+     * @param  array<int, int>  $counts
+     * @return array<int, array{player:string,count:int}>
+     */
+    private function mapTransferCountsToPlayers(array $counts): array
+    {
+        if ($counts === []) {
+            return [];
+        }
+
+        arsort($counts);
+        $topCounts = array_slice($counts, 0, 5, true);
+
+        $players = FplPlayer::query()
+            ->whereIn('id', array_keys($topCounts))
+            ->pluck('web_name', 'id')
+            ->toArray();
+
+        return collect($topCounts)->map(function (int $count, int $playerId) use ($players): array {
+            return [
+                'player' => $players[$playerId] ?? 'Unknown',
+                'count' => $count,
+            ];
+        })->values()->all();
     }
 }

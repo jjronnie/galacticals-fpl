@@ -53,4 +53,10 @@ return [
         'redirect' => env('MICROSOFT_REDIRECT_URI'),
     ],
 
+    'fpl' => [
+        'base_url' => env('FPL_BASE_URL', 'https://fantasy.premierleague.com/api'),
+        'manager_request_interval_ms' => (int) env('FPL_MANAGER_REQUEST_INTERVAL_MS', 300),
+        'page_request_interval_ms' => (int) env('FPL_PAGE_REQUEST_INTERVAL_MS', 200),
+    ],
+
 ];

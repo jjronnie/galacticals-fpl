@@ -118,6 +118,12 @@ return [
             'replace_placeholders' => true,
         ],
 
+        'nightwatch' => [
+            'driver' => 'stack',
+            'channels' => ['single'],
+            'ignore_exceptions' => false,
+        ],
+
         'null' => [
             'driver' => 'monolog',
             'handler' => NullHandler::class,

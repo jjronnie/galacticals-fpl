@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
-use Artesaos\SEOTools\Facades\SEOMeta;
-use Artesaos\SEOTools\Facades\OpenGraph;
-use Artesaos\SEOTools\Facades\TwitterCard;
 use Artesaos\SEOTools\Facades\JsonLd;
+use Artesaos\SEOTools\Facades\OpenGraph;
+use Artesaos\SEOTools\Facades\SEOMeta;
+use Artesaos\SEOTools\Facades\TwitterCard;
 
 class SeoService
 {
@@ -60,14 +60,14 @@ class SeoService
         JsonLd::addValue('offers', [
             '@type' => 'Offer',
             'price' => '0',
-            'priceCurrency' => 'USD'
+            'priceCurrency' => 'USD',
         ]);
     }
 
     public function setLeague($league)
     {
-        $title = "{$league->name} - FPL Galaxy League Stats";
-        $description = "View detailed statistics for {$league->name}. Track gameweek performance, hall of shame, only men standing, biggest point swings, and more fun FPL stats.";
+        $title = "{$league->name} - FPL Galaxy V2 League Analytics";
+        $description = "View advanced gameweek tables, longest top streak, ownership trends, chip insights, and detailed mini-league analytics for {$league->name}.";
 
         SEOMeta::setTitle($title);
         SEOMeta::setDescription($description);
@@ -83,10 +83,70 @@ class SeoService
         TwitterCard::setDescription($description);
         TwitterCard::setImage(asset('assets/img/logo.webp'));
 
-
         JsonLd::setTitle($league->name);
         JsonLd::setDescription($description);
         JsonLd::setType('Dataset');
+    }
+
+    public function setProfileDashboard(): void
+    {
+        $title = 'My FPL Profile Dashboard - FPL Galaxy V2';
+        $description = 'Track your points trajectory, captaincy impact, transfer efficiency, chip history, bench impact, and club bias analytics.';
+
+        SEOMeta::setTitle($title);
+        SEOMeta::setDescription($description);
+        SEOMeta::setCanonical(url()->current());
+
+        OpenGraph::setTitle($title);
+        OpenGraph::setDescription($description);
+        OpenGraph::setUrl(url()->current());
+        OpenGraph::addImage(asset('assets/img/logo.webp'));
+
+        TwitterCard::setTitle($title);
+        TwitterCard::setDescription($description);
+        TwitterCard::setImage(asset('assets/img/logo.webp'));
+    }
+
+    public function setClaimSearch(): void
+    {
+        $title = 'Search and Claim Your FPL Team - FPL Galaxy V2';
+        $description = 'Search by team name, manager name, or entry ID and claim your FPL team profile for advanced analytics.';
+
+        SEOMeta::setTitle($title);
+        SEOMeta::setDescription($description);
+        SEOMeta::setCanonical(url()->current());
+
+        OpenGraph::setTitle($title);
+        OpenGraph::setDescription($description);
+        OpenGraph::setUrl(url()->current());
+        OpenGraph::addImage(asset('assets/img/logo.webp'));
+
+        TwitterCard::setTitle($title);
+        TwitterCard::setDescription($description);
+        TwitterCard::setImage(asset('assets/img/logo.webp'));
+    }
+
+    public function setPublicProfile($manager): void
+    {
+        $title = "{$manager->team_name} ({$manager->entry_id}) - FPL Manager Profile";
+        $description = "Public FPL profile for {$manager->player_name}. View points trajectory, captaincy impact, transfer history, and chip analytics.";
+
+        SEOMeta::setTitle($title);
+        SEOMeta::setDescription($description);
+        SEOMeta::setCanonical(url()->current());
+
+        OpenGraph::setTitle($title);
+        OpenGraph::setDescription($description);
+        OpenGraph::setUrl(url()->current());
+        OpenGraph::addImage(asset('assets/img/logo.webp'));
+
+        TwitterCard::setTitle($title);
+        TwitterCard::setDescription($description);
+        TwitterCard::setImage(asset('assets/img/logo.webp'));
+
+        JsonLd::setTitle($title);
+        JsonLd::setDescription($description);
+        JsonLd::setType('ProfilePage');
     }
 
     public function setHowToFind(): void
@@ -106,7 +166,6 @@ class SeoService
         TwitterCard::setTitle($title);
         TwitterCard::setDescription($description);
         TwitterCard::setImage(asset('assets/img/logo.webp'));
-
 
         JsonLd::setTitle('How to Find FPL League ID');
         JsonLd::setType('HowTo');

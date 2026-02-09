@@ -24,7 +24,7 @@
 
                     <x-table.cell>
                         <a href="{{ route('public.leagues.show', ['slug' => $league->slug]) }}" class="btn-sm">
-                            View League
+                            View Overview
                         </a>
                     </x-table.cell>
 

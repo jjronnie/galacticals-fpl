@@ -1,4 +1,4 @@
- <x-gif-advert />
+ {{-- <x-gif-advert /> --}}
 
 
 <footer class="  py-4">
@@ -7,6 +7,6 @@
         <p>&copy; {{ date('Y') }} <a href="http://techtowerinc.com" target="_blank" rel="noopener noreferrer"> TechTower
                 Inc. </a>| All rights reserved.</p>
 
-        <p>Version 1.0.0</p>
+        <p>Version 2.0.0</p>
     </div>
 </footer>

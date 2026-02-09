@@ -95,10 +95,15 @@
 
                 <!-- Menu Items -->
                 <nav class="py-2">
-                    <a href="{{ route('profile.edit') }}"
+                    <a href="{{ route('profile.index') }}"
                         class="flex items-center px-4 py-2 text-sm hover:bg-secondary hover:text-white transition">
                         <i data-lucide="user" class="w-4 h-4 mr-2"></i>
-                        Profile
+                        Profile Dashboard
+                    </a>
+                    <a href="{{ route('profile.edit') }}"
+                        class="flex items-center px-4 py-2 text-sm hover:bg-secondary hover:text-white transition">
+                        <i data-lucide="settings" class="w-4 h-4 mr-2"></i>
+                        Account Settings
                     </a>
                 </nav>
 

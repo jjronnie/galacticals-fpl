@@ -2,9 +2,10 @@
 
 namespace App\Jobs;
 
+use App\Models\GameweekScore;
 use App\Models\League;
 use App\Models\Manager;
-use App\Models\GameweekScore;
+use App\Services\LeagueStatsService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -17,212 +18,257 @@ class FetchLeagueStandings implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $timeout = 3600; // 1 hour timeout
-    public $tries = 3;
-    public $backoff = 300; // 5 minutes between retries
+    public int $timeout = 3600;
 
-    protected $leagueId;
+    public int $tries = 3;
 
-    public function __construct($leagueId)
+    /** @var int[] */
+    public array $backoff = [120, 300, 600];
+
+    public function __construct(private readonly int $leagueId) {}
+
+    public function handle(): void
     {
-        $this->leagueId = $leagueId;
-    }
+        $league = League::find($this->leagueId);
 
-  public function handle()
-{
-    $league = League::find($this->leagueId);
+        if ($league === null) {
+            Log::error('League not found for standings sync.', ['league_id' => $this->leagueId]);
 
-    if (!$league) {
-        Log::error("League not found: {$this->leagueId}");
-        return;
-    }
-
-    try {
-        // Fetch all standings pages
-        $allStandings = $this->fetchAllStandings($league);
-        
-        if (empty($allStandings)) {
-            $league->update([
-                'sync_status' => 'failed',
-                'sync_message' => 'No managers found in this league. The league may be empty or invalid.',
-            ]);
             return;
         }
 
-        $totalManagers = count($allStandings);
-        $league->update([
-            'total_managers' => $totalManagers,
-            'sync_message' => "Processing {$totalManagers} managers...",
-        ]);
+        try {
+            $allStandings = $this->fetchAllStandings($league);
 
-        $existingEntryIds = []; // track fetched FPL entries
+            if ($allStandings === []) {
+                $league->update([
+                    'sync_status' => 'failed',
+                    'sync_message' => 'No managers found in this league. The league may be empty or invalid.',
+                ]);
 
-        // Process managers in chunks to avoid memory issues
-        $chunks = array_chunk($allStandings, 10);
-        $processedCount = 0;
+                return;
+            }
 
-        foreach ($chunks as $chunk) {
-            foreach ($chunk as $entry) {
+            $totalManagers = count($allStandings);
+
+            $league->update([
+                'sync_status' => 'processing',
+                'total_managers' => $totalManagers,
+                'synced_managers' => 0,
+                'sync_message' => "Processing {$totalManagers} managers...",
+                'current_gameweek' => $this->fetchCurrentGameweek(),
+            ]);
+
+            $existingEntryIds = [];
+            $processedCount = 0;
+
+            foreach ($allStandings as $entry) {
                 $this->processManager($league, $entry);
-                $existingEntryIds[] = $entry['entry']; // store valid entry id
+                $existingEntryIds[] = (int) $entry['entry'];
                 $processedCount++;
 
-                // Update progress every 5 managers
-                if ($processedCount % 5 === 0) {
+                if ($processedCount % 5 === 0 || $processedCount === $totalManagers) {
                     $league->update([
                         'synced_managers' => $processedCount,
                         'sync_message' => "Processed {$processedCount} of {$totalManagers} managers...",
                     ]);
                 }
 
-                // Rate limiting - 0.3 seconds per manager
-                usleep(300000);
+                usleep($this->managerIntervalMicroseconds());
             }
+
+            $managersToDelete = Manager::query()
+                ->where('league_id', $league->id)
+                ->whereNotIn('entry_id', $existingEntryIds)
+                ->get();
+
+            foreach ($managersToDelete as $manager) {
+                GameweekScore::where('manager_id', $manager->id)->delete();
+                $manager->delete();
+            }
+
+            $league->update([
+                'sync_status' => 'completed',
+                'sync_message' => "Successfully imported {$totalManagers} managers.",
+                'synced_managers' => $totalManagers,
+                'last_synced_at' => now(),
+            ]);
+
+            ComputeLeagueGameweekStandingsJob::dispatch($league->id, (int) ($league->season ?? now()->year));
+
+            app(LeagueStatsService::class)->flushLeagueStats($league);
+        } catch (\Throwable $exception) {
+            Log::error('FetchLeagueStandings failed.', [
+                'league_id' => $this->leagueId,
+                'error' => $exception->getMessage(),
+            ]);
+
+            $league->update([
+                'sync_status' => 'failed',
+                'sync_message' => 'Failed to fetch league data. Please try again.',
+            ]);
+
+            throw $exception;
         }
-
-        // Delete managers that no longer exist in FPL
-        $managersToDelete = Manager::where('league_id', $league->id)
-            ->whereNotIn('entry_id', $existingEntryIds)
-            ->get();
-
-        foreach ($managersToDelete as $manager) {
-            GameweekScore::where('manager_id', $manager->id)->delete();
-            $manager->delete();
-        }
-
-        // Mark as completed
-        $league->update([
-            'sync_status' => 'completed',
-            'sync_message' => "Successfully imported {$totalManagers} managers!",
-            'synced_managers' => $totalManagers,
-            'last_synced_at' => now(),
-        ]);
-
-    } catch (\Exception $e) {
-        Log::error("FetchLeagueStandings failed for league {$this->leagueId}: " . $e->getMessage());
-        
-        $league->update([
-            'sync_status' => 'failed',
-            'sync_message' => 'Failed to fetch league data. Please try updating the league again. If the problem persists, contact support.',
-        ]);
-
-        throw $e; // Re-throw to trigger job retry
     }
-}
 
-
-    private function fetchAllStandings($league)
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function fetchAllStandings(League $league): array
     {
         $page = 1;
         $allStandings = [];
-        $leagueInfo = null;
-        $maxPages = 100; // Safety limit
+        $maxPages = 100;
 
         do {
-            try {
-                $response = Http::timeout(15)->get("https://fantasy.premierleague.com/api/leagues-classic/{$league->league_id}/standings/", [
-                    'page_standings' => $page
+            $response = Http::timeout(15)->get($this->endpoint("leagues-classic/{$league->league_id}/standings/"), [
+                'page_standings' => $page,
+            ]);
+
+            if ($response->failed()) {
+                Log::warning('Failed to fetch league standings page.', [
+                    'league_id' => $league->league_id,
+                    'page' => $page,
                 ]);
 
-                if ($response->failed()) {
-                    Log::warning("Failed to fetch page {$page} for league {$league->league_id}");
-                    break;
-                }
-
-                $data = $response->json();
-
-                if (!isset($data['league']) || !isset($data['standings']['results'])) {
-                    break;
-                }
-
-                if (!$leagueInfo) {
-                    $leagueInfo = $data['league'];
-                    $league->update([
-                        'name' => $leagueInfo['name'],
-                        'admin_name' => $leagueInfo['admin_entry'] ?? null,
-                    ]);
-                }
-
-                $standings = $data['standings']['results'] ?? [];
-                $allStandings = array_merge($allStandings, $standings);
-
-                $hasNext = $data['standings']['has_next'] ?? false;
-                $page++;
-
-                // Rate limiting between pages
-                usleep(200000);
-
-                if ($page > $maxPages) {
-                    Log::warning("Reached max pages limit for league {$league->league_id}");
-                    break;
-                }
-
-            } catch (\Exception $e) {
-                Log::error("Error fetching page {$page} for league {$league->league_id}: " . $e->getMessage());
                 break;
             }
 
-        } while ($hasNext);
+            $data = $response->json();
+
+            if (! isset($data['league'], $data['standings']['results'])) {
+                break;
+            }
+
+            if ($page === 1) {
+                $league->update([
+                    'name' => $data['league']['name'],
+                    'admin_name' => $data['league']['admin_entry'] ?? null,
+                ]);
+            }
+
+            $standings = $data['standings']['results'] ?? [];
+            $allStandings = array_merge($allStandings, $standings);
+
+            $hasNext = (bool) ($data['standings']['has_next'] ?? false);
+            $page++;
+
+            usleep($this->pageIntervalMicroseconds());
+        } while ($hasNext && $page <= $maxPages);
 
         return $allStandings;
     }
 
-    private function processManager($league, $entry)
+    /**
+     * @param  array<string, mixed>  $entry
+     */
+    private function processManager(League $league, array $entry): void
     {
         try {
             $manager = Manager::updateOrCreate(
                 [
                     'league_id' => $league->id,
-                    'entry_id' => $entry['entry'],
+                    'entry_id' => (int) $entry['entry'],
                 ],
                 [
-                    'player_name' => $entry['player_name'],
-                    'team_name' => $entry['entry_name'],
-                    'rank' => $entry['rank'],
-                    'total_points' => $entry['total'],
+                    'player_name' => (string) $entry['player_name'],
+                    'team_name' => (string) $entry['entry_name'],
+                    'rank' => (int) ($entry['rank'] ?? 0),
+                    'total_points' => (int) ($entry['total'] ?? 0),
                 ]
             );
 
-            // Fetch gameweek history
-            $historyResponse = Http::timeout(15)->get("https://fantasy.premierleague.com/api/entry/{$entry['entry']}/history/");
-            
-            if ($historyResponse->successful()) {
-                $historyData = $historyResponse->json();
+            $historyResponse = Http::timeout(20)->get($this->endpoint("entry/{$entry['entry']}/history/"));
 
-                if (isset($historyData['current'])) {
-                    foreach ($historyData['current'] as $week) {
-                        GameweekScore::updateOrCreate(
-                            [
-                                'manager_id' => $manager->id,
-                                'gameweek' => $week['event'],
-                                'season_year' => 2025,
-
-                            ],
-                            [
-                                'points' => $week['points'],
-                            ]
-                        );
-                    }
-                }
+            if ($historyResponse->failed()) {
+                return;
             }
 
-        } catch (\Exception $e) {
-            Log::warning("Failed to process manager {$entry['entry']}: " . $e->getMessage());
-            // Continue processing other managers
+            $historyData = $historyResponse->json();
+
+            foreach (($historyData['current'] ?? []) as $week) {
+                GameweekScore::updateOrCreate(
+                    [
+                        'manager_id' => $manager->id,
+                        'gameweek' => (int) $week['event'],
+                        'season_year' => (int) ($league->season ?? now()->year),
+                    ],
+                    [
+                        'points' => (int) ($week['points'] ?? 0),
+                        'total_points' => (int) ($week['total_points'] ?? 0),
+                        'overall_rank' => (int) ($week['overall_rank'] ?? 0),
+                        'bank' => (int) ($week['bank'] ?? 0),
+                        'value' => (int) ($week['value'] ?? 0),
+                        'event_transfers' => (int) ($week['event_transfers'] ?? 0),
+                        'event_transfers_cost' => (int) ($week['event_transfers_cost'] ?? 0),
+                        'points_on_bench' => (int) ($week['points_on_bench'] ?? 0),
+                    ]
+                );
+            }
+        } catch (\Throwable $exception) {
+            Log::warning('Failed to process manager during standings sync.', [
+                'league_id' => $league->id,
+                'entry_id' => $entry['entry'] ?? null,
+                'error' => $exception->getMessage(),
+            ]);
         }
     }
 
-    public function failed(\Throwable $exception)
+    private function fetchCurrentGameweek(): int
+    {
+        try {
+            $response = Http::timeout(15)->get($this->endpoint('bootstrap-static/'));
+
+            if ($response->failed()) {
+                return 0;
+            }
+
+            $current = collect($response->json('events', []))
+                ->filter(fn (array $event): bool => (bool) ($event['finished'] ?? false))
+                ->max('id');
+
+            return (int) ($current ?? 0);
+        } catch (\Throwable) {
+            return 0;
+        }
+    }
+
+    private function endpoint(string $path): string
+    {
+        $baseUrl = rtrim((string) config('services.fpl.base_url', 'https://fantasy.premierleague.com/api'), '/');
+
+        return $baseUrl.'/'.ltrim($path, '/');
+    }
+
+    private function managerIntervalMicroseconds(): int
+    {
+        $milliseconds = (int) config('services.fpl.manager_request_interval_ms', 300);
+
+        return max($milliseconds, 0) * 1000;
+    }
+
+    private function pageIntervalMicroseconds(): int
+    {
+        $milliseconds = (int) config('services.fpl.page_request_interval_ms', 200);
+
+        return max($milliseconds, 0) * 1000;
+    }
+
+    public function failed(\Throwable $exception): void
     {
         $league = League::find($this->leagueId);
-        
-        if ($league) {
+
+        if ($league !== null) {
             $league->update([
                 'sync_status' => 'failed',
-                'sync_message' => 'Failed to import league data after multiple attempts. Please try again later or contact support.',
+                'sync_message' => 'Failed to import league data after multiple attempts.',
             ]);
         }
 
-        Log::error("FetchLeagueStandings job failed permanently for league {$this->leagueId}: " . $exception->getMessage());
+        Log::error('FetchLeagueStandings failed permanently.', [
+            'league_id' => $this->leagueId,
+            'error' => $exception->getMessage(),
+        ]);
     }
 }

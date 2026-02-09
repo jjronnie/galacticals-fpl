@@ -3,12 +3,13 @@
 namespace App\Services;
 
 use App\Models\League;
+use App\Models\Manager;
 use Spatie\Sitemap\Sitemap;
 use Spatie\Sitemap\Tags\Url;
 
 class SitemapService
 {
-   public static function update()
+    public static function update()
     {
         $sitemap = Sitemap::create();
 
@@ -23,24 +24,15 @@ class SitemapService
             ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
             ->setPriority(0.8));
 
-       
-            $sitemap->add(Url::create(route('privacy.policy'))
-                ->setLastModificationDate(now())
-                ->setChangeFrequency(Url::CHANGE_FREQUENCY_YEARLY)
-                ->setPriority(0.3));
-        
+        $sitemap->add(Url::create(route('privacy.policy'))
+            ->setLastModificationDate(now())
+            ->setChangeFrequency(Url::CHANGE_FREQUENCY_YEARLY)
+            ->setPriority(0.3));
 
-     
-            $sitemap->add(Url::create(route('terms'))
-                ->setLastModificationDate(now())
-                ->setChangeFrequency(Url::CHANGE_FREQUENCY_YEARLY)
-                ->setPriority(0.3));
-       
-            $sitemap->add(Url::create(route('table'))
-                ->setLastModificationDate(now())
-                ->setChangeFrequency(Url::CHANGE_FREQUENCY_DAILY)
-                ->setPriority(0.7));
-        
+        $sitemap->add(Url::create(route('terms'))
+            ->setLastModificationDate(now())
+            ->setChangeFrequency(Url::CHANGE_FREQUENCY_YEARLY)
+            ->setPriority(0.3));
 
         // Dynamic league pages
         League::query()
@@ -54,8 +46,19 @@ class SitemapService
                 }
             });
 
+        Manager::query()
+            ->whereNull('suspended_at')
+            ->select('entry_id')
+            ->distinct()
+            ->chunk(100, function ($managers) use ($sitemap) {
+                foreach ($managers as $manager) {
+                    $sitemap->add(Url::create(route('managers.show', $manager->entry_id))
+                        ->setLastModificationDate(now())
+                        ->setChangeFrequency(Url::CHANGE_FREQUENCY_DAILY)
+                        ->setPriority(0.8));
+                }
+            });
+
         $sitemap->writeToFile(public_path('sitemap.xml'));
     }
-
-
 }

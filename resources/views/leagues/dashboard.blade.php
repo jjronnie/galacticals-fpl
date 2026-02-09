@@ -27,6 +27,19 @@
                 </div>
             </div>
 
+            @if (! $hasClaimedProfile)
+                <section class="rounded-2xl border border-dashed border-gray-600 bg-card p-6">
+                    <h2 class="text-lg font-semibold text-white">Claim Your Personal Profile</h2>
+                    <p class="mt-2 text-sm text-gray-300">
+                        Your league is set up. Claim your profile to unlock personal analytics and shareable profile stats.
+                    </p>
+                    <a href="{{ route('profile.search') }}" class="mt-4 inline-flex rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-primary hover:bg-cyan-300">
+                        Search and Claim Profile
+                    </a>
+                </section>
+            @endif
+
+            <x-adsense />
 
 
         </div>

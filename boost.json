@@ -1,0 +1,14 @@
+{
+    "agents": [
+        "codex",
+        "copilot",
+        "cursor"
+    ],
+    "editors": [
+        "codex",
+        "cursor",
+        "vscode"
+    ],
+    "guidelines": [],
+    "sail": true
+}
