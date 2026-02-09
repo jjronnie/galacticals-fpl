@@ -1,6 +1,6 @@
-<header class=" bg-navgradient text-white px-4 py-3 flex items-center   top-0 z-30"
-    x-data="{ sidebarOpen: false, quickAccessOpen: false, notificationOpen: false }"
-    @resize.window="if (window.innerWidth >= 1024) sidebarOpen = true">
+<header class="relative top-0 z-30 flex items-center bg-navgradient px-4 py-3 text-white"
+    x-data="{ sidebarOpen: false, quickAccessOpen: false, notificationOpen: false, adminMenuOpen: false }"
+    @resize.window="if (window.innerWidth >= 1024) { sidebarOpen = true; adminMenuOpen = false; }">
 
     <!-- Logo -->
     <a href="/" class="flex items-center space-x-2">
@@ -15,16 +15,28 @@
     </div>
 
     @guest
-
-
     <div class="flex items-center space-x-2 p-2">
-        <a href="/#join-steps" class="text-sm  text-white hover:underline ">How it works?</a>
+        <a href="/#join-steps" class="text-sm text-white hover:underline">How it works?</a>
     </div>
     @endguest
 
 
     <!-- Right Section -->
     <div class="ml-auto flex items-center space-x-4 relative">
+        @auth
+            @if (auth()->user()->isAdmin())
+                <button
+                    type="button"
+                    class="inline-flex items-center rounded-lg p-2 text-white transition hover:bg-card lg:hidden"
+                    @click="adminMenuOpen = !adminMenuOpen"
+                    :aria-expanded="adminMenuOpen.toString()"
+                    aria-controls="admin-mobile-menu"
+                    aria-label="Toggle admin navigation menu"
+                >
+                    <i data-lucide="menu" class="h-5 w-5"></i>
+                </button>
+            @endif
+        @endauth
 
         @guest
         <a href="{{ route('login') }}" class="btn-sm">
@@ -146,4 +158,49 @@
         @endauth
 
     </div>
+
+    @auth
+        @if (auth()->user()->isAdmin())
+            <div
+                id="admin-mobile-menu"
+                x-show="adminMenuOpen"
+                x-transition
+                x-cloak
+                class="absolute inset-x-0 top-full z-40 border-t border-gray-700 bg-card shadow-xl lg:hidden"
+                @click.away="adminMenuOpen = false"
+            >
+                <nav class="grid grid-cols-2 gap-2 p-4 text-sm">
+                    <a href="{{ route('home') }}" @click="adminMenuOpen = false" class="rounded-lg px-3 py-2 font-medium {{ request()->routeIs('home') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
+                        Home
+                    </a>
+                    <a href="{{ route('dashboard') }}" @click="adminMenuOpen = false" class="rounded-lg px-3 py-2 font-medium {{ request()->routeIs('dashboard') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
+                        Dashboard
+                    </a>
+                    <a href="{{ route('public.leagues.list') }}" @click="adminMenuOpen = false" class="rounded-lg px-3 py-2 font-medium {{ request()->routeIs('public.leagues.*') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
+                        Leagues
+                    </a>
+                    <a href="{{ route('profile.index') }}" @click="adminMenuOpen = false" class="rounded-lg px-3 py-2 font-medium {{ request()->routeIs('profile.index') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
+                        Profile
+                    </a>
+                    @if (! auth()->user()->hasClaimedProfile())
+                        <a href="{{ route('profile.search') }}" @click="adminMenuOpen = false" class="rounded-lg px-3 py-2 font-medium {{ request()->routeIs('profile.search') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
+                            Search & Claim
+                        </a>
+                    @endif
+                    <a href="{{ route('admin.index') }}" @click="adminMenuOpen = false" class="rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.index') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
+                        Users
+                    </a>
+                    <a href="{{ route('admin.data') }}" @click="adminMenuOpen = false" class="rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.data*') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
+                        Data Sync
+                    </a>
+                    <a href="{{ route('admin.managers.index') }}" @click="adminMenuOpen = false" class="rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.managers.*') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
+                        Claimed Profiles
+                    </a>
+                    <a href="{{ route('admin.complaints.index') }}" @click="adminMenuOpen = false" class="rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.complaints.*') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
+                        Complaints
+                    </a>
+                </nav>
+            </div>
+        @endif
+    @endauth
 </header>
