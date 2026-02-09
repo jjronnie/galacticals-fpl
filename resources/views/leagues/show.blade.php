@@ -16,14 +16,7 @@
             @include('leagues.partials.share')
 
             <div class="flex flex-wrap items-end justify-center gap-3 rounded-xl border border-gray-700 bg-card p-4">
-                @auth
-                    @if (auth()->user()->isAdmin())
-                        <form action="{{ route('league.update') }}" method="POST">
-                            @csrf
-                            <button type="submit" class="btn">Update <i class="fa-solid fa-sync"></i></button>
-                        </form>
-                    @endif
-                @endauth
+             
 
                 <div class="w-full sm:w-auto">
                     <label for="gameweek-select" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-400">Gameweek Overview</label>
