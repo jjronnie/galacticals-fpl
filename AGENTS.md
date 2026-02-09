@@ -122,12 +122,7 @@ protected function isAccessible(User $user, ?string $path = null): bool
     - Execute PHP scripts: `vendor/bin/sail php [script]`
 - View all available Sail commands by running `vendor/bin/sail` without arguments.
 
-=== tests rules ===
 
-## Test Enforcement
-
-- Every change must be programmatically tested. Write a new test or update an existing test, then run the affected tests to make sure they pass.
-- Run the minimum number of tests needed to ensure code quality and speed. Use `vendor/bin/sail artisan test --compact` with a specific filename or filter.
 
 === laravel/core rules ===
 
@@ -176,7 +171,7 @@ protected function isAccessible(User $user, ?string $path = null): bool
 
 === laravel/v12 rules ===
 
-## Laravel 12
+## Laravel 12 
 
 - Use the `search-docs` tool to get version-specific documentation.
 - Since Laravel 11, Laravel has a new streamlined file structure which this project uses.
@@ -214,11 +209,7 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - Tests should test all of the happy paths, failure paths, and weird paths.
 - You must not remove any tests or test files from the tests directory without approval. These are not temporary or helper files; these are core to the application.
 
-### Running Tests
-- Run the minimal number of tests, using an appropriate filter, before finalizing.
-- To run all tests: `vendor/bin/sail artisan test --compact`.
-- To run all tests in a file: `vendor/bin/sail artisan test --compact tests/Feature/ExampleTest.php`.
-- To filter on a particular test name: `vendor/bin/sail artisan test --compact --filter=testName` (recommended after making a change to a related file).
+
 
 === tailwindcss/core rules ===
 

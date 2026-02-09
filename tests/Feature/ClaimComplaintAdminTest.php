@@ -120,6 +120,69 @@ class ClaimComplaintAdminTest extends TestCase
         ]);
     }
 
+    public function test_admin_sidebar_shows_open_complaints_badge_count(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin',
+        ]);
+
+        $reporter = User::factory()->create();
+        $leagueOwner = User::factory()->create();
+
+        $league = League::create([
+            'user_id' => $leagueOwner->id,
+            'league_id' => 6010,
+            'name' => 'Sidebar Complaints League',
+            'admin_name' => 'Admin',
+            'current_gameweek' => 1,
+            'season' => 2025,
+        ]);
+
+        $manager = Manager::create([
+            'league_id' => $league->id,
+            'entry_id' => 790,
+            'player_name' => 'Sidebar Manager',
+            'team_name' => 'Sidebar Team',
+            'rank' => 1,
+            'total_points' => 121,
+        ]);
+
+        ClaimsComplaint::create([
+            'manager_id' => $manager->id,
+            'reporter_user_id' => $reporter->id,
+            'subject' => 'Open complaint',
+            'message' => 'Still unresolved.',
+            'status' => 'open',
+        ]);
+
+        ClaimsComplaint::create([
+            'manager_id' => $manager->id,
+            'reporter_user_id' => $reporter->id,
+            'subject' => 'In progress complaint',
+            'message' => 'Still pending.',
+            'status' => 'in_progress',
+        ]);
+
+        ClaimsComplaint::create([
+            'manager_id' => $manager->id,
+            'reporter_user_id' => $reporter->id,
+            'subject' => 'Resolved complaint',
+            'message' => 'Already done.',
+            'status' => 'resolved',
+        ]);
+
+        $response = $this
+            ->actingAs($admin)
+            ->get(route('admin.complaints.index'));
+
+        $response->assertOk()->assertSee('aria-label="Open complaints"', false);
+
+        $this->assertMatchesRegularExpression(
+            '/aria-label="Open complaints"[^>]*>\s*2\s*<\/span>/',
+            (string) $response->getContent()
+        );
+    }
+
     public function test_duplicate_complaints_are_blocked_for_the_same_day(): void
     {
         Mail::fake();

@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\FplPlayer;
 use App\Models\FplTeam;
+use App\Services\SyncJobProgressService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -26,6 +27,12 @@ class FetchFplDataJob implements ShouldQueue
 
     public function handle(): void
     {
+        SyncJobProgressService::start(
+            SyncJobProgressService::FETCH_FPL_DATA,
+            3,
+            'Fetching FPL bootstrap data...'
+        );
+
         $cacheKey = 'fpl.bootstrap-static.'.now()->toDateString();
 
         try {
@@ -38,6 +45,13 @@ class FetchFplDataJob implements ShouldQueue
 
                 return $response->json();
             });
+
+            SyncJobProgressService::progress(
+                SyncJobProgressService::FETCH_FPL_DATA,
+                1,
+                3,
+                'Bootstrap payload fetched. Syncing teams...'
+            );
 
             $teams = collect($payload['teams'] ?? [])->map(function (array $team): array {
                 return [
@@ -75,6 +89,13 @@ class FetchFplDataJob implements ShouldQueue
                 ['name', 'short_name', 'code', 'strength_overall', 'updated_at']
             );
 
+            SyncJobProgressService::progress(
+                SyncJobProgressService::FETCH_FPL_DATA,
+                2,
+                3,
+                'Teams synced. Syncing players...'
+            );
+
             FplPlayer::upsert(
                 $players,
                 ['id'],
@@ -96,6 +117,11 @@ class FetchFplDataJob implements ShouldQueue
             Cache::put('fpl.bootstrap-static.latest', $payload, now()->addDay());
             Cache::put('fpl.bootstrap-static.last_synced_at', now()->toIso8601String(), now()->addDay());
 
+            SyncJobProgressService::complete(
+                SyncJobProgressService::FETCH_FPL_DATA,
+                sprintf('FPL data synced (%d teams, %d players).', count($teams), count($players))
+            );
+
             Log::info('FPL static data synced.', [
                 'teams' => count($teams),
                 'players' => count($players),
@@ -104,6 +130,11 @@ class FetchFplDataJob implements ShouldQueue
             Log::error('FetchFplDataJob failed.', [
                 'error' => $exception->getMessage(),
             ]);
+
+            SyncJobProgressService::fail(
+                SyncJobProgressService::FETCH_FPL_DATA,
+                'FPL teams/players sync failed.'
+            );
 
             throw $exception;
         }

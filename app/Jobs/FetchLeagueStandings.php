@@ -6,6 +6,7 @@ use App\Models\GameweekScore;
 use App\Models\League;
 use App\Models\Manager;
 use App\Services\LeagueStatsService;
+use App\Services\SyncJobProgressService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -25,7 +26,10 @@ class FetchLeagueStandings implements ShouldQueue
     /** @var int[] */
     public array $backoff = [120, 300, 600];
 
-    public function __construct(private readonly int $leagueId) {}
+    public function __construct(
+        private readonly int $leagueId,
+        private readonly bool $dispatchGameweekComputation = true
+    ) {}
 
     public function handle(): void
     {
@@ -34,8 +38,20 @@ class FetchLeagueStandings implements ShouldQueue
         if ($league === null) {
             Log::error('League not found for standings sync.', ['league_id' => $this->leagueId]);
 
+            SyncJobProgressService::incrementProcessed(
+                SyncJobProgressService::FETCH_LEAGUE_STANDINGS,
+                true,
+                'League sync failed: league record not found.'
+            );
+
             return;
         }
+
+        SyncJobProgressService::start(
+            SyncJobProgressService::FETCH_LEAGUE_STANDINGS,
+            null,
+            "Syncing league standings for {$league->name}..."
+        );
 
         try {
             $allStandings = $this->fetchAllStandings($league);
@@ -45,6 +61,12 @@ class FetchLeagueStandings implements ShouldQueue
                     'sync_status' => 'failed',
                     'sync_message' => 'No managers found in this league. The league may be empty or invalid.',
                 ]);
+
+                SyncJobProgressService::incrementProcessed(
+                    SyncJobProgressService::FETCH_LEAGUE_STANDINGS,
+                    true,
+                    "League sync failed for {$league->name}: no managers found."
+                );
 
                 return;
             }
@@ -94,9 +116,17 @@ class FetchLeagueStandings implements ShouldQueue
                 'last_synced_at' => now(),
             ]);
 
-            ComputeLeagueGameweekStandingsJob::dispatch($league->id, (int) ($league->season ?? now()->year));
+            if ($this->dispatchGameweekComputation) {
+                ComputeLeagueGameweekStandingsJob::dispatch($league->id, (int) ($league->season ?? now()->year));
+            }
 
             app(LeagueStatsService::class)->flushLeagueStats($league);
+
+            SyncJobProgressService::incrementProcessed(
+                SyncJobProgressService::FETCH_LEAGUE_STANDINGS,
+                false,
+                "League standings synced for {$league->name}."
+            );
         } catch (\Throwable $exception) {
             Log::error('FetchLeagueStandings failed.', [
                 'league_id' => $this->leagueId,
@@ -270,5 +300,11 @@ class FetchLeagueStandings implements ShouldQueue
             'league_id' => $this->leagueId,
             'error' => $exception->getMessage(),
         ]);
+
+        SyncJobProgressService::incrementProcessed(
+            SyncJobProgressService::FETCH_LEAGUE_STANDINGS,
+            true,
+            'A league standings sync job failed after retries.'
+        );
     }
 }

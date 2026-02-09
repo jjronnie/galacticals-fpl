@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\GameweekScore;
 use App\Models\League;
 use App\Models\LeagueGameweekStanding;
+use App\Services\SyncJobProgressService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -35,14 +36,32 @@ class ComputeLeagueGameweekStandingsJob implements ShouldQueue
                 'league_id' => $this->leagueId,
             ]);
 
+            SyncJobProgressService::incrementProcessed(
+                SyncJobProgressService::COMPUTE_GAMEWEEK_TABLES,
+                true,
+                'Gameweek table computation failed: league not found.'
+            );
+
             return;
         }
+
+        SyncJobProgressService::start(
+            SyncJobProgressService::COMPUTE_GAMEWEEK_TABLES,
+            null,
+            "Computing gameweek tables for {$league->name}..."
+        );
 
         $seasonYear = $this->seasonYear ?? (int) ($league->season ?? now()->year);
 
         $managerIds = $league->managers()->pluck('managers.id');
 
         if ($managerIds->isEmpty()) {
+            SyncJobProgressService::incrementProcessed(
+                SyncJobProgressService::COMPUTE_GAMEWEEK_TABLES,
+                false,
+                "Gameweek table computation skipped for {$league->name}: no managers."
+            );
+
             return;
         }
 
@@ -57,6 +76,12 @@ class ComputeLeagueGameweekStandingsJob implements ShouldQueue
             ->all();
 
         if ($gameweeks === []) {
+            SyncJobProgressService::incrementProcessed(
+                SyncJobProgressService::COMPUTE_GAMEWEEK_TABLES,
+                false,
+                "Gameweek table computation skipped for {$league->name}: no gameweek scores."
+            );
+
             return;
         }
 
@@ -135,5 +160,25 @@ class ComputeLeagueGameweekStandingsJob implements ShouldQueue
             Cache::forget("league_gameweek_standings_{$league->id}_{$gameweek}");
             Cache::forget("league_trends_{$league->id}_{$gameweek}");
         }
+
+        SyncJobProgressService::incrementProcessed(
+            SyncJobProgressService::COMPUTE_GAMEWEEK_TABLES,
+            false,
+            "Gameweek tables computed for {$league->name}."
+        );
+    }
+
+    public function failed(\Throwable $exception): void
+    {
+        Log::error('ComputeLeagueGameweekStandingsJob failed permanently.', [
+            'league_id' => $this->leagueId,
+            'error' => $exception->getMessage(),
+        ]);
+
+        SyncJobProgressService::incrementProcessed(
+            SyncJobProgressService::COMPUTE_GAMEWEEK_TABLES,
+            true,
+            'A gameweek table computation job failed after retries.'
+        );
     }
 }

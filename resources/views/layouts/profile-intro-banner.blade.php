@@ -13,15 +13,11 @@
             </div>
 
             <div>
-                @auth
+                
                     <a href="{{ route('profile.search') }}" class="inline-flex rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-primary hover:bg-cyan-300">
                         Claim Yours Now
                     </a>
-                @else
-                    <a href="{{ route('register') }}" class="inline-flex rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-primary hover:bg-cyan-300">
-                        Claim Yours Now
-                    </a>
-                @endauth
+               
             </div>
         </div>
     </section>

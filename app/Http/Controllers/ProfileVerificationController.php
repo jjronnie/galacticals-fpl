@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreProfileVerificationSubmissionRequest;
+use App\Mail\ProfileVerificationSubmittedMail;
 use App\Models\Manager;
 use App\Models\ProfileVerificationSubmission;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
 class ProfileVerificationController extends Controller
@@ -89,7 +91,7 @@ class ProfileVerificationController extends Controller
 
         $screenshotPath = $request->file('screenshot')->store('verifications/profiles', 'local');
 
-        ProfileVerificationSubmission::query()->create([
+        $submission = ProfileVerificationSubmission::query()->create([
             'user_id' => $user->id,
             'manager_id' => $claimedManager->id,
             'entry_id' => $claimedManager->entry_id,
@@ -99,6 +101,8 @@ class ProfileVerificationController extends Controller
             'notes' => $request->validated('notes'),
             'status' => 'pending',
         ]);
+
+        Mail::to('ronaldjjuuko7@gmail.com')->queue(new ProfileVerificationSubmittedMail($submission));
 
         return redirect()
             ->route('profile.index')

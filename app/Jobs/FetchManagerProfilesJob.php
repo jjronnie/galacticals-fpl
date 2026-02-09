@@ -7,6 +7,7 @@ use App\Models\GameweekScore;
 use App\Models\Manager;
 use App\Models\ManagerChip;
 use App\Models\ManagerPick;
+use App\Services\SyncJobProgressService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -43,13 +44,25 @@ class FetchManagerProfilesJob implements ShouldQueue
         $managers = $this->managerQuery()->get();
 
         if ($managers->isEmpty()) {
+            SyncJobProgressService::complete(
+                SyncJobProgressService::FETCH_MANAGER_PROFILES,
+                'No claimed profiles found to sync.'
+            );
+
             return;
         }
 
         $managersByEntry = $managers->groupBy('entry_id');
         $totalEntries = $managersByEntry->count();
         $processedEntries = 0;
+        $failedEntries = 0;
         $finishedGameweeks = $this->finishedGameweeks();
+
+        SyncJobProgressService::start(
+            SyncJobProgressService::FETCH_MANAGER_PROFILES,
+            $totalEntries,
+            'Starting claimed profile sync...'
+        );
 
         foreach ($managersByEntry as $entryId => $entryManagers) {
             $processedEntries++;
@@ -88,6 +101,8 @@ class FetchManagerProfilesJob implements ShouldQueue
                 }
                 Cache::forget('profile_stats_entry_'.$entryId);
             } catch (\Throwable $exception) {
+                $failedEntries++;
+
                 Log::warning('Failed to sync manager profile data.', [
                     'entry_id' => $entryId,
                     'error' => $exception->getMessage(),
@@ -97,12 +112,40 @@ class FetchManagerProfilesJob implements ShouldQueue
                     'sync_status' => 'failed',
                     'sync_message' => 'Failed to sync profile data. Try again later.',
                 ]);
-
-                continue;
             }
+
+            SyncJobProgressService::progress(
+                SyncJobProgressService::FETCH_MANAGER_PROFILES,
+                $processedEntries,
+                $totalEntries,
+                sprintf(
+                    'Synced %d/%d profile entries%s.',
+                    $processedEntries,
+                    $totalEntries,
+                    $failedEntries > 0 ? " ({$failedEntries} failed)" : ''
+                )
+            );
 
             usleep($this->managerIntervalMicroseconds());
         }
+
+        if ($failedEntries > 0) {
+            SyncJobProgressService::fail(
+                SyncJobProgressService::FETCH_MANAGER_PROFILES,
+                sprintf(
+                    'Profile sync finished with %d failures out of %d entries.',
+                    $failedEntries,
+                    $totalEntries
+                )
+            );
+
+            return;
+        }
+
+        SyncJobProgressService::complete(
+            SyncJobProgressService::FETCH_MANAGER_PROFILES,
+            sprintf('Successfully synced %d claimed profile entries.', $totalEntries)
+        );
     }
 
     private function managerQuery()
@@ -385,5 +428,17 @@ class FetchManagerProfilesJob implements ShouldQueue
         $milliseconds = (int) config('services.fpl.page_request_interval_ms', 200);
 
         return max($milliseconds, 0) * 1000;
+    }
+
+    public function failed(\Throwable $exception): void
+    {
+        Log::error('FetchManagerProfilesJob failed permanently.', [
+            'error' => $exception->getMessage(),
+        ]);
+
+        SyncJobProgressService::fail(
+            SyncJobProgressService::FETCH_MANAGER_PROFILES,
+            'Claimed profile sync failed after retries.'
+        );
     }
 }

@@ -7,6 +7,7 @@ use App\Models\ClaimsComplaint;
 use App\Models\League;
 use App\Models\Manager;
 use App\Models\User;
+use App\Services\SyncJobProgressService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -100,6 +101,12 @@ class AdminController extends Controller
 
     public function sendMissingLeagueReminders(): RedirectResponse
     {
+        SyncJobProgressService::queue(
+            SyncJobProgressService::SEND_LEAGUE_REMINDERS,
+            1,
+            'League reminder job queued.'
+        );
+
         SendLeagueReminderJob::dispatch();
 
         return back()->with('success', 'League reminder emails are being sent.');

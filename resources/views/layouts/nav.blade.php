@@ -202,11 +202,21 @@
                     <a href="{{ route('admin.managers.all') }}" @click="adminMenuOpen = false" class="rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.managers.all*') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
                         All Managers
                     </a>
-                    <a href="{{ route('admin.complaints.index') }}" @click="adminMenuOpen = false" class="rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.complaints.*') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
-                        Complaints
+                    <a href="{{ route('admin.complaints.index') }}" @click="adminMenuOpen = false" class="flex items-center justify-between rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.complaints.*') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
+                        <span>Complaints</span>
+                        @if ($openComplaintsCount > 0)
+                            <span aria-label="Open complaints" class="inline-flex min-w-6 items-center justify-center rounded-full bg-red-600 px-1.5 py-0.5 text-xs font-semibold text-white">
+                                {{ $openComplaintsCount }}
+                            </span>
+                        @endif
                     </a>
-                    <a href="{{ route('admin.verifications.index') }}" @click="adminMenuOpen = false" class="rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.verifications.*') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
-                        Verifications
+                    <a href="{{ route('admin.verifications.index') }}" @click="adminMenuOpen = false" class="flex items-center justify-between rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.verifications.*') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
+                        <span>Verifications</span>
+                        @if ($pendingVerificationsCount > 0)
+                            <span aria-label="Pending verifications" class="inline-flex min-w-6 items-center justify-center rounded-full bg-secondary px-1.5 py-0.5 text-xs font-semibold text-white">
+                                {{ $pendingVerificationsCount }}
+                            </span>
+                        @endif
                     </a>
                 </nav>
             </div>

@@ -2,12 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Mail\ProfileVerificationSubmittedMail;
 use App\Models\League;
 use App\Models\Manager;
 use App\Models\ProfileVerificationSubmission;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -18,6 +20,7 @@ class ProfileVerificationFlowTest extends TestCase
     public function test_claimed_user_can_submit_profile_verification_screenshot(): void
     {
         Storage::fake('local');
+        Mail::fake();
 
         $claimedManager = $this->createClaimedManager();
         $user = User::findOrFail($claimedManager->user_id);
@@ -41,6 +44,11 @@ class ProfileVerificationFlowTest extends TestCase
         $this->assertSame('I am logged in on the official app.', $submission->notes);
 
         Storage::disk('local')->assertExists((string) $submission->screenshot_path);
+
+        Mail::assertQueued(ProfileVerificationSubmittedMail::class, function (ProfileVerificationSubmittedMail $mail) use ($submission): bool {
+            return $mail->hasTo('ronaldjjuuko7@gmail.com')
+                && $mail->submission->id === $submission->id;
+        });
     }
 
     public function test_pending_submission_hides_submit_call_to_action_on_profile_dashboard(): void

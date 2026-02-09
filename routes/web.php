@@ -74,7 +74,9 @@ Route::middleware(['auth', 'can:admin'])->group(function (): void {
         ->name('run.league.update');
 
     Route::get('/admin/data', [AdminDataController::class, 'index'])->name('admin.data');
+    Route::get('/admin/data/status', [AdminDataController::class, 'status'])->name('admin.data.status');
     Route::get('/admin/data/observer', [AdminDataController::class, 'observer'])->name('admin.data.observer');
+    Route::post('/admin/data/sync-all', [AdminDataController::class, 'syncAll'])->name('admin.data.syncAll');
     Route::post('/admin/data/fetch-fpl', [AdminDataController::class, 'fetchFpl'])->name('admin.data.fetchFpl');
     Route::post('/admin/data/fetch-managers', [AdminDataController::class, 'fetchManagers'])->name('admin.data.fetchManagers');
     Route::post('/admin/data/compute-gameweeks', [AdminDataController::class, 'computeGameweeks'])->name('admin.data.computeGameweeks');

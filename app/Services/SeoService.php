@@ -193,8 +193,8 @@ class SeoService
 
     public function setLeagues(): void
     {
-        $title = 'Al Leagues- FPL Galaxy';
-        $description = 'View all leagues that are already using FPL Galaxy and see thier stats.';
+        $title = 'All Leagues - FPL Galaxy';
+        $description = 'View all leagues already using FPL Galaxy and explore their public stats.';
 
         SEOMeta::setTitle($title);
         SEOMeta::setDescription($description);
@@ -209,5 +209,62 @@ class SeoService
         TwitterCard::setDescription($description);
         TwitterCard::setImage(asset('assets/img/logo.webp'));
 
+    }
+
+    public function setPrivacyPolicy(): void
+    {
+        $title = 'Privacy Policy - FPL Galaxy';
+        $description = 'Read how FPL Galaxy handles your data, cookies, and account information.';
+
+        SEOMeta::setTitle($title);
+        SEOMeta::setDescription($description);
+        SEOMeta::setCanonical(route('privacy.policy'));
+
+        OpenGraph::setTitle($title);
+        OpenGraph::setDescription($description);
+        OpenGraph::setUrl(route('privacy.policy'));
+        OpenGraph::addImage(asset('assets/img/logo.webp'));
+
+        TwitterCard::setTitle($title);
+        TwitterCard::setDescription($description);
+        TwitterCard::setImage(asset('assets/img/logo.webp'));
+    }
+
+    public function setTermsAndConditions(): void
+    {
+        $title = 'Terms and Conditions - FPL Galaxy';
+        $description = 'Read the terms and conditions for using FPL Galaxy.';
+
+        SEOMeta::setTitle($title);
+        SEOMeta::setDescription($description);
+        SEOMeta::setCanonical(route('terms'));
+
+        OpenGraph::setTitle($title);
+        OpenGraph::setDescription($description);
+        OpenGraph::setUrl(route('terms'));
+        OpenGraph::addImage(asset('assets/img/logo.webp'));
+
+        TwitterCard::setTitle($title);
+        TwitterCard::setDescription($description);
+        TwitterCard::setImage(asset('assets/img/logo.webp'));
+    }
+
+    public function setMore(): void
+    {
+        $title = 'More Tools - FPL Galaxy';
+        $description = 'Explore extra tools, guides, and resources available on FPL Galaxy.';
+
+        SEOMeta::setTitle($title);
+        SEOMeta::setDescription($description);
+        SEOMeta::setCanonical(route('more'));
+
+        OpenGraph::setTitle($title);
+        OpenGraph::setDescription($description);
+        OpenGraph::setUrl(route('more'));
+        OpenGraph::addImage(asset('assets/img/logo.webp'));
+
+        TwitterCard::setTitle($title);
+        TwitterCard::setDescription($description);
+        TwitterCard::setImage(asset('assets/img/logo.webp'));
     }
 }
