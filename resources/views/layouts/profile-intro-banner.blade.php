@@ -8,7 +8,7 @@
             <div>
                 <h2 class="text-sm font-semibold uppercase tracking-wide text-cyan-300">Introducing Individual Profiles</h2>
                 <p class="mt-1 text-sm text-cyan-100/90">
-                    Claim your FPL team profile to unlock personal stats, charts, awards, and a shareable public page.
+                    Claim your FPL team profile to unlock personal stats.
                 </p>
             </div>
 

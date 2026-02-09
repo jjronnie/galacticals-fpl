@@ -22,3 +22,7 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 /public/sitemap.xml
+
+.cursor
+AGENTS.md
+boost.json

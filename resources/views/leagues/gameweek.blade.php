@@ -6,6 +6,11 @@
             @php
                 $sortedGameweeks = collect($availableGameweeks)->sortDesc()->values();
                 $standingsRows = collect($gameweekStandings)->values();
+                $gameweekAveragePoints = $standingsRows->isNotEmpty()
+                    ? round((float) $standingsRows->avg('points'), 2)
+                    : null;
+                $bestPoints = $standingsRows->isNotEmpty() ? (int) $standingsRows->max('points') : null;
+                $worstPoints = $standingsRows->isNotEmpty() ? (int) $standingsRows->min('points') : null;
             @endphp
 
             <div class="text-center">
@@ -40,7 +45,7 @@
 
         <section class="space-y-4">
             @if ($gameweekInsights)
-                <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
                     <x-gw-stat-card title="BEST MANAGER" color="green" tooltip="Manager(s) with the highest points in this gameweek.">
                         @foreach ($gameweekInsights['best_managers'] as $manager)
                             <div>
@@ -63,6 +68,12 @@
                             </div>
                         @endforeach
                         <p class="mt-2 text-xs text-gray-300">{{ $gameweekInsights['worst_points'] }} points</p>
+                    </x-gw-stat-card>
+
+                    <x-gw-stat-card title="GW AVERAGE" color="blue" tooltip="Average points scored by all managers in this gameweek.">
+                        <p class="text-sm">
+                            {{ $gameweekAveragePoints !== null ? rtrim(rtrim(number_format($gameweekAveragePoints, 2), '0'), '.') : 'N/A' }} pts
+                        </p>
                     </x-gw-stat-card>
 
                     <x-gw-stat-card title="MOST OWNED (TOP 5)" color="blue" tooltip="Most popular players in this gameweek.">
@@ -112,40 +123,52 @@
                     @forelse (($ownershipTrends['chips_played'] ?? []) as $chip => $count)
                         <p class="text-sm">{{ $chip }} - {{ $count }}</p>
                     @empty
-                        <p class="text-sm">No chips played this GW.</p>
+                        <p class="text-sm">No data.</p>
                     @endforelse
                 </x-gw-stat-card>
             </div>
 
             <div x-data="{ visibleRows: 50, totalRows: {{ $standingsRows->count() }} }">
-                <div class="-mx-2 overflow-x-auto sm:mx-0">
-                    <table class="min-w-full text-sm text-gray-200">
+                <div class="-mx-2 border border-gray-700 rounded-lg bg-card p-2 overflow-x-auto sm:mx-0">
+                    <table class="min-w-full whitespace-nowrap text-sm text-gray-200">
                         <thead>
                             <tr class="border-b border-gray-700 text-xs uppercase tracking-wide text-gray-400">
-                                <th class="px-3 py-2 text-left">Rank</th>
-                                <th class="px-3 py-2 text-left">Manager</th>
-                                <th class="px-3 py-2 text-right">Points</th>
-                                <th class="px-3 py-2 text-right">Total</th>
-                                <th class="px-3 py-2 text-right">Diff to Avg</th>
+                                <th class="px-3 py-2 text-left whitespace-nowrap">#</th>
+                                <th class="px-3 py-2 text-left whitespace-nowrap">Manager</th>
+                                <th class="px-3 py-2 text-right whitespace-nowrap">GW </th>
+                                <th class="px-3 py-2 text-right whitespace-nowrap">Total</th>
+                                <th class="px-3 py-2 text-right whitespace-nowrap">Diff to Avg</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($standingsRows as $index => $standing)
+                                @php
+                                    $isBestManager = $bestPoints !== null && (int) $standing->points === $bestPoints;
+                                    $isWorstManager = $worstPoints !== null && (int) $standing->points === $worstPoints;
+                                @endphp
                                 <tr class="border-b border-gray-800/80" x-show="{{ $index }} < visibleRows" @if ($index >= 50) x-cloak @endif>
-                                    <td class="px-3 py-2">{{ $standing->rank }}</td>
+                                    <td class="px-3 py-2 whitespace-nowrap">
+                                        @if ($isBestManager)
+                                            <span aria-label="Best manager in this gameweek" title="Best manager in this gameweek">🏆</span>
+                                        @elseif ($isWorstManager)
+                                            <span aria-label="Lowest manager in this gameweek" title="Lowest manager in this gameweek">🤡</span>
+                                        @else
+                                            {{ $standing->rank }}
+                                        @endif
+                                    </td>
                                     <td class="px-3 py-2">
                                         @if ($standing->manager)
-                                            <a href="{{ route('managers.show', $standing->manager->entry_id) }}" class="text-white hover:text-white">
+                                            <a href="{{ route('managers.show', $standing->manager->entry_id) }}" class="block whitespace-nowrap text-white hover:text-white">
                                                 {{ $standing->manager->player_name }}
                                             </a>
-                                            <p class="text-xs text-gray-400">{{ $standing->manager->team_name }}</p>
+                                            <p class="whitespace-nowrap text-xs text-gray-400">{{ $standing->manager->team_name }}</p>
                                         @else
                                             -
                                         @endif
                                     </td>
-                                    <td class="px-3 py-2 text-right">{{ $standing->points }}</td>
-                                    <td class="px-3 py-2 text-right">{{ $standing->total_points }}</td>
-                                    <td class="px-3 py-2 text-right {{ $standing->difference_to_average >= 0 ? 'text-green-300' : 'text-red-300' }}">
+                                    <td class="px-3 py-2 text-right whitespace-nowrap">{{ $standing->points }}</td>
+                                    <td class="px-3 py-2 text-right whitespace-nowrap">{{ $standing->total_points }}</td>
+                                    <td class="px-3 py-2 text-right whitespace-nowrap {{ $standing->difference_to_average >= 0 ? 'text-green-300' : 'text-red-300' }}">
                                         {{ $standing->difference_to_average >= 0 ? '+' : '' }}{{ $standing->difference_to_average }}
                                     </td>
                                 </tr>

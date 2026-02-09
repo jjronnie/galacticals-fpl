@@ -22,7 +22,7 @@
         <section class="rounded-2xl border border-gray-700 bg-card p-6">
             <h1 class="text-2xl font-bold text-white">Search and Claim FPL Team</h1>
             <p class="mt-2 text-sm text-gray-300">
-                Open search and type at least 2 characters to find your FPL team instantly.
+                Only claim profile that belongs to you
             </p>
 
             <button
@@ -30,7 +30,7 @@
                 class="mt-5 inline-flex rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-primary hover:bg-cyan-300"
                 @click="open = true"
             >
-                Search Teams
+                Claim my team
             </button>
         </section>
 
@@ -57,13 +57,11 @@
                         type="text"
                         x-model="query"
                         @input="search()"
-                        placeholder="Type at least 2 characters..."
+                        placeholder="Search by manager name, team name, or team ID..."
                         class="w-full rounded-lg border border-gray-600 bg-primary px-4 py-3 text-sm text-white placeholder:text-gray-400 focus:border-accent focus:ring-accent"
                     >
 
-                    <div x-show="query.length > 0 && query.length < 2" class="text-xs text-gray-400">
-                        Keep typing. Search starts at 2 characters.
-                    </div>
+                   
 
                     <div x-show="loading" class="text-xs text-accent">Searching...</div>
                     <div x-show="errorMessage" class="text-xs text-red-300" x-text="errorMessage"></div>

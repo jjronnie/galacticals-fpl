@@ -5,7 +5,20 @@
 @endphp
 
 <div class="rounded-2xl border-2 border-gray-700 bg-card p-6">
-    <h2 class="mb-4 text-center text-xl font-bold uppercase text-white">GameWeek {{ $gw['gameweek'] }}</h2>
+    <div class="mb-4 flex items-center justify-between gap-3">
+        <h2 class="text-xl font-bold uppercase text-white">GameWeek {{ $gw['gameweek'] }}</h2>
+
+        @if ($gwLink)
+            <a
+                href="{{ $gwLink }}"
+                class="inline-flex items-center justify-center rounded-lg bg-primary p-2 text-white hover:bg-secondary"
+                aria-label="Open gameweek {{ $gw['gameweek'] }} overview"
+                title="Open gameweek overview"
+            >
+                <i data-lucide="square-arrow-out-up-right" class="h-4 w-4"></i>
+            </a>
+        @endif
+    </div>
 
     <div class="flex justify-between">
         <div>
@@ -46,13 +59,4 @@
             <p class="text-sm font-semibold text-red-400">{{ $gw['worst_points'] }}pts</p>
         </div>
     </div>
-
-    @if ($gwLink)
-        <div class="mt-4 flex justify-end">
-            <a href="{{ $gwLink }}" class="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white hover:bg-secondary">
-                Open Gameweek
-                <i data-lucide="square-arrow-out-up-right" class="h-4 w-4"></i>
-            </a>
-        </div>
-    @endif
 </div>

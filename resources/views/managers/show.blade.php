@@ -6,7 +6,7 @@
             <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                 <div>
                     <h1 class="text-2xl font-bold text-white">{{ $manager->team_name }}</h1>
-                    <p class="mt-2 text-sm text-gray-300">{{ $manager->player_name }} · Entry {{ $manager->entry_id }}</p>
+                    <p class="mt-2 text-sm text-gray-300">{{ $manager->player_name }}</p>
                 </div>
 
                 <div>
@@ -44,7 +44,7 @@
                 <div class="mt-4">
                     @auth
                         <a href="{{ route('profile.search') }}" class="inline-flex rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-primary hover:bg-cyan-300">
-                            Claim Yours Now
+                            Claim  Now
                         </a>
                     @else
                         <a href="{{ route('login') }}" class="inline-flex rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-primary hover:bg-cyan-300">
@@ -213,7 +213,7 @@
                                 <span class="ml-2 text-accent">{{ $chip['points_gained'] >= 0 ? '+' : '' }}{{ $chip['points_gained'] }} pts</span>
                             </div>
                         @empty
-                            <p class="text-sm text-gray-400">No chips recorded yet.</p>
+                            <p class="text-sm text-gray-400">No data yet.</p>
                         @endforelse
                     </div>
                 </div>

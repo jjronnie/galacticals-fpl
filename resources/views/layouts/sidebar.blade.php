@@ -59,12 +59,12 @@
                 @if (! auth()->user()->hasClaimedProfile())
                     <a href="{{ route('profile.search') }}" class="flex w-full flex-col items-center justify-center p-2 text-xs {{ request()->routeIs('profile.search') ? 'text-white' : 'text-gray-400 hover:text-white' }}">
                         <i data-lucide="search" class="h-5 w-5"></i>
-                        Search
+                        Claim
                     </a>
                 @endif
                 <a href="{{ route('profile.index') }}" class="flex w-full flex-col items-center justify-center p-2 text-xs {{ request()->routeIs('profile.*') ? 'text-white' : 'text-gray-400 hover:text-white' }}">
                     <i data-lucide="user" class="h-5 w-5"></i>
-                    Profile
+                   My Team
                 </a>
             </div>
         </nav>
