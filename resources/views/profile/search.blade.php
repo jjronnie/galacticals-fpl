@@ -68,7 +68,7 @@
 
                     <div class="grid max-h-[60vh] gap-3 overflow-y-auto pr-1 sm:grid-cols-2 xl:grid-cols-3">
                         <template x-for="manager in results" :key="manager.entry_id">
-                            <article class="rounded-2xl border border-gray-700 bg-primary p-4">
+                            <article class="rounded-2xl border border-gray-700 bg-card p-4">
                                 <div class="flex items-start justify-between gap-3">
                                     <div>
                                         <p class="text-base font-bold text-white" x-text="manager.team_name"></p>

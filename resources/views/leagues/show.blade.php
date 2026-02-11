@@ -72,7 +72,7 @@
                                 $profileUrl = $entryId > 0 ? route('managers.show', $entryId) : null;
                             @endphp
                             <div x-show="{{ $index }} < visibleItems" @if ($index >= $cardItemsStep) x-cloak @endif>
-                                <div class="min-w-0 rounded-lg bg-primary px-3 py-2">
+                                <div class="min-w-0 rounded-lg bg-card px-3 py-2">
                                     @if ($profileUrl)
                                         <a href="{{ $profileUrl }}" class="block truncate font-semibold text-white hover:text-accent hover:underline">
                                             {{ $entryName }}
@@ -122,7 +122,7 @@
                             @php
                                 $profileUrl = $managerProfileUrl($name);
                             @endphp
-                            <div class="flex min-w-0 items-center justify-between rounded-lg bg-primary px-3 py-2">
+                            <div class="flex min-w-0 items-center justify-between rounded-lg bg-card px-3 py-2">
                                 @if ($profileUrl)
                                     <a href="{{ $profileUrl }}" class="truncate font-semibold text-white hover:text-accent hover:underline">{{ $name }}</a>
                                 @else
@@ -146,7 +146,7 @@
                             @php
                                 $profileUrl = $managerProfileUrl($name);
                             @endphp
-                            <div class="flex min-w-0 items-center justify-between rounded-lg bg-primary px-3 py-2">
+                            <div class="flex min-w-0 items-center justify-between rounded-lg bg-card px-3 py-2">
                                 @if ($profileUrl)
                                     <a href="{{ $profileUrl }}" class="truncate font-semibold text-white hover:text-accent hover:underline">{{ $name }}</a>
                                 @else
@@ -172,7 +172,7 @@
                                     ? route('managers.show', $row['entry_id'])
                                     : null;
                             @endphp
-                            <div class="flex min-w-0 items-center justify-between rounded-lg bg-primary px-3 py-2">
+                            <div class="flex min-w-0 items-center justify-between rounded-lg bg-card px-3 py-2">
                                 <div class="min-w-0">
                                     @if ($profileUrl)
                                         <a href="{{ $profileUrl }}" class="block truncate font-semibold text-white hover:text-accent hover:underline">
@@ -203,7 +203,7 @@
                                     ? route('managers.show', $row['entry_id'])
                                     : null;
                             @endphp
-                            <div class="flex min-w-0 items-center justify-between rounded-lg bg-primary px-3 py-2">
+                            <div class="flex min-w-0 items-center justify-between rounded-lg bg-card px-3 py-2">
                                 <div class="min-w-0">
                                     @if ($profileUrl)
                                         <a href="{{ $profileUrl }}" class="block truncate font-semibold text-white hover:text-accent hover:underline">
@@ -233,7 +233,7 @@
                                 $streakManager = $stats['longest_top_streak']['manager'] ?? null;
                                 $profileUrl = $managerProfileUrl($streakManager);
                             @endphp
-                            <div class="rounded-lg bg-primary px-3 py-2">
+                            <div class="rounded-lg bg-card px-3 py-2">
                                 @if ($profileUrl)
                                     <a href="{{ $profileUrl }}" class="font-semibold text-white hover:text-accent hover:underline">
                                         {{ $streakManager }}
@@ -265,10 +265,10 @@
                                 $highestProfileUrl = $managerProfileUrl($highestName);
                                 $lowestProfileUrl = $managerProfileUrl($lowestName);
                             @endphp
-                            <p class="rounded-lg bg-primary px-3 py-2">
+                            <p class="rounded-lg bg-card px-3 py-2">
                                 {{ $stats['the_blowout']['difference'] }} point gap (GW {{ $stats['the_blowout']['gw'] }})
                             </p>
-                            <p class="rounded-lg bg-primary px-3 py-2 text-xs text-gray-300">
+                            <p class="rounded-lg bg-card px-3 py-2 text-xs text-gray-300">
                                 High:
                                 @if ($highestProfileUrl)
                                     <a href="{{ $highestProfileUrl }}" class="font-semibold text-white hover:text-accent hover:underline">{{ $highestName }}</a>
@@ -277,7 +277,7 @@
                                 @endif
                                 ({{ $stats['the_blowout']['highest_points'] }})
                             </p>
-                            <p class="rounded-lg bg-primary px-3 py-2 text-xs text-gray-300">
+                            <p class="rounded-lg bg-card px-3 py-2 text-xs text-gray-300">
                                 Low:
                                 @if ($lowestProfileUrl)
                                     <a href="{{ $lowestProfileUrl }}" class="font-semibold text-white hover:text-accent hover:underline">{{ $lowestName }}</a>
@@ -339,7 +339,7 @@
                                 @php
                                     $profileUrl = $managerProfileUrl($manager);
                                 @endphp
-                                <div class="rounded-lg bg-primary px-3 py-2">
+                                <div class="rounded-lg bg-card px-3 py-2">
                                     @if ($profileUrl)
                                         <a href="{{ $profileUrl }}" class="font-semibold text-white hover:text-accent hover:underline">{{ $manager }}</a>
                                     @else
@@ -356,7 +356,7 @@
                                 @php
                                     $profileUrl = $managerProfileUrl($manager);
                                 @endphp
-                                <div class="rounded-lg bg-primary px-3 py-2">
+                                <div class="rounded-lg bg-card px-3 py-2">
                                     @if ($profileUrl)
                                         <a href="{{ $profileUrl }}" class="font-semibold text-white hover:text-accent hover:underline">{{ $manager }}</a>
                                     @else
@@ -373,7 +373,7 @@
                                 @php
                                     $profileUrl = $managerProfileUrl($manager);
                                 @endphp
-                                <div class="rounded-lg bg-primary px-3 py-2">
+                                <div class="rounded-lg bg-card px-3 py-2">
                                     @if ($profileUrl)
                                         <a href="{{ $profileUrl }}" class="font-semibold text-white hover:text-accent hover:underline">{{ $manager }}</a>
                                     @else
@@ -397,7 +397,7 @@
                             @php
                                 $profileUrl = $managerProfileUrl($contender);
                             @endphp
-                            <div class="rounded-lg bg-primary px-3 py-2">
+                            <div class="rounded-lg bg-card px-3 py-2">
                                 @if ($profileUrl)
                                     <a href="{{ $profileUrl }}" class="font-semibold text-white hover:text-accent hover:underline">{{ $contender }}</a>
                                 @else
@@ -421,7 +421,7 @@
                                 $profileUrl = $managerProfileUrl($row['name']);
                             @endphp
                             <div x-show="{{ $index }} < visibleItems" @if ($index >= $cardItemsStep) x-cloak @endif>
-                                <div class="flex min-w-0 items-center justify-between rounded-lg bg-primary px-3 py-2">
+                                <div class="flex min-w-0 items-center justify-between rounded-lg bg-card px-3 py-2">
                                     @if ($profileUrl)
                                         <a href="{{ $profileUrl }}" class="truncate font-semibold text-white hover:text-accent hover:underline">{{ $row['name'] }}</a>
                                     @else
@@ -468,7 +468,7 @@
                                 $profileUrl = $managerProfileUrl($name);
                             @endphp
                             <div x-show="{{ $index }} < visibleItems" @if ($index >= $cardItemsStep) x-cloak @endif>
-                                <div class="rounded-lg bg-primary px-3 py-2">
+                                <div class="rounded-lg bg-card px-3 py-2">
                                     @if ($profileUrl)
                                         <a href="{{ $profileUrl }}" class="font-semibold text-white hover:text-accent hover:underline">{{ $name }}</a>
                                     @else
@@ -514,7 +514,7 @@
                                 $profileUrl = $managerProfileUrl($name);
                             @endphp
                             <div x-show="{{ $index }} < visibleItems" @if ($index >= $cardItemsStep) x-cloak @endif>
-                                <div class="rounded-lg bg-primary px-3 py-2">
+                                <div class="rounded-lg bg-card px-3 py-2">
                                     @if ($profileUrl)
                                         <a href="{{ $profileUrl }}" class="font-semibold text-white hover:text-accent hover:underline">{{ $name }}</a>
                                     @else
@@ -557,7 +557,7 @@
                     <div x-data="{ visibleItems: {{ $cardItemsStep }}, totalItems: {{ $countryDistributionEntries->count() }} }" class="mt-3 space-y-2 text-sm text-gray-300">
                         @forelse($countryDistributionEntries as $index => $row)
                             <div x-show="{{ $index }} < visibleItems" @if ($index >= $cardItemsStep) x-cloak @endif>
-                                <div class="flex items-center justify-between rounded-lg bg-primary px-3 py-2">
+                                <div class="flex items-center justify-between rounded-lg bg-card px-3 py-2">
                                     <span class="truncate">{{ $row['country'] }}</span>
                                     <span class="font-semibold text-accent">{{ $row['count'] }}</span>
                                 </div>
@@ -597,7 +597,7 @@
                     <div x-data="{ visibleItems: {{ $cardItemsStep }}, totalItems: {{ $favouriteTeamEntries->count() }} }" class="mt-3 space-y-2 text-sm text-gray-300">
                         @forelse($favouriteTeamEntries as $index => $row)
                             <div x-show="{{ $index }} < visibleItems" @if ($index >= $cardItemsStep) x-cloak @endif>
-                                <div class="flex items-center justify-between rounded-lg bg-primary px-3 py-2">
+                                <div class="flex items-center justify-between rounded-lg bg-card px-3 py-2">
                                     <span class="truncate">{{ $row['team'] }}</span>
                                     <span class="font-semibold text-accent">{{ $row['count'] }}</span>
                                 </div>
@@ -635,9 +635,9 @@
                         <i data-lucide="package" class="h-4 w-4 text-accent"></i>
                     </div>
                     <div class="mt-3 space-y-2 text-sm text-gray-300">
-                        <div class="rounded-lg bg-primary px-3 py-2">Most used: {{ $stats['most_used_chip'] ?? 'N/A' }}</div>
-                        <div class="rounded-lg bg-primary px-3 py-2">Least used: {{ $stats['least_used_chip'] ?? 'N/A' }}</div>
-                        <div class="rounded-lg bg-primary px-3 py-2">Most effective: {{ $stats['most_effective_chip'] ?? 'N/A' }}</div>
+                        <div class="rounded-lg bg-card px-3 py-2">Most used: {{ $stats['most_used_chip'] ?? 'N/A' }}</div>
+                        <div class="rounded-lg bg-card px-3 py-2">Least used: {{ $stats['least_used_chip'] ?? 'N/A' }}</div>
+                        <div class="rounded-lg bg-card px-3 py-2">Most effective: {{ $stats['most_effective_chip'] ?? 'N/A' }}</div>
                     </div>
                 </article>
             </div>

@@ -12,7 +12,7 @@
 
                 <button
                     type="button"
-                    class="flex w-full items-center justify-between rounded-lg border border-gray-700 bg-primary px-3 py-2 text-left transition hover:border-gray-500"
+                    class="flex w-full items-center justify-between rounded-lg border border-gray-700 bg-card px-3 py-2 text-left transition hover:border-gray-500"
                     @click="openAward = openAward === {{ $index }} ? null : {{ $index }}"
                 >
                     <span class="text-sm font-semibold text-accent">{{ $awardTitle }}</span>
@@ -28,7 +28,7 @@
                     x-cloak
                     x-show="openAward === {{ $index }}"
                     x-transition
-                    class="rounded-lg border border-gray-700/80 bg-primary/80 px-3 py-2 text-xs text-gray-300"
+                    class="rounded-lg border border-gray-700/80 bg-card/80 px-3 py-2 text-xs text-gray-300"
                 >
                     <p><span class="font-semibold text-gray-200">Given for:</span> {{ $awardReason }}</p>
                     <p class="mt-1"><span class="font-semibold text-gray-200">Achieved:</span> {{ $awardAchievedAt }}</p>

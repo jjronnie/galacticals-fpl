@@ -36,7 +36,7 @@
     </div>
 
     @if ($teamOfWeek !== null)
-        <div class="mt-4 rounded-xl border border-gray-700 bg-primary p-3">
+        <div class="mt-4 rounded-xl border border-gray-700 bg-card p-3">
             @if ($showMeta)
                 <div class="mb-3 flex items-center justify-between gap-2">
                     <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">
@@ -90,7 +90,7 @@
             </div>
         </div>
     @else
-        <p class="mt-4 rounded-xl border border-gray-700 bg-primary px-4 py-6 text-center text-sm text-gray-400">
+        <p class="mt-4 rounded-xl border border-gray-700 bg-card px-4 py-6 text-center text-sm text-gray-400">
             {{ $emptyText }}
         </p>
     @endif

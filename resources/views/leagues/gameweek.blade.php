@@ -33,7 +33,7 @@
                     </div>
                     <div class="mt-3 space-y-2 text-sm text-gray-300">
                         @foreach ($gameweekInsights['best_managers'] as $manager)
-                            <div class="rounded-lg bg-primary px-3 py-2">
+                            <div class="rounded-lg bg-card px-3 py-2">
                                 <a href="{{ route('managers.show', $manager['entry_id']) }}" class="font-semibold text-green-300 hover:text-green-200">
                                     {{ $manager['name'] }}
                                 </a>
@@ -51,7 +51,7 @@
                     </div>
                     <div class="mt-3 space-y-2 text-sm text-gray-300">
                         @foreach ($gameweekInsights['worst_managers'] as $manager)
-                            <div class="rounded-lg bg-primary px-3 py-2">
+                            <div class="rounded-lg bg-card px-3 py-2">
                                 <a href="{{ route('managers.show', $manager['entry_id']) }}" class="font-semibold text-red-300 hover:text-red-200">
                                     {{ $manager['name'] }}
                                 </a>
@@ -68,7 +68,7 @@
                         <i data-lucide="bar-chart-3" class="h-4 w-4 text-accent"></i>
                     </div>
                     <div class="mt-3 text-sm text-gray-300">
-                        <p class="rounded-lg bg-primary px-3 py-2 font-semibold text-accent">
+                        <p class="rounded-lg bg-card px-3 py-2 font-semibold text-accent">
                             {{ $gameweekAveragePoints !== null ? rtrim(rtrim(number_format($gameweekAveragePoints, 2), '0'), '.') : 'N/A' }} pts
                         </p>
                     </div>
@@ -84,7 +84,7 @@
                 </div>
                 <div class="mt-3 space-y-1 text-sm text-gray-300">
                     @forelse (($ownershipTrends['most_captained'] ?? []) as $captain)
-                        <div class="flex items-center justify-between rounded-lg bg-primary px-3 py-2">
+                        <div class="flex items-center justify-between rounded-lg bg-card px-3 py-2">
                             <span class="truncate">{{ $captain['player'] }}</span>
                             <span class="font-semibold text-accent">{{ $captain['count'] }}</span>
                         </div>
@@ -101,7 +101,7 @@
                 </div>
                 <div class="mt-3 space-y-1 text-sm text-gray-300">
                     @forelse (($ownershipTrends['most_transferred_in'] ?? []) as $player)
-                        <div class="flex items-center justify-between rounded-lg bg-primary px-3 py-2">
+                        <div class="flex items-center justify-between rounded-lg bg-card px-3 py-2">
                             <span class="truncate">{{ $player['player'] }}</span>
                             <span class="font-semibold text-accent">{{ $player['count'] }}</span>
                         </div>
@@ -118,7 +118,7 @@
                 </div>
                 <div class="mt-3 space-y-1 text-sm text-gray-300">
                     @forelse (($ownershipTrends['most_transferred_out'] ?? []) as $player)
-                        <div class="flex items-center justify-between rounded-lg bg-primary px-3 py-2">
+                        <div class="flex items-center justify-between rounded-lg bg-card px-3 py-2">
                             <span class="truncate">{{ $player['player'] }}</span>
                             <span class="font-semibold text-accent">{{ $player['count'] }}</span>
                         </div>
@@ -135,7 +135,7 @@
                 </div>
                 <div class="mt-3 space-y-1 text-sm text-gray-300">
                     @forelse (($ownershipTrends['chips_played'] ?? []) as $chip => $count)
-                        <div class="flex items-center justify-between rounded-lg bg-primary px-3 py-2">
+                        <div class="flex items-center justify-between rounded-lg bg-card px-3 py-2">
                             <span class="truncate">{{ $chip }}</span>
                             <span class="font-semibold text-accent">{{ $count }}</span>
                         </div>
@@ -148,6 +148,7 @@
 
         @include('leagues.partials.team-of-week-list', [
             'teamOfWeek' => $teamOfWeek,
+            'historyUrl' => route('dashboard.team-of-week-history', ['gameweek' => $targetGW]),
             'emptyText' => 'No team-of-the-week data for this gameweek.',
         ])
 

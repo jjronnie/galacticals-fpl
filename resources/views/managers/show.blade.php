@@ -125,7 +125,7 @@
                                 x-transition
                                 method="POST"
                                 action="{{ route('profile.complaint', $manager) }}"
-                                class="mt-4 space-y-3 rounded-xl border border-gray-700 bg-primary p-4"
+                                class="mt-4 space-y-3 rounded-xl border border-gray-700 bg-card p-4"
                             >
                                 @csrf
 
@@ -243,7 +243,7 @@
                             @foreach ($sectionBlocks as $block)
                                 <a
                                     href="{{ route('managers.section', ['entryId' => $manager->entry_id, 'section' => $block['key']]) }}"
-                                    class="group rounded-xl border border-gray-700 bg-primary p-4 transition hover:border-gray-500"
+                                    class="group rounded-xl border border-gray-700 bg-card p-4 transition hover:border-gray-500"
                                 >
                                     <div class="flex items-start justify-between gap-3">
                                         <h3 class="text-sm font-semibold text-white">{{ $block['title'] }}</h3>
@@ -381,7 +381,7 @@
                             <h2 class="text-lg font-semibold text-white">Top Player Contributions</h2>
                             <div class="mt-4 space-y-2">
                                 @forelse (($stats['player_contribution'] ?? []) as $player)
-                                    <div class="flex items-center justify-between rounded-lg bg-primary px-3 py-2 text-sm">
+                                    <div class="flex items-center justify-between rounded-lg bg-card px-3 py-2 text-sm">
                                         <span class="text-white">{{ $player['player'] }} <span class="text-gray-400">({{ $player['team'] }})</span></span>
                                         <span class="font-semibold text-accent">{{ $player['points'] }} pts</span>
                                     </div>
@@ -407,7 +407,7 @@
                         <h2 class="text-lg font-semibold text-white">Chip Usage</h2>
                         <div class="mt-4 grid gap-2 sm:grid-cols-2">
                             @forelse (($stats['chip_usage']['rows'] ?? []) as $chip)
-                                <div class="rounded-lg bg-primary px-3 py-2 text-sm text-gray-200">
+                                <div class="rounded-lg bg-card px-3 py-2 text-sm text-gray-200">
                                     GW{{ $chip['gameweek'] }} - {{ $chip['chip'] }}
                                     <span class="ml-2 text-accent">{{ $chip['points_gained'] >= 0 ? '+' : '' }}{{ $chip['points_gained'] }} pts</span>
                                 </div>

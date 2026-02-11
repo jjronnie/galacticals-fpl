@@ -19,7 +19,7 @@
 
             <div class="mt-5 space-y-3">
                 @forelse ($playerOfWeekHistory as $row)
-                    <article class="rounded-xl border border-gray-700 bg-primary px-4 py-3">
+                    <article class="rounded-xl border border-gray-700 bg-card px-4 py-3">
                         <div class="flex items-center justify-between gap-3">
                             <div class="flex min-w-0 items-center gap-3">
                                 <svg viewBox="0 0 64 64" class="h-10 w-10 shrink-0">
@@ -41,7 +41,7 @@
                         </div>
                     </article>
                 @empty
-                    <p class="rounded-xl border border-gray-700 bg-primary px-4 py-6 text-center text-sm text-gray-400">
+                    <p class="rounded-xl border border-gray-700 bg-card px-4 py-6 text-center text-sm text-gray-400">
                         No player of the week history available yet.
                     </p>
                 @endforelse

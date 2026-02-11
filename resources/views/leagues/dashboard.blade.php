@@ -102,7 +102,7 @@
                     @forelse ($playerOfWeekCards as $playerCard)
                         <a
                             href="{{ route('dashboard.player-of-week-history') }}"
-                            class="min-w-[240px] rounded-xl border border-gray-700 bg-primary p-3 transition hover:border-gray-500"
+                            class="min-w-[240px] rounded-xl border border-gray-700 bg-card p-3 transition hover:border-gray-500"
                         >
                             <div class="flex items-center justify-between gap-3">
                                 <div class="flex items-center gap-3">

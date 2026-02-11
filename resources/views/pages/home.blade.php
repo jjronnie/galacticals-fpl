@@ -55,20 +55,20 @@
         <section id="join-steps" class="rounded-3xl border border-gray-700 bg-card p-8">
             <h2 class="text-2xl font-bold text-white">How It Works</h2>
             <div class="mt-6 grid gap-4 md:grid-cols-3">
-                <div class="rounded-2xl bg-primary p-5">
+                <div class="rounded-2xl bg-card p-5">
                     <p class="text-xs font-semibold uppercase tracking-wide text-accent">Step 1</p>
                     <h3 class="mt-2 text-lg font-semibold text-white">Create an Account</h3>
                     <p class="mt-2 text-sm text-gray-300">Sign up and confirm your email to unlock your dashboard.</p>
                 </div>
 
-                <div class="rounded-2xl bg-primary p-5">
+                <div class="rounded-2xl bg-card p-5">
                     <p class="text-xs font-semibold uppercase tracking-wide text-accent">Step 2</p>
                     <h3 class="mt-2 text-lg font-semibold text-white">Add Your League</h3>
                     <p class="mt-2 text-sm text-gray-300">Paste your classic league ID and let the app import standings.</p>
                     <a href="{{ route('find') }}" class="mt-3 inline-flex text-xs font-semibold text-accent hover:underline">How to find league ID</a>
                 </div>
 
-                <div class="rounded-2xl bg-primary p-5">
+                <div class="rounded-2xl bg-card p-5">
                     <p class="text-xs font-semibold uppercase tracking-wide text-accent">Step 3</p>
                     <h3 class="mt-2 text-lg font-semibold text-white">Claim Your Profile</h3>
                     <p class="mt-2 text-sm text-gray-300">Search your FPL team and claim it for personal weekly analytics.</p>
@@ -81,10 +81,10 @@
         <section class="rounded-3xl border border-gray-700 bg-card p-8">
             <h2 class="text-2xl font-bold text-white">What You Can Track</h2>
             <div class="mt-4 grid gap-3 sm:grid-cols-2">
-                <div class="rounded-xl bg-primary p-4 text-sm text-gray-200">Longest top streak in your league</div>
-                <div class="rounded-xl bg-primary p-4 text-sm text-gray-200">Most-owned and most-captained players per gameweek</div>
-                <div class="rounded-xl bg-primary p-4 text-sm text-gray-200">Transfer trends and chip usage</div>
-                <div class="rounded-xl bg-primary p-4 text-sm text-gray-200">Bench points, captaincy impact, and team value changes</div>
+                <div class="rounded-xl bg-card p-4 text-sm text-gray-200">Longest top streak in your league</div>
+                <div class="rounded-xl bg-card p-4 text-sm text-gray-200">Most-owned and most-captained players per gameweek</div>
+                <div class="rounded-xl bg-card p-4 text-sm text-gray-200">Transfer trends and chip usage</div>
+                <div class="rounded-xl bg-card p-4 text-sm text-gray-200">Bench points, captaincy impact, and team value changes</div>
             </div>
         </section>
 
