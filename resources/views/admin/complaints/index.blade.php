@@ -18,17 +18,13 @@
             <form method="GET" action="{{ route('admin.complaints.index') }}" class="flex flex-col gap-3 sm:flex-row sm:items-end">
                 <div>
                     <label for="status" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-400">Status</label>
-                    <select id="status" name="status" class="rounded-lg border border-gray-600 bg-primary px-3 py-2 text-sm text-white">
+                    <select id="status" name="status" onchange="this.form.submit()" class="rounded-lg border border-gray-600 bg-primary px-3 py-2 text-sm text-white">
                         <option value="">All</option>
                         <option value="open" @selected($status === 'open')>Open</option>
                         <option value="in_progress" @selected($status === 'in_progress')>In progress</option>
                         <option value="resolved" @selected($status === 'resolved')>Resolved</option>
                     </select>
                 </div>
-
-                <button type="submit" class="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-primary hover:bg-cyan-300">
-                    Apply
-                </button>
             </form>
         </section>
 

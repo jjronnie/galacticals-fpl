@@ -19,10 +19,34 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
+    private const PROFILE_SECTIONS = [
+        'overview' => 'Overview',
+        'contributions' => 'Top Contributions',
+        'chips' => 'Chip Usage',
+        'captaincy' => 'Captain Performance',
+        'transfers' => 'Transfer Efficiency',
+        'value' => 'Squad Value Evolution',
+        'history' => 'Gameweek History',
+    ];
+
     public function __construct(private readonly ProfileStatsService $profileStatsService) {}
 
     public function index(Request $request): View
     {
+        return $this->renderDashboard($request, 'overview');
+    }
+
+    public function section(Request $request, string $section): View
+    {
+        return $this->renderDashboard($request, $section);
+    }
+
+    private function renderDashboard(Request $request, string $section): View
+    {
+        if (! array_key_exists($section, self::PROFILE_SECTIONS)) {
+            abort(404);
+        }
+
         app(SeoService::class)->setProfileDashboard();
 
         $user = $request->user();
@@ -65,7 +89,7 @@ class ProfileController extends Controller
             }
 
             if (! $profileSuspended) {
-                $stats = $this->profileStatsService->getProfileStats($selectedManager);
+                $stats = $this->profileStatsService->getProfileStats($selectedManager, $section);
             }
         }
 
@@ -76,6 +100,8 @@ class ProfileController extends Controller
             'profileSuspended' => $profileSuspended,
             'profileVerificationState' => $profileVerificationState,
             'latestProfileVerificationSubmission' => $latestProfileVerificationSubmission,
+            'activeSection' => $section,
+            'profileSections' => self::PROFILE_SECTIONS,
         ]);
     }
 
@@ -206,10 +232,7 @@ class ProfileController extends Controller
                 'suspended_at' => null,
             ]);
 
-        foreach ($managerIds as $managerId) {
-            Cache::forget('profile_stats_'.$managerId);
-        }
-        Cache::forget('profile_stats_entry_'.$entryId);
+        $this->forgetProfileCaches($entryId, $managerIds);
 
         FetchFplDataJob::dispatch();
         FetchManagerProfilesJob::dispatch($managerIds);
@@ -234,7 +257,12 @@ class ProfileController extends Controller
                 'suspended_at' => null,
             ]);
 
-        Cache::forget('profile_stats_entry_'.$entryId);
+        $managerIds = Manager::query()
+            ->where('entry_id', $entryId)
+            ->pluck('id')
+            ->all();
+
+        $this->forgetProfileCaches((int) $entryId, $managerIds);
 
         return Redirect::route('profile.index')->with('status', 'Team claim removed.');
     }
@@ -275,5 +303,21 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    /**
+     * @param  array<int>  $managerIds
+     */
+    private function forgetProfileCaches(int $entryId, array $managerIds): void
+    {
+        foreach ($managerIds as $managerId) {
+            Cache::forget('profile_stats_'.$managerId);
+        }
+
+        Cache::forget('profile_stats_entry_'.$entryId);
+
+        foreach (array_keys(self::PROFILE_SECTIONS) as $section) {
+            Cache::forget("profile_stats_entry_{$entryId}_{$section}");
+        }
     }
 }

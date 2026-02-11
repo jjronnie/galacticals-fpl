@@ -6,7 +6,7 @@
     <section class="mb-6 rounded-2xl border border-cyan-700/50 bg-cyan-900/20 p-4">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h2 class="text-sm font-semibold uppercase tracking-wide text-cyan-300">Introducing Individual Profiles(Beta)</h2>
+                <h2 class="text-sm font-semibold uppercase tracking-wide text-cyan-300">Individual Profiles (Beta) now available</h2>
                 <p class="mt-1 text-sm text-cyan-100/90">
                     Claim your FPL team profile to unlock personal stats.
                 </p>

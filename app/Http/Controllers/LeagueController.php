@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Jobs\FetchLeagueStandings;
 use App\Models\League;
+use App\Models\User;
+use App\Services\DashboardStatsService;
 use App\Services\LeagueStatsService;
 use App\Services\SeoService;
 use Illuminate\Http\RedirectResponse;
@@ -18,26 +20,23 @@ class LeagueController extends Controller
 {
     public function __construct(
         private readonly LeagueStatsService $statsService,
-        private readonly SeoService $seoService
+        private readonly SeoService $seoService,
+        private readonly DashboardStatsService $dashboardStatsService
     ) {}
 
     public function index(): RedirectResponse|View
     {
         $user = Auth::user();
-        $league = League::query()->where('user_id', $user->id)->first();
+        $league = $this->resolveDashboardLeague($user);
 
         if ($league === null) {
-            if ($user->hasClaimedProfile()) {
-                return redirect()
-                    ->route('profile.index')
-                    ->with('status', 'You do not have a league yet. Showing your profile dashboard instead.');
-            }
-
             return view('leagues.dashboard-empty', [
                 'hasClaimedProfile' => false,
                 'hasLeague' => false,
             ]);
         }
+
+        $isOwnedLeague = (int) $league->user_id === (int) $user->id;
 
         $totalManagers = $league->managers()->count();
 
@@ -45,11 +44,18 @@ class LeagueController extends Controller
             ->orderBy('gameweek_scores.updated_at', 'desc')
             ->value('gameweek_scores.updated_at');
 
+        $dashboardStats = $this->dashboardStatsService->getGlobalDashboardStats();
+
         return view('leagues.dashboard', [
             'league' => $league,
             'totalManagers' => $totalManagers,
             'lastUpdated' => $lastUpdated,
             'hasClaimedProfile' => $user->hasClaimedProfile(),
+            'isOwnedLeague' => $isOwnedLeague,
+            'bestLeagues' => $dashboardStats['best_leagues'] ?? [],
+            'mostValuableTeams' => $dashboardStats['most_valuable_teams'] ?? [],
+            'playerOfWeekCards' => $dashboardStats['player_of_week_cards'] ?? [],
+            'teamOfWeekRows' => $dashboardStats['team_of_week_rows'] ?? [],
         ]);
     }
 
@@ -242,12 +248,30 @@ class LeagueController extends Controller
     {
         $league = League::query()->where('slug', $slug)->firstOrFail();
         $availableGameweeks = $this->statsService->getAvailableGameweeks($league);
+        $leagueStats = $this->statsService->getLeagueStats($league);
+        $teamOfWeek = collect($leagueStats['teamOfWeekRows'] ?? [])
+            ->firstWhere('gameweek', $gameweek);
+        $previousGameweek = collect($availableGameweeks)
+            ->filter(fn (int $available): bool => $available < $gameweek)
+            ->max();
 
         if (! in_array($gameweek, $availableGameweeks, true)) {
             return redirect()->route('public.leagues.show', ['slug' => $league->slug]);
         }
 
         $gameweekStandings = $this->statsService->getGameweekStandings($league, $gameweek)->values();
+        $previousStandingsByManager = [];
+
+        if ($previousGameweek !== null) {
+            $previousStandingsByManager = $this->statsService
+                ->getGameweekStandings($league, (int) $previousGameweek)
+                ->keyBy('manager_id')
+                ->map(fn ($standing): array => [
+                    'rank' => (int) $standing->rank,
+                    'points' => (int) $standing->points,
+                ])
+                ->all();
+        }
 
         $gameweekInsights = null;
         if ($gameweekStandings->isNotEmpty()) {
@@ -291,10 +315,61 @@ class LeagueController extends Controller
         return view('leagues.gameweek', [
             'league' => $league,
             'targetGW' => $gameweek,
+            'previousGameweek' => $previousGameweek,
+            'previousStandingsByManager' => $previousStandingsByManager,
             'availableGameweeks' => $availableGameweeks,
+            'teamOfWeek' => $teamOfWeek,
             'gameweekStandings' => $gameweekStandings,
             'gameweekInsights' => $gameweekInsights,
             'ownershipTrends' => $this->statsService->getOwnershipAndCaptaincyTrends($league, $gameweek),
+        ]);
+    }
+
+    public function playerOfWeekHistory(): RedirectResponse|View
+    {
+        $league = $this->resolveDashboardLeague(Auth::user());
+
+        if ($league === null) {
+            return redirect()
+                ->route('dashboard')
+                ->withErrors(['league' => 'Set up a league or claim a profile first to view player of the week history.']);
+        }
+
+        return view('leagues.player-of-week-history', [
+            'league' => $league,
+            'playerOfWeekHistory' => $this->dashboardStatsService->getPlayerOfWeekHistory(),
+        ]);
+    }
+
+    public function teamOfWeekHistory(Request $request): RedirectResponse|View
+    {
+        $league = $this->resolveDashboardLeague(Auth::user());
+
+        if ($league === null) {
+            return redirect()
+                ->route('dashboard')
+                ->withErrors(['league' => 'Set up a league or claim a profile first to view team of the week history.']);
+        }
+
+        $teamOfWeekHistory = collect($this->dashboardStatsService->getTeamOfWeekHistory());
+        $availableGameweeks = $teamOfWeekHistory
+            ->pluck('gameweek')
+            ->filter()
+            ->map(fn ($gameweek): int => (int) $gameweek)
+            ->values();
+        $selectedGameweek = (int) $request->integer('gameweek', (int) ($availableGameweeks->first() ?? 0));
+
+        if ($availableGameweeks->isNotEmpty() && ! $availableGameweeks->contains($selectedGameweek)) {
+            $selectedGameweek = (int) $availableGameweeks->first();
+        }
+
+        $selectedTeamOfWeek = $teamOfWeekHistory->firstWhere('gameweek', $selectedGameweek);
+
+        return view('leagues.team-of-week-history', [
+            'league' => $league,
+            'availableGameweeks' => $availableGameweeks,
+            'selectedGameweek' => $selectedGameweek,
+            'selectedTeamOfWeek' => $selectedTeamOfWeek,
         ]);
     }
 
@@ -367,10 +442,10 @@ class LeagueController extends Controller
 
     public function managers(): RedirectResponse|View
     {
-        $league = League::query()->where('user_id', auth()->id())->first();
+        $league = $this->resolveDashboardLeague(auth()->user());
 
         if ($league === null) {
-            return back()->with('error', 'You do not have any league registered yet.');
+            return back()->with('error', 'You do not have any league or claimed profile yet.');
         }
 
         $page = (int) request()->get('page', 1);
@@ -413,5 +488,24 @@ class LeagueController extends Controller
         $baseUrl = rtrim((string) config('services.fpl.base_url', 'https://fantasy.premierleague.com/api'), '/');
 
         return $baseUrl.'/'.ltrim($path, '/');
+    }
+
+    private function resolveDashboardLeague(User $user): ?League
+    {
+        $ownedLeague = League::query()
+            ->where('user_id', $user->id)
+            ->first();
+
+        if ($ownedLeague !== null) {
+            return $ownedLeague;
+        }
+
+        return League::query()
+            ->whereHas('managers', function ($query) use ($user): void {
+                $query->where('user_id', $user->id);
+            })
+            ->orderByDesc('last_synced_at')
+            ->orderByDesc('updated_at')
+            ->first();
     }
 }

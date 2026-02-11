@@ -37,23 +37,7 @@
 
         <section class="rounded-2xl border border-gray-700 bg-card p-5">
             <h2 class="text-lg font-semibold text-white">Admin Tools</h2>
-            <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-                <a href="{{ route('admin.data') }}" class="rounded-lg bg-accent px-4 py-3 text-center text-sm font-semibold text-primary hover:bg-cyan-300">
-                    Data Sync Panel
-                </a>
-
-                <a href="{{ route('admin.data.observer') }}" class="rounded-lg bg-primary px-4 py-3 text-center text-sm font-semibold text-white hover:bg-secondary">
-                    DB Observer
-                </a>
-
-               
-
-                <a href="{{ route('admin.managers.all') }}" class="rounded-lg bg-primary px-4 py-3 text-center text-sm font-semibold text-white hover:bg-secondary">
-                    All Managers
-                </a>
-
-              
-
+            <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:max-w-2xl">
                 <form action="{{ route('run.league.update') }}" method="POST">
                     @csrf
                     <button type="submit" class="w-full rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-white hover:bg-secondary">
@@ -61,21 +45,12 @@
                     </button>
                 </form>
 
-                <form action="{{ route('admin.send.league.reminders') }}" method="POST">
+                <form action="{{ route('admin.data.computeGameweeks') }}" method="POST">
                     @csrf
                     <button type="submit" class="w-full rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-white hover:bg-secondary">
-                        Send Reminders
+                        Compute All GW Tables
                     </button>
                 </form>
-            </div>
-        </section>
-
-        <section class="rounded-2xl border border-gray-700 bg-card p-5">
-            <h2 class="text-lg font-semibold text-white">Managers per League</h2>
-            <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                @foreach ($managersPerLeague as $league)
-                    <x-stat-card :title="$league->name" :value="$league->managers_count" icon="users-round" />
-                @endforeach
             </div>
         </section>
 

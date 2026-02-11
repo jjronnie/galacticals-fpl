@@ -10,6 +10,16 @@ use Illuminate\View\View;
 
 class ManagerProfileController extends Controller
 {
+    private const PROFILE_SECTIONS = [
+        'overview' => 'Overview',
+        'contributions' => 'Top Contributions',
+        'chips' => 'Chip Usage',
+        'captaincy' => 'Captain Performance',
+        'transfers' => 'Transfer Efficiency',
+        'value' => 'Squad Value Evolution',
+        'history' => 'Gameweek History',
+    ];
+
     public function __construct(
         private readonly ProfileStatsService $profileStatsService,
         private readonly SeoService $seoService
@@ -17,6 +27,20 @@ class ManagerProfileController extends Controller
 
     public function show(int $entryId): View
     {
+        return $this->renderProfile($entryId, 'overview');
+    }
+
+    public function section(int $entryId, string $section): View
+    {
+        return $this->renderProfile($entryId, $section);
+    }
+
+    private function renderProfile(int $entryId, string $section): View
+    {
+        if (! array_key_exists($section, self::PROFILE_SECTIONS)) {
+            abort(404);
+        }
+
         $managerRows = Manager::query()
             ->where('entry_id', $entryId)
             ->whereNull('suspended_at')
@@ -37,7 +61,7 @@ class ManagerProfileController extends Controller
 
         $isClaimed = $managerRows->contains(fn (Manager $candidate): bool => $candidate->user_id !== null);
         $isVerified = $managerRows->contains(fn (Manager $candidate): bool => $candidate->user_id !== null && $candidate->verified_at !== null);
-        $stats = $isClaimed ? $this->profileStatsService->getProfileStats($manager) : null;
+        $stats = $isClaimed ? $this->profileStatsService->getProfileStats($manager, $section) : null;
 
         $leagueMemberships = Manager::query()
             ->where('entry_id', $entryId)
@@ -57,6 +81,8 @@ class ManagerProfileController extends Controller
             'isClaimed' => $isClaimed,
             'isVerified' => $isVerified,
             'leagueMemberships' => $leagueMemberships,
+            'activeSection' => $section,
+            'profileSections' => self::PROFILE_SECTIONS,
         ]);
     }
 

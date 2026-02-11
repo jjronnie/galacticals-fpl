@@ -10,18 +10,19 @@ class ImportLeagueReminderMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $user;
-    public $appName;
+    public mixed $user;
 
-    public function __construct($user)
+    public string $appName;
+
+    public function __construct(mixed $user)
     {
         $this->user = $user;
         $this->appName = config('app.name');
     }
 
-    public function build()
+    public function build(): static
     {
-        return $this->subject('Reminder to Complete Your League Setup')
+        return $this->subject('Complete Your FPL Setup')
             ->markdown('emails.import-league-reminder');
     }
 }

@@ -26,6 +26,13 @@ class AdminDataController extends Controller
         ]);
     }
 
+    public function leagues(): View
+    {
+        return view('admin.data.leagues', [
+            'initialPayload' => $this->buildStatusPayload(),
+        ]);
+    }
+
     public function status(): JsonResponse
     {
         return response()->json($this->buildStatusPayload());
@@ -278,6 +285,7 @@ class AdminDataController extends Controller
     private function buildStatusPayload(): array
     {
         $leagues = League::query()
+            ->with('user:id,name,email')
             ->withCount('managers')
             ->orderByDesc('updated_at')
             ->get();
@@ -295,7 +303,14 @@ class AdminDataController extends Controller
             return [
                 'id' => $league->id,
                 'name' => $league->name,
+                'slug' => (string) $league->slug,
                 'league_id' => (int) $league->league_id,
+                'owner_name' => (string) ($league->user?->name ?? 'Unassigned'),
+                'owner_email' => (string) ($league->user?->email ?? '-'),
+                'joined_at' => $league->created_at?->toIso8601String(),
+                'joined_at_human' => $league->created_at?->diffForHumans(),
+                'last_updated_at' => ($league->last_synced_at ?? $league->updated_at)?->toIso8601String(),
+                'last_updated_at_human' => ($league->last_synced_at ?? $league->updated_at)?->diffForHumans(),
                 'managers_count' => (int) ($league->managers_count ?? 0),
                 'sync_status' => (string) ($league->sync_status ?? 'completed'),
                 'sync_message' => $league->sync_message ?: '-',
@@ -305,6 +320,15 @@ class AdminDataController extends Controller
             ];
         })->values()->all();
 
+        $jobs = SyncJobProgressService::all();
+        $hasRunningJob = collect($jobs)->contains(function (array $job): bool {
+            return in_array($job['status'] ?? 'idle', ['queued', 'processing'], true);
+        });
+
+        $hasProcessingLeague = collect($leagueRows)->contains(function (array $leagueRow): bool {
+            return ($leagueRow['sync_status'] ?? '') === 'processing';
+        });
+
         return [
             'summary' => [
                 'total_leagues' => $leagues->count(),
@@ -312,8 +336,9 @@ class AdminDataController extends Controller
                 'processing_leagues' => $leagues->where('sync_status', 'processing')->count(),
                 'failed_leagues' => $leagues->where('sync_status', 'failed')->count(),
             ],
-            'jobs' => SyncJobProgressService::all(),
+            'jobs' => $jobs,
             'leagues' => $leagueRows,
+            'has_running_work' => $hasRunningJob || $hasProcessingLeague,
         ];
     }
 

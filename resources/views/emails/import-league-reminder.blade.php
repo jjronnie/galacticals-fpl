@@ -1,18 +1,25 @@
 @component('mail::message')
-# Reminder to  Complete Your League Setup
+# Complete Your FPL Setup
 
 Hello {{ $user->name }},
 
-We noticed that you created an account on **{{ $appName }}**, but you did not complete the steps required to fully import your league.
+You created an account on **{{ $appName }}**, but your setup is still incomplete.
 
-To help you complete your setup, click the button below for instructions on how to find your League ID.
+To get started, complete at least one of these:
+
+- Import your league
+- Add your personal profile by searching and claiming your FPL team
 
 @component('mail::button', ['url' => route('find')])
 Find My League ID
 @endcomponent
 
-If you need any special help or have questions, simply reply to this email and our support team will assist you.
+@component('mail::button', ['url' => route('profile.search')])
+Add Personal Profile
+@endcomponent
 
-Thanks,  
+If you need help, reply to this email and we will assist you.
+
+Thanks,
 {{ $appName }} Team
 @endcomponent

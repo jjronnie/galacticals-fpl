@@ -1,5 +1,6 @@
 @php
-$userLeague = auth()->user()->league;
+    $userLeague = auth()->user()->league;
+    $isOwnedLeague = $userLeague !== null && (int) $userLeague->id === (int) $league->id;
 @endphp
 
 <!-- Dashboard Header & Share Section -->
@@ -14,6 +15,7 @@ $userLeague = auth()->user()->league;
         totalManagers: {{ $league->total_managers }},
         syncMessage: '{{ addslashes($league->sync_message ?? '') }}',
         syncStatus: '{{ $league->sync_status }}',
+        canTrackProgress: {{ $isOwnedLeague ? 'true' : 'false' }},
         startTime: null,
         estimatedTime: 0,
         
@@ -73,7 +75,7 @@ $userLeague = auth()->user()->league;
         },
 
         updateProgress() {
-            if (this.syncStatus !== 'processing') return;
+            if (this.syncStatus !== 'processing' || !this.canTrackProgress) return;
             
             fetch('/api/league/{{ $league->id }}/status')
                 .then(response => response.json())
@@ -94,7 +96,7 @@ $userLeague = auth()->user()->league;
                 })
                 .catch(error => console.error('Error fetching status:', error));
         }
-     }" x-init="if (syncStatus === 'processing') { updating = true; setInterval(() => updateProgress(), 3000); }">
+     }" x-init="if (syncStatus === 'processing' && canTrackProgress) { updating = true; setInterval(() => updateProgress(), 3000); }">
 
     <!-- Status Messages -->
     @if(session('status'))
@@ -244,8 +246,8 @@ $userLeague = auth()->user()->league;
                 <div class="flex flex-wrap items-center gap-3">
 
                     <!-- View Button -->
-                    @if($userLeague)
-                    <a href="{{ route('public.leagues.show', ['slug' => $userLeague->slug]) }}"
+                    @if($league)
+                    <a href="{{ route('public.leagues.show', ['slug' => $league->slug]) }}"
                         class="inline-flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors font-medium text-sm">
                         <i class="fa-solid fa-eye"></i>
                         View League
@@ -253,7 +255,7 @@ $userLeague = auth()->user()->league;
                     @endif
 
                     <!-- Update Button -->
-                    @if($league->sync_status === 'processing')
+                    @if($league->sync_status === 'processing' && $isOwnedLeague)
                     <button type="button" disabled
                         class="inline-flex items-center gap-2 px-4 py-2 bg-gray-700 text-gray-400 rounded-lg font-medium text-sm cursor-not-allowed opacity-60">
                         <i class="fa-solid fa-sync fa-spin"></i>
@@ -262,7 +264,7 @@ $userLeague = auth()->user()->league;
                     @else
 
                     
-                    @if(auth()->user()->isAdmin())
+                    @if(auth()->user()->isAdmin() && $isOwnedLeague)
 
                     <form action="{{ route('league.update') }}" method="POST"
                         @submit.prevent="updating = true; $el.submit()">

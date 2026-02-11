@@ -32,6 +32,8 @@ class FetchManagerProfilesJob implements ShouldQueue
     /** @var array<int, array<int, int>> */
     private array $eventPointsCache = [];
 
+    private bool $teamCatalogEnsured = false;
+
     /**
      * @param  array<int>|null  $managerIds
      */
@@ -39,8 +41,7 @@ class FetchManagerProfilesJob implements ShouldQueue
 
     public function handle(): void
     {
-        FetchFplDataJob::dispatchSync();
-
+        $this->ensureTeamCatalog();
         $managers = $this->managerQuery()->get();
 
         if ($managers->isEmpty()) {
@@ -81,7 +82,9 @@ class FetchManagerProfilesJob implements ShouldQueue
                 $this->syncGameweekHistory($entryManagers, $historyPayload['current'] ?? []);
                 $this->syncChips($entryManagers, $historyPayload['chips'] ?? []);
 
-                foreach ($finishedGameweeks as $gameweek) {
+                $gameweeksToSync = $this->gameweeksToSync($entryManagers, $finishedGameweeks);
+
+                foreach ($gameweeksToSync as $gameweek) {
                     $picksPayload = $this->fetchJson("entry/{$entryId}/event/{$gameweek}/picks/");
                     $pointsMap = $this->eventPointsForGameweek($gameweek);
 
@@ -96,10 +99,7 @@ class FetchManagerProfilesJob implements ShouldQueue
                     'last_synced_at' => now(),
                 ]);
 
-                foreach ($managerIds as $managerId) {
-                    Cache::forget('profile_stats_'.$managerId);
-                }
-                Cache::forget('profile_stats_entry_'.$entryId);
+                $this->forgetProfileCaches($entryId, $managerIds);
             } catch (\Throwable $exception) {
                 $failedEntries++;
 
@@ -156,14 +156,7 @@ class FetchManagerProfilesJob implements ShouldQueue
             return $query->whereIn('id', $this->managerIds);
         }
 
-        return $query
-            ->whereNotNull('user_id')
-            ->where(function ($builder): void {
-                $builder
-                    ->whereNull('player_first_name')
-                    ->orWhereNull('region_name')
-                    ->orWhereNull('last_synced_at');
-            });
+        return $query->whereNotNull('user_id');
     }
 
     /**
@@ -172,19 +165,16 @@ class FetchManagerProfilesJob implements ShouldQueue
     private function syncManagerIdentity(Collection $entryManagers, array $profilePayload): void
     {
         $fullName = trim(($profilePayload['player_first_name'] ?? '').' '.($profilePayload['player_last_name'] ?? ''));
+        $favouriteTeamKey = $this->favouriteTeamPayloadKey($profilePayload);
 
         $attributes = [
             'player_first_name' => $profilePayload['player_first_name'] ?? null,
             'player_last_name' => $profilePayload['player_last_name'] ?? null,
             'region_name' => $profilePayload['player_region_name'] ?? null,
-            'favourite_team_id' => null,
         ];
 
-        if (! empty($profilePayload['favourite_team'])) {
-            $favouriteTeamId = (int) $profilePayload['favourite_team'];
-            $attributes['favourite_team_id'] = FplTeam::query()->where('id', $favouriteTeamId)->exists()
-                ? $favouriteTeamId
-                : null;
+        if ($favouriteTeamKey !== null) {
+            $attributes['favourite_team_id'] = $this->resolveFavouriteTeamId($profilePayload[$favouriteTeamKey]);
         }
 
         if ($fullName !== '') {
@@ -398,7 +388,10 @@ class FetchManagerProfilesJob implements ShouldQueue
 
     private function fetchJson(string $path): array
     {
-        $response = Http::timeout(30)->get($this->endpoint($path));
+        $response = Http::acceptJson()
+            ->timeout(30)
+            ->retry(3, 750, throw: false)
+            ->get($this->endpoint($path));
 
         if ($response->failed()) {
             throw new \RuntimeException("FPL API request failed for path: {$path}");
@@ -406,7 +399,13 @@ class FetchManagerProfilesJob implements ShouldQueue
 
         usleep($this->pageIntervalMicroseconds());
 
-        return $response->json();
+        $payload = $response->json();
+
+        if (! is_array($payload)) {
+            throw new \RuntimeException("Invalid JSON payload received for path: {$path}");
+        }
+
+        return $payload;
     }
 
     private function endpoint(string $path): string
@@ -428,6 +427,140 @@ class FetchManagerProfilesJob implements ShouldQueue
         $milliseconds = (int) config('services.fpl.page_request_interval_ms', 200);
 
         return max($milliseconds, 0) * 1000;
+    }
+
+    /**
+     * @param  Collection<int, Manager>  $entryManagers
+     * @param  array<int>  $finishedGameweeks
+     * @return array<int>
+     */
+    private function gameweeksToSync(Collection $entryManagers, array $finishedGameweeks): array
+    {
+        if ($finishedGameweeks === []) {
+            return [];
+        }
+
+        $managerIds = $entryManagers->pluck('id')->all();
+        $expectedPickRows = max(15 * count($managerIds), 15);
+        $recentGameweeks = collect($finishedGameweeks)->sortDesc()->take(3)->values()->all();
+
+        $existingPickCounts = ManagerPick::query()
+            ->whereIn('manager_id', $managerIds)
+            ->whereIn('gameweek', $finishedGameweeks)
+            ->selectRaw('gameweek, COUNT(*) as picks_count')
+            ->groupBy('gameweek')
+            ->pluck('picks_count', 'gameweek');
+
+        return collect($finishedGameweeks)
+            ->filter(function (int $gameweek) use ($existingPickCounts, $expectedPickRows, $recentGameweeks): bool {
+                $pickCount = (int) ($existingPickCounts[$gameweek] ?? 0);
+
+                if ($pickCount < $expectedPickRows) {
+                    return true;
+                }
+
+                return in_array($gameweek, $recentGameweeks, true);
+            })
+            ->values()
+            ->all();
+    }
+
+    private function ensureTeamCatalog(): void
+    {
+        if ($this->teamCatalogEnsured) {
+            return;
+        }
+
+        $this->teamCatalogEnsured = true;
+
+        if (FplTeam::query()->count() >= 20) {
+            return;
+        }
+
+        try {
+            FetchFplDataJob::dispatchSync();
+        } catch (\Throwable $exception) {
+            Log::warning('Unable to refresh FPL teams before profile sync.', [
+                'error' => $exception->getMessage(),
+            ]);
+        }
+    }
+
+    private function favouriteTeamPayloadKey(array $profilePayload): ?string
+    {
+        foreach (['favourite_team', 'favourite_team_id', 'favorite_team'] as $key) {
+            if (array_key_exists($key, $profilePayload)) {
+                return $key;
+            }
+        }
+
+        return null;
+    }
+
+    private function resolveFavouriteTeamId(mixed $rawFavouriteTeam): ?int
+    {
+        if ($rawFavouriteTeam === null || $rawFavouriteTeam === '' || (string) $rawFavouriteTeam === '0') {
+            return null;
+        }
+
+        if (! is_numeric($rawFavouriteTeam)) {
+            return null;
+        }
+
+        $favouriteTeamId = (int) $rawFavouriteTeam;
+
+        if ($favouriteTeamId <= 0) {
+            return null;
+        }
+
+        if (FplTeam::query()->whereKey($favouriteTeamId)->exists()) {
+            return $favouriteTeamId;
+        }
+
+        $teamIdByCode = FplTeam::query()
+            ->where('code', $favouriteTeamId)
+            ->value('id');
+
+        if ($teamIdByCode !== null) {
+            return (int) $teamIdByCode;
+        }
+
+        $this->ensureTeamCatalog();
+
+        if (FplTeam::query()->whereKey($favouriteTeamId)->exists()) {
+            return $favouriteTeamId;
+        }
+
+        $teamIdByCode = FplTeam::query()
+            ->where('code', $favouriteTeamId)
+            ->value('id');
+
+        return $teamIdByCode !== null ? (int) $teamIdByCode : null;
+    }
+
+    /**
+     * @param  array<int>  $managerIds
+     */
+    private function forgetProfileCaches(int $entryId, array $managerIds): void
+    {
+        foreach ($managerIds as $managerId) {
+            Cache::forget('profile_stats_'.$managerId);
+        }
+
+        Cache::forget('profile_stats_entry_'.$entryId);
+
+        foreach ([
+            'overview',
+            'contributions',
+            'chips',
+            'captaincy',
+            'transfers',
+            'value',
+            'awards',
+            'history',
+        ] as $section) {
+            Cache::forget("profile_stats_entry_{$entryId}_{$section}");
+        }
     }
 
     public function failed(\Throwable $exception): void

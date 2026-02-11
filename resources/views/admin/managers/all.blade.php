@@ -5,10 +5,23 @@
             initialPayload: @js($initialPayload),
             initialSearch: @js($initialSearch),
             resultsUrl: @js($resultsUrl),
+            fetchManagersUrl: @js(route('admin.data.fetchManagers')),
+            csrfToken: @js(csrf_token()),
         })"
         x-init="init()"
     >
         <x-page-title title="All Managers" />
+
+        <section class="grid gap-4 md:grid-cols-2">
+            <div class="rounded-2xl border border-gray-700 bg-card p-6">
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Total Managers in System</p>
+                <p class="mt-2 text-2xl font-bold text-white" x-text="totals.total_managers ?? 0"></p>
+            </div>
+            <div class="rounded-2xl border border-gray-700 bg-card p-6">
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Total Claimed Managers</p>
+                <p class="mt-2 text-2xl font-bold text-white" x-text="totals.claimed_managers ?? 0"></p>
+            </div>
+        </section>
 
         <section class="rounded-2xl border border-gray-700 bg-card p-5">
             <div class="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
@@ -37,6 +50,7 @@
 
             <p class="mt-3 text-xs text-gray-400" x-text="summaryText()"></p>
             <p x-show="errorMessage" class="mt-2 text-xs text-red-300" x-text="errorMessage"></p>
+            <p x-show="successMessage" class="mt-2 text-xs text-green-300" x-text="successMessage"></p>
         </section>
 
         <section class="rounded-2xl border border-gray-700 bg-card p-5">
@@ -91,14 +105,24 @@
                                         <span x-text="row.claimed_at_human ?? '-'"></span>
                                     </td>
                                     <td class="px-3 py-3">
-                                        <a
-                                            :href="managerUrl(row.entry_id)"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            class="inline-flex rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white hover:bg-secondary"
-                                        >
-                                            Show
-                                        </a>
+                                        <div class="flex flex-wrap gap-2">
+                                            <a
+                                                :href="managerUrl(row.entry_id)"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                class="inline-flex rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white hover:bg-secondary"
+                                            >
+                                                Show
+                                            </a>
+                                            <button
+                                                type="button"
+                                                class="inline-flex rounded-lg bg-secondary px-3 py-2 text-xs font-semibold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                                                :disabled="updatingManagerId !== null"
+                                                @click="syncManager(row)"
+                                            >
+                                                <span x-text="updatingManagerId === row.manager_id ? 'Updating...' : 'Update Data'"></span>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             </template>
@@ -136,6 +160,10 @@
             return {
                 search: config.initialSearch ?? '',
                 rows: config.initialPayload?.rows ?? [],
+                totals: config.initialPayload?.totals ?? {
+                    total_managers: 0,
+                    claimed_managers: 0,
+                },
                 pagination: config.initialPayload?.pagination ?? {
                     current_page: 1,
                     last_page: 1,
@@ -144,13 +172,18 @@
                 },
                 loading: false,
                 errorMessage: '',
+                successMessage: '',
+                updatingManagerId: null,
                 searchDebounceTimeout: null,
                 resultsUrl: config.resultsUrl,
+                fetchManagersUrl: config.fetchManagersUrl,
+                csrfToken: config.csrfToken,
                 managerUrl(entryId) {
                     return `/managers/${entryId}`;
                 },
                 init() {
                     this.rows = config.initialPayload?.rows ?? [];
+                    this.totals = config.initialPayload?.totals ?? this.totals;
                     this.pagination = config.initialPayload?.pagination ?? this.pagination;
                 },
                 onSearchInput() {
@@ -172,6 +205,7 @@
                 fetchRows(page) {
                     this.loading = true;
                     this.errorMessage = '';
+                    this.successMessage = '';
 
                     const params = new URLSearchParams({
                         q: this.search.trim(),
@@ -192,6 +226,7 @@
                         })
                         .then((payload) => {
                             this.rows = payload.rows ?? [];
+                            this.totals = payload.totals ?? this.totals;
                             this.pagination = payload.pagination ?? this.pagination;
                         })
                         .catch(() => {
@@ -241,6 +276,44 @@
                     }
 
                     return `${total} result(s) for "${this.search.trim()}".`;
+                },
+                async syncManager(row) {
+                    if (!row?.manager_id || this.updatingManagerId !== null) {
+                        return;
+                    }
+
+                    this.errorMessage = '';
+                    this.successMessage = '';
+                    this.updatingManagerId = row.manager_id;
+
+                    try {
+                        const response = await fetch(this.fetchManagersUrl, {
+                            method: 'POST',
+                            headers: {
+                                Accept: 'application/json',
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': this.csrfToken,
+                            },
+                            body: JSON.stringify({
+                                manager_ids: [row.manager_id],
+                            }),
+                        });
+
+                        const payload = await response.json().catch(() => ({}));
+
+                        if (!response.ok) {
+                            const validationErrors = payload.errors ? Object.values(payload.errors).flat() : [];
+                            this.errorMessage = validationErrors[0] || payload.message || 'Could not queue manager sync.';
+
+                            return;
+                        }
+
+                        this.successMessage = payload.message || `Sync queued for entry ${row.entry_id}.`;
+                    } catch (error) {
+                        this.errorMessage = 'Network error while queueing manager sync.';
+                    } finally {
+                        this.updatingManagerId = null;
+                    }
                 },
             };
         }

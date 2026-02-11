@@ -18,7 +18,13 @@ class SendLeagueReminderJob implements ShouldQueue
 
     public function handle(): void
     {
-        $users = User::whereDoesntHave('league')->get();
+        $users = User::query()
+            ->whereNull('league_reminder_sent_at')
+            ->whereDoesntHave('league')
+            ->whereDoesntHave('claimedManagers', function ($query): void {
+                $query->whereNotNull('user_id');
+            })
+            ->get();
         $totalUsers = $users->count();
 
         if ($totalUsers === 0) {

@@ -9,7 +9,7 @@
             fetchFplUrl: '{{ route('admin.data.fetchFpl') }}',
             fetchManagersUrl: '{{ route('admin.data.fetchManagers') }}',
             computeGameweeksUrl: '{{ route('admin.data.computeGameweeks') }}',
-            refreshLeagueUrlTemplate: '{{ route('admin.data.refreshLeague', ['league' => '__LEAGUE_ID__']) }}',
+            leaguesUrl: '{{ route('admin.data.leagues') }}',
             observerUrl: '{{ route('admin.data.observer') }}'
         })"
         x-init="init()"
@@ -57,7 +57,7 @@
 
         <section class="rounded-2xl border border-gray-700 bg-card p-5">
             <h2 class="text-lg font-semibold text-white">Queue Actions</h2>
-            <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <button
                     type="button"
                     class="w-full rounded-lg bg-cyan-500 px-4 py-3 text-sm font-semibold text-primary hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60"
@@ -94,12 +94,7 @@
                     Compute All GW Tables
                 </button>
 
-               
-
-                <label class="flex items-center justify-center gap-2 rounded-lg border border-gray-600 px-4 py-3 text-sm text-gray-300">
-                    <input type="checkbox" x-model="autoRefresh" class="rounded border-gray-600 bg-primary text-accent focus:ring-accent">
-                    Live refresh
-                </label>
+              
             </div>
         </section>
 
@@ -148,81 +143,16 @@
             </div>
         </section>
 
-        <section class="rounded-2xl border border-gray-700 bg-card p-5">
-            <h2 class="text-lg font-semibold text-white">League Sync Progress</h2>
-            <div class="mt-4 overflow-x-auto">
-                <table class="min-w-full text-sm text-gray-200">
-                    <thead>
-                        <tr class="border-b border-gray-700 text-xs uppercase tracking-wide text-gray-400">
-                            <th class="px-3 py-2 text-left">League</th>
-                            <th class="px-3 py-2 text-left">Status</th>
-                            <th class="px-3 py-2 text-left">Progress</th>
-                            <th class="px-3 py-2 text-left">Message</th>
-                            <th class="px-3 py-2 text-right">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template x-for="league in leagues" :key="league.id">
-                            <tr class="border-b border-gray-800/80">
-                                <td class="px-3 py-3">
-                                    <p class="font-semibold text-white" x-text="league.name"></p>
-                                    <p class="text-xs text-gray-400">
-                                        ID <span x-text="league.league_id"></span> /
-                                        <span x-text="league.managers_count"></span> managers
-                                    </p>
-                                </td>
-                                <td class="px-3 py-3">
-                                    <span class="rounded-full px-2 py-1 text-xs font-semibold" :class="statusClass(league.sync_status)" x-text="formatStatus(league.sync_status)"></span>
-                                </td>
-                                <td class="px-3 py-3">
-                                    <div class="w-44">
-                                        <div class="h-2 w-full rounded bg-primary">
-                                            <div class="h-2 rounded bg-accent transition-all duration-500" :style="`width: ${league.progress}%`"></div>
-                                        </div>
-                                        <p class="mt-1 text-xs text-gray-400">
-                                            <span x-text="league.synced_managers"></span>/<span x-text="league.total_managers"></span>
-                                            (<span x-text="league.progress"></span>%)
-                                        </p>
-                                    </div>
-                                </td>
-                                <td class="px-3 py-3 text-xs text-gray-300" x-text="league.sync_message"></td>
-                                <td class="px-3 py-3 text-right">
-                                    <div class="flex justify-end gap-2">
-                                        <button
-                                            type="button"
-                                            class="rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60"
-                                            :disabled="busyAction !== null || league.sync_status === 'processing'"
-                                            @click="refreshLeague(league.id)"
-                                        >
-                                            Refresh League
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            class="rounded-lg bg-secondary px-3 py-2 text-xs font-semibold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-                                            :disabled="busyAction !== null"
-                                            @click="postAction(computeGameweeksUrl, { league_id: league.id }, 'League gameweek computation queued.')"
-                                        >
-                                            Compute GW
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
-            </div>
-        </section>
     </div>
 
     <script>
         function adminDataSyncPanel(config) {
             return {
-                autoRefresh: true,
                 busyAction: null,
                 fetchFplUrl: config.fetchFplUrl,
                 fetchManagersUrl: config.fetchManagersUrl,
                 computeGameweeksUrl: config.computeGameweeksUrl,
+                leaguesUrl: config.leaguesUrl,
                 observerUrl: config.observerUrl,
                 summary: config.initialPayload.summary,
                 jobs: config.initialPayload.jobs,
@@ -235,10 +165,17 @@
 
                 init() {
                     this.pollTimer = setInterval(() => {
-                        if (this.autoRefresh) {
+                        if (this.hasRunningWork()) {
                             this.fetchStatus();
                         }
-                    }, 3000);
+                    }, 4000);
+                },
+
+                hasRunningWork() {
+                    const activeJob = this.jobs.some((job) => ['queued', 'processing'].includes(String(job.status || '').toLowerCase()));
+                    const activeLeague = this.leagues.some((league) => String(league.sync_status || '').toLowerCase() === 'processing');
+
+                    return activeJob || activeLeague;
                 },
 
                 async fetchStatus() {
@@ -268,11 +205,6 @@
 
                 async queueFullSync() {
                     await this.postAction(config.syncAllUrl, {}, 'Full application sync queued.');
-                },
-
-                async refreshLeague(leagueId) {
-                    const url = config.refreshLeagueUrlTemplate.replace('__LEAGUE_ID__', String(leagueId));
-                    await this.postAction(url, {}, 'League refresh queued.');
                 },
 
                 async postAction(url, payload = {}, fallbackMessage = 'Action queued.') {

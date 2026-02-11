@@ -158,15 +158,39 @@
 
         <x-adsense />
 
-        <section>
+        <section x-data="{ visibleCards: 5, totalCards: {{ $sortedGwPerformance->count() }} }">
             <h2 id="performance" class="mb-4 text-center text-2xl font-bold text-white">Gameweek Performance</h2>
             <div class="grid gap-4 sm:grid-cols-1 lg:grid-cols-3">
-                @forelse ($sortedGwPerformance as $gw)
-                    <x-gw-card :gw="$gw" :league="$league" />
+                @forelse ($sortedGwPerformance as $index => $gw)
+                    <div x-show="{{ $index }} < visibleCards" @if ($index >= 5) x-cloak @endif>
+                        <x-gw-card :gw="$gw" :league="$league" />
+                    </div>
                 @empty
                     <div class="rounded-xl border border-gray-700 bg-card p-6 text-center text-gray-400">No gameweek data available yet.</div>
                 @endforelse
             </div>
+
+            @if ($sortedGwPerformance->count() > 5)
+                <div class="mt-5 flex justify-center">
+                    <button
+                        x-show="visibleCards < totalCards"
+                        type="button"
+                        class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-secondary"
+                        @click="visibleCards = Math.min(totalCards, visibleCards + 10)"
+                    >
+                        Load More
+                    </button>
+
+                    <button
+                        x-show="visibleCards >= totalCards"
+                        type="button"
+                        class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-secondary"
+                        @click="visibleCards = 5"
+                    >
+                        Show Less
+                    </button>
+                </div>
+            @endif
         </section>
 
         @include('leagues.partials.share')

@@ -24,12 +24,17 @@ Route::get('/leagues', [FrontendController::class, 'index'])->name('public.leagu
 
 Route::get('/s/{code}', [FrontendController::class, 'shortCode'])->name('short.league');
 Route::get('/p/{code}', [ManagerProfileController::class, 'short'])->name('managers.short');
+Route::get('/managers/{entryId}/insights/{section}', [ManagerProfileController::class, 'section'])
+    ->whereNumber('entryId')
+    ->name('managers.section');
 Route::get('/managers/{entryId}', [ManagerProfileController::class, 'show'])
     ->whereNumber('entryId')
     ->name('managers.show');
 
 Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('/dashboard', [LeagueController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/player-of-week-history', [LeagueController::class, 'playerOfWeekHistory'])->name('dashboard.player-of-week-history');
+    Route::get('/dashboard/team-of-week-history', [LeagueController::class, 'teamOfWeekHistory'])->name('dashboard.team-of-week-history');
     Route::get('/leagues/setup', [LeagueController::class, 'create'])->name('league.create');
     Route::get('/leagues/confirm', [LeagueController::class, 'confirm'])->name('leagues.confirm');
     Route::post('/leagues/confirm', [LeagueController::class, 'confirmAction'])->name('leagues.confirm.action');
@@ -47,6 +52,7 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
 
 Route::middleware('auth')->group(function (): void {
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+    Route::get('/profile/insights/{section}', [ProfileController::class, 'section'])->name('profile.section');
     Route::get('/profile/search', [ProfileController::class, 'search'])->name('profile.search');
     Route::get('/profile/search/results', [ProfileController::class, 'searchResults'])->name('profile.search.results');
     Route::get('/profile/settings', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -75,6 +81,7 @@ Route::middleware(['auth', 'can:admin'])->group(function (): void {
 
     Route::get('/admin/data', [AdminDataController::class, 'index'])->name('admin.data');
     Route::get('/admin/data/status', [AdminDataController::class, 'status'])->name('admin.data.status');
+    Route::get('/admin/data/leagues', [AdminDataController::class, 'leagues'])->name('admin.data.leagues');
     Route::get('/admin/data/observer', [AdminDataController::class, 'observer'])->name('admin.data.observer');
     Route::post('/admin/data/sync-all', [AdminDataController::class, 'syncAll'])->name('admin.data.syncAll');
     Route::post('/admin/data/fetch-fpl', [AdminDataController::class, 'fetchFpl'])->name('admin.data.fetchFpl');
@@ -94,8 +101,11 @@ Route::middleware(['auth', 'can:admin'])->group(function (): void {
     Route::delete('/admin/complaints/{complaint}', [ClaimComplaintController::class, 'destroy'])->name('admin.complaints.destroy');
 
     Route::get('/admin/verifications', [AdminProfileVerificationController::class, 'index'])->name('admin.verifications.index');
+    Route::get('/admin/verifications/managers/search', [AdminProfileVerificationController::class, 'searchManagers'])->name('admin.verifications.managers.search');
     Route::patch('/admin/verifications/{submission}/resolve', [AdminProfileVerificationController::class, 'resolve'])->name('admin.verifications.resolve');
     Route::get('/admin/verifications/{submission}/screenshot', [AdminProfileVerificationController::class, 'screenshot'])->name('admin.verifications.screenshot');
+    Route::patch('/admin/verifications/managers/{manager}/verify', [AdminProfileVerificationController::class, 'verifyManager'])->name('admin.verifications.managers.verify');
+    Route::patch('/admin/verifications/managers/{manager}/revoke', [AdminProfileVerificationController::class, 'revokeManagerVerification'])->name('admin.verifications.managers.revoke');
 });
 
 Route::get('/leagues/{slug}/gameweeks/{gameweek}', [LeagueController::class, 'showGameweek'])

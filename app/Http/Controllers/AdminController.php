@@ -80,10 +80,6 @@ class AdminController extends Controller
             ->groupBy('signup_method')
             ->pluck('total', 'signup_method');
 
-        $managersPerLeague = League::withCount('managers')
-            ->orderBy('name')
-            ->get(['id', 'name']);
-
         return view('admin.users.index', compact(
             'users',
             'totalUsers',
@@ -92,7 +88,6 @@ class AdminController extends Controller
             'usersBySignupMethod',
             'totalLeagues',
             'totalManagers',
-            'managersPerLeague',
             'claimedManagers',
             'suspendedProfiles',
             'openComplaints'

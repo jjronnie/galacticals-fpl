@@ -33,18 +33,47 @@
             <form method="GET" action="{{ route('admin.verifications.index') }}" class="flex flex-col gap-3 sm:flex-row sm:items-end">
                 <div>
                     <label for="status" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-400">Status</label>
-                    <select id="status" name="status" class="rounded-lg border border-gray-600 bg-primary px-3 py-2 text-sm text-white">
+                    <select id="status" name="status" onchange="this.form.submit()" class="rounded-lg border border-gray-600 bg-primary px-3 py-2 text-sm text-white">
                         <option value="pending" @selected($status === 'pending')>Pending</option>
                         <option value="rejected" @selected($status === 'rejected')>Rejected</option>
                         <option value="approved" @selected($status === 'approved')>Approved</option>
                         <option value="all" @selected($status === 'all')>All</option>
                     </select>
                 </div>
-
-                <button type="submit" class="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-primary hover:bg-cyan-300">
-                    Apply
-                </button>
             </form>
+        </section>
+
+        <section
+            class="rounded-2xl border border-gray-700 bg-card p-5"
+            x-data="manualVerificationSearch(@js(route('admin.verifications.managers.search')), @js($managerSearch))"
+            x-init="init()"
+        >
+            <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-300">Manual Verification</h2>
+            <p class="mt-1 text-xs text-gray-400">Search claimed profiles and verify or revoke directly.</p>
+
+            <div class="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+                <div>
+                    <label for="manager_search" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-400">Search Claimed Profile</label>
+                    <input
+                        id="manager_search"
+                        type="text"
+                        x-model="query"
+                        @input.debounce.350ms="search()"
+                        placeholder="Team, manager, entry ID, claimant name or email"
+                        class="w-full rounded-lg border border-gray-600 bg-primary px-3 py-2 text-sm text-white placeholder:text-gray-400"
+                    >
+                </div>
+                <div class="flex items-center justify-end">
+                    <p x-show="loading" x-cloak class="text-xs text-gray-400">Searching...</p>
+                </div>
+            </div>
+
+            <div x-ref="resultsContainer">
+                @include('admin.verifications.partials.manual-managers-results', [
+                    'managerSearch' => $managerSearch,
+                    'manualManagers' => $manualManagers,
+                ])
+            </div>
         </section>
 
         <section class="rounded-2xl border border-gray-700 bg-card p-5">
@@ -196,5 +225,65 @@
 
             <img :src="previewUrl" alt="Full screen verification screenshot" class="max-h-[90vh] max-w-[90vw] rounded-lg object-contain">
         </div>
+
+        <script>
+            function manualVerificationSearch(searchUrl, initialQuery = '') {
+                return {
+                    searchUrl,
+                    query: initialQuery,
+                    loading: false,
+                    requestAbortController: null,
+                    init() {
+                        if (this.query.trim() !== '') {
+                            this.search();
+                        }
+                    },
+                    search() {
+                        const normalizedQuery = this.query.trim();
+
+                        if (this.requestAbortController !== null) {
+                            this.requestAbortController.abort();
+                        }
+
+                        this.requestAbortController = new AbortController();
+                        this.loading = true;
+
+                        const url = `${this.searchUrl}?q=${encodeURIComponent(normalizedQuery)}`;
+
+                        fetch(url, {
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                },
+                                signal: this.requestAbortController.signal,
+                            })
+                            .then((response) => {
+                                if (!response.ok) {
+                                    throw new Error('Unable to search managers.');
+                                }
+
+                                return response.text();
+                            })
+                            .then((html) => {
+                                this.$refs.resultsContainer.innerHTML = html;
+
+                                this.$nextTick(() => {
+                                    if (window.Alpine) {
+                                        window.Alpine.initTree(this.$refs.resultsContainer);
+                                    }
+                                });
+                            })
+                            .catch((error) => {
+                                if (error.name !== 'AbortError') {
+                                    this.$refs.resultsContainer.innerHTML =
+                                        '<p class="mt-4 text-xs text-red-300">Search failed. Please try again.</p>';
+                                }
+                            })
+                            .finally(() => {
+                                this.loading = false;
+                            });
+                    },
+                };
+            }
+        </script>
     </div>
 </x-app-layout>

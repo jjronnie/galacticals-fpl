@@ -122,7 +122,7 @@ class AdminManagerController extends Controller
 
     private function paginatedManagerOverview(string $search, int $page, int $perPage = 50): array
     {
-        $cacheKey = 'admin_manager_overview_'.md5(strtolower($search).'|'.$page.'|'.$perPage);
+        $cacheKey = 'admin_manager_overview_v2_'.md5(strtolower($search).'|'.$page.'|'.$perPage);
 
         return Cache::remember($cacheKey, now()->addMinutes(15), function () use ($search, $page, $perPage): array {
             $results = Manager::query()
@@ -139,6 +139,7 @@ class AdminManagerController extends Controller
                 })
                 ->groupBy('m.entry_id')
                 ->selectRaw('m.entry_id as entry_id')
+                ->selectRaw('MAX(m.id) as manager_id')
                 ->selectRaw('MAX(m.player_name) as player_name')
                 ->selectRaw('MAX(m.team_name) as team_name')
                 ->selectRaw('MAX(CASE WHEN m.user_id IS NULL THEN 0 ELSE 1 END) as is_claimed')
@@ -162,6 +163,7 @@ class AdminManagerController extends Controller
                     ->all();
 
                 return [
+                    'manager_id' => (int) $row->manager_id,
                     'entry_id' => (int) $row->entry_id,
                     'player_name' => (string) ($row->player_name ?? 'Unknown Manager'),
                     'team_name' => (string) ($row->team_name ?? 'Unknown Team'),
@@ -175,6 +177,13 @@ class AdminManagerController extends Controller
 
             return [
                 'rows' => $rows,
+                'totals' => [
+                    'total_managers' => (int) Manager::query()->distinct('entry_id')->count('entry_id'),
+                    'claimed_managers' => (int) Manager::query()
+                        ->whereNotNull('user_id')
+                        ->distinct('entry_id')
+                        ->count('entry_id'),
+                ],
                 'pagination' => [
                     'current_page' => $results->currentPage(),
                     'last_page' => $results->lastPage(),

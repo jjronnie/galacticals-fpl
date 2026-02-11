@@ -7,6 +7,7 @@ use App\Models\Manager;
 use App\Models\ProfileVerificationSubmission;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -16,6 +17,7 @@ class AdminProfileVerificationController extends Controller
     public function index(Request $request): View
     {
         $status = $request->query('status', 'pending');
+        $managerSearch = trim((string) $request->query('manager_search', ''));
 
         $submissions = ProfileVerificationSubmission::query()
             ->with(['user:id,name,email', 'reviewer:id,name'])
@@ -37,12 +39,16 @@ class AdminProfileVerificationController extends Controller
             ->where('status', 'approved')
             ->count();
 
+        $manualManagers = $this->manualManagersForSearch($managerSearch);
+
         return view('admin.verifications.index', [
             'submissions' => $submissions,
             'status' => $status,
             'pendingCount' => $pendingCount,
             'rejectedCount' => $rejectedCount,
             'approvedCount' => $approvedCount,
+            'managerSearch' => $managerSearch,
+            'manualManagers' => $manualManagers,
         ]);
     }
 
@@ -106,5 +112,98 @@ class AdminProfileVerificationController extends Controller
         abort_unless(Storage::disk('local')->exists($submission->screenshot_path), 404);
 
         return Storage::disk('local')->response($submission->screenshot_path);
+    }
+
+    public function searchManagers(Request $request): View
+    {
+        $managerSearch = trim((string) $request->query('q', ''));
+        $manualManagers = $this->manualManagersForSearch($managerSearch);
+
+        return view('admin.verifications.partials.manual-managers-results', [
+            'managerSearch' => $managerSearch,
+            'manualManagers' => $manualManagers,
+        ]);
+    }
+
+    public function verifyManager(Request $request, Manager $manager): RedirectResponse
+    {
+        if ($manager->user_id === null) {
+            return back()->withErrors([
+                'verification' => 'Only claimed profiles can be verified.',
+            ]);
+        }
+
+        $affectedRows = Manager::query()
+            ->where('entry_id', $manager->entry_id)
+            ->whereNotNull('user_id')
+            ->update([
+                'verified_at' => now(),
+                'verified_by' => $request->user()->id,
+            ]);
+
+        if ($affectedRows === 0) {
+            return back()->withErrors([
+                'verification' => 'Verification could not be applied. Please refresh and try again.',
+            ]);
+        }
+
+        return back()->with('status', 'Manager profile verified successfully.');
+    }
+
+    public function revokeManagerVerification(Manager $manager): RedirectResponse
+    {
+        $affectedRows = Manager::query()
+            ->where('entry_id', $manager->entry_id)
+            ->whereNotNull('user_id')
+            ->update([
+                'verified_at' => null,
+                'verified_by' => null,
+            ]);
+
+        if ($affectedRows === 0) {
+            return back()->withErrors([
+                'verification' => 'No claimed manager rows found to revoke.',
+            ]);
+        }
+
+        return back()->with('status', 'Manager verification revoked successfully.');
+    }
+
+    private function manualManagersForSearch(string $managerSearch): Collection
+    {
+        if ($managerSearch === '') {
+            return collect();
+        }
+
+        $canonicalManagerIds = Manager::query()
+            ->from('managers as m')
+            ->whereNotNull('m.user_id')
+            ->where(function ($query) use ($managerSearch): void {
+                $query
+                    ->where('m.team_name', 'like', "%{$managerSearch}%")
+                    ->orWhere('m.player_name', 'like', "%{$managerSearch}%")
+                    ->orWhere('m.entry_id', $managerSearch)
+                    ->orWhereExists(function ($userQuery) use ($managerSearch): void {
+                        $userQuery
+                            ->selectRaw('1')
+                            ->from('users')
+                            ->whereColumn('users.id', 'm.user_id')
+                            ->where(function ($credentials) use ($managerSearch): void {
+                                $credentials
+                                    ->where('users.name', 'like', "%{$managerSearch}%")
+                                    ->orWhere('users.email', 'like', "%{$managerSearch}%");
+                            });
+                    });
+            })
+            ->groupBy('m.entry_id')
+            ->selectRaw('MAX(m.id) as id')
+            ->pluck('id');
+
+        return Manager::query()
+            ->with(['user:id,name,email', 'verifiedBy:id,name'])
+            ->whereIn('id', $canonicalManagerIds->all())
+            ->orderByDesc('claimed_at')
+            ->limit(25)
+            ->get();
     }
 }

@@ -18,11 +18,14 @@
                 </a>
                 @if (! auth()->user()->hasClaimedProfile())
                     <a href="{{ route('profile.search') }}" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('profile.search') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
-                        Search & Claim
+                        Search &amp; Claim
                     </a>
                 @endif
-                <a href="{{ route('profile.index') }}" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('profile.index') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
+                <a href="{{ route('profile.index') }}" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('profile.index') || request()->routeIs('profile.section') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
                     Profile
+                </a>
+                <a href="{{ route('profile.edit') }}" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('profile.edit') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
+                    Settings
                 </a>
 
                 <p class="pt-4 text-xs font-semibold uppercase tracking-wider text-gray-500">Administration</p>
@@ -32,8 +35,11 @@
                 <a href="{{ route('admin.data') }}" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.data') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
                     Data Sync
                 </a>
+                <a href="{{ route('admin.data.leagues') }}" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.data.leagues') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
+                    Admin Leagues
+                </a>
                 <a href="{{ route('admin.data.observer') }}" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.data.observer') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
-                    DB Observer
+                    PL Teams and Players
                 </a>
                 <a href="{{ route('admin.managers.index') }}" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.managers.index') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
                     Claimed Profiles
@@ -59,35 +65,38 @@
                 </a>
             </nav>
         </aside>
-
-    @else
-        <nav class="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl bg-card">
-            <div class="flex items-center justify-around px-4 py-2">
-                <a href="{{ route('home') }}" class="flex w-full flex-col items-center justify-center p-2 text-xs {{ request()->routeIs('home') ? 'text-white' : 'text-gray-400 hover:text-white' }}">
-                    <i data-lucide="house" class="h-5 w-5"></i>
-                    Home
-                </a>
-                <a href="{{ route('dashboard') }}" class="flex w-full flex-col items-center justify-center p-2 text-xs {{ request()->routeIs('dashboard') ? 'text-white' : 'text-gray-400 hover:text-white' }}">
-                    <i data-lucide="layout-dashboard" class="h-5 w-5"></i>
-                    Dashboard
-                </a>
-                <a href="{{ route('public.leagues.list') }}" class="flex w-full flex-col items-center justify-center p-2 text-xs {{ request()->routeIs('public.leagues.*') ? 'text-white' : 'text-gray-400 hover:text-white' }}">
-                    <i data-lucide="trophy" class="h-5 w-5"></i>
-                    Leagues
-                </a>
-                @if (! auth()->user()->hasClaimedProfile())
-                    <a href="{{ route('profile.search') }}" class="flex w-full flex-col items-center justify-center p-2 text-xs {{ request()->routeIs('profile.search') ? 'text-white' : 'text-gray-400 hover:text-white' }}">
-                        <i data-lucide="search" class="h-5 w-5"></i>
-                        Claim
-                    </a>
-                @endif
-                <a href="{{ route('profile.index') }}" class="flex w-full flex-col items-center justify-center p-2 text-xs {{ request()->routeIs('profile.*') ? 'text-white' : 'text-gray-400 hover:text-white' }}">
-                    <i data-lucide="user" class="h-5 w-5"></i>
-                   My Team
-                </a>
-            </div>
-        </nav>
     @endif
+
+    <nav class="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl bg-card">
+        <div class="flex items-center justify-around px-2 py-2">
+            <a href="{{ route('home') }}" class="flex w-full flex-col items-center justify-center p-2 text-[11px] {{ request()->routeIs('home') ? 'text-white' : 'text-gray-400 hover:text-white' }}">
+                <i data-lucide="house" class="h-5 w-5"></i>
+                Home
+            </a>
+            <a href="{{ route('dashboard') }}" class="flex w-full flex-col items-center justify-center p-2 text-[11px] {{ request()->routeIs('dashboard') ? 'text-white' : 'text-gray-400 hover:text-white' }}">
+                <i data-lucide="layout-dashboard" class="h-5 w-5"></i>
+                Dashboard
+            </a>
+            <a href="{{ route('public.leagues.list') }}" class="flex w-full flex-col items-center justify-center p-2 text-[11px] {{ request()->routeIs('public.leagues.*') ? 'text-white' : 'text-gray-400 hover:text-white' }}">
+                <i data-lucide="trophy" class="h-5 w-5"></i>
+                Leagues
+            </a>
+            @if (! auth()->user()->hasClaimedProfile())
+                <a href="{{ route('profile.search') }}" class="flex w-full flex-col items-center justify-center p-2 text-[11px] {{ request()->routeIs('profile.search') ? 'text-white' : 'text-gray-400 hover:text-white' }}">
+                    <i data-lucide="search" class="h-5 w-5"></i>
+                    Claim
+                </a>
+            @endif
+            <a href="{{ route('profile.index') }}" class="flex w-full flex-col items-center justify-center p-2 text-[11px] {{ request()->routeIs('profile.index') || request()->routeIs('profile.section') ? 'text-white' : 'text-gray-400 hover:text-white' }}">
+                <i data-lucide="user" class="h-5 w-5"></i>
+                My Team
+            </a>
+            <a href="{{ route('profile.edit') }}" class="flex w-full flex-col items-center justify-center p-2 text-[11px] {{ request()->routeIs('profile.edit') ? 'text-white' : 'text-gray-400 hover:text-white' }}">
+                <i data-lucide="ellipsis" class="h-5 w-5"></i>
+                More
+            </a>
+        </div>
+    </nav>
 @else
     <nav class="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl bg-card">
         <div class="flex items-center justify-around px-4 py-2">

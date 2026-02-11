@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Helpers\TeamColorHelper;
 use App\Models\FplPlayer;
 use App\Models\GameweekScore;
 use App\Models\League;
@@ -13,6 +14,20 @@ use Illuminate\Support\Facades\Cache;
 
 class LeagueStatsService
 {
+    /**
+     * @var array<int, array{name: string, defenders: int, midfielders: int, forwards: int}>
+     */
+    private const TEAM_OF_WEEK_FORMATIONS = [
+        ['name' => '4-2-3-1', 'defenders' => 4, 'midfielders' => 5, 'forwards' => 1],
+        ['name' => '4-3-3', 'defenders' => 4, 'midfielders' => 3, 'forwards' => 3],
+        ['name' => '3-4-3', 'defenders' => 3, 'midfielders' => 4, 'forwards' => 3],
+        ['name' => '3-5-2', 'defenders' => 3, 'midfielders' => 5, 'forwards' => 2],
+        ['name' => '4-4-2', 'defenders' => 4, 'midfielders' => 4, 'forwards' => 2],
+        ['name' => '4-1-4-1', 'defenders' => 4, 'midfielders' => 5, 'forwards' => 1],
+        ['name' => '5-3-2', 'defenders' => 5, 'midfielders' => 3, 'forwards' => 2],
+        ['name' => '4-5-1', 'defenders' => 4, 'midfielders' => 5, 'forwards' => 1],
+    ];
+
     public function getLeagueStats(League $league): array
     {
         $cacheKey = $this->getCacheKey($league->id);
@@ -25,6 +40,7 @@ class LeagueStatsService
                     'isEmpty' => true,
                     'standings' => collect(),
                     'gwPerformance' => collect(),
+                    'teamOfWeekRows' => [],
                     'stats' => $this->getEmptyStats(),
                 ];
             }
@@ -44,6 +60,7 @@ class LeagueStatsService
                     'isEmpty' => true,
                     'standings' => $managers->sortByDesc('total_points')->values(),
                     'gwPerformance' => collect(),
+                    'teamOfWeekRows' => [],
                     'stats' => $this->getEmptyStats(),
                 ];
             }
@@ -254,6 +271,8 @@ class LeagueStatsService
                     return round($rows->avg(fn ($chip): int => (int) (($chip->points_after ?? 0) - ($chip->points_before ?? 0))), 2);
                 });
 
+            $teamOfWeekRows = $this->buildTeamOfWeekRows($managerIds, $gameweeks->keys()->map(fn ($gw): int => (int) $gw)->all());
+
             $leastUsedChip = $chipUsage->isNotEmpty()
                 ? $this->formatChipName((string) $chipUsage->sort()->keys()->first())
                 : null;
@@ -271,6 +290,7 @@ class LeagueStatsService
                 'isEmpty' => false,
                 'standings' => $standings,
                 'gwPerformance' => collect($gwPerformance),
+                'teamOfWeekRows' => $teamOfWeekRows,
                 'stats' => [
                     'most_gw_leads' => $mostGWLeads,
                     'most_gw_last' => $mostGWLasts,
@@ -561,6 +581,180 @@ class LeagueStatsService
                 'count' => $count,
             ];
         })->values()->all();
+    }
+
+    /**
+     * @param  array<int>  $managerIds
+     * @param  array<int>  $gameweeks
+     * @return array<int, array<string, mixed>>
+     */
+    private function buildTeamOfWeekRows(array $managerIds, array $gameweeks): array
+    {
+        if ($managerIds === [] || $gameweeks === []) {
+            return [];
+        }
+
+        $picks = ManagerPick::query()
+            ->whereIn('manager_id', $managerIds)
+            ->whereIn('gameweek', $gameweeks)
+            ->whereNotNull('event_points')
+            ->with('player.team')
+            ->get()
+            ->groupBy('gameweek')
+            ->sortKeysDesc();
+
+        return $picks->map(function (Collection $gameweekPicks, int $gameweek): ?array {
+            $bestRows = $this->bestPlayerRowsForGameweek($gameweekPicks);
+
+            if ($bestRows->isEmpty()) {
+                return null;
+            }
+
+            $goalkeepers = $bestRows->where('element_type', 1)->sortByDesc('points')->values();
+            $defenders = $bestRows->where('element_type', 2)->sortByDesc('points')->values();
+            $midfielders = $bestRows->where('element_type', 3)->sortByDesc('points')->values();
+            $forwards = $bestRows->where('element_type', 4)->sortByDesc('points')->values();
+
+            if ($goalkeepers->isEmpty() || $defenders->count() < 3 || $midfielders->count() < 3 || $forwards->count() < 1) {
+                return null;
+            }
+
+            $goalkeeper = $goalkeepers->first();
+            $bestTeam = null;
+
+            foreach (self::TEAM_OF_WEEK_FORMATIONS as $formation) {
+                if (
+                    $defenders->count() < $formation['defenders']
+                    || $midfielders->count() < $formation['midfielders']
+                    || $forwards->count() < $formation['forwards']
+                ) {
+                    continue;
+                }
+
+                $selectedDefenders = $defenders->take($formation['defenders'])->values();
+                $selectedMidfielders = $midfielders->take($formation['midfielders'])->values();
+                $selectedForwards = $forwards->take($formation['forwards'])->values();
+
+                $baseTotalPoints = (int) (
+                    $goalkeeper['points']
+                    + $selectedDefenders->sum('points')
+                    + $selectedMidfielders->sum('points')
+                    + $selectedForwards->sum('points')
+                );
+                $captainBonus = $this->captainBonusPoints(
+                    collect([$goalkeeper])
+                        ->merge($selectedDefenders)
+                        ->merge($selectedMidfielders)
+                        ->merge($selectedForwards)
+                );
+                $totalPoints = $baseTotalPoints + $captainBonus;
+
+                if ($bestTeam === null || $totalPoints > $bestTeam['total_points']) {
+                    $captainizedRows = $this->captainizeRows(
+                        collect([$goalkeeper])
+                            ->merge($selectedDefenders)
+                            ->merge($selectedMidfielders)
+                            ->merge($selectedForwards)
+                    );
+
+                    $bestTeam = [
+                        'formation' => $formation['name'],
+                        'goalkeeper' => $captainizedRows->where('element_type', 1)->values()->all(),
+                        'defenders' => $captainizedRows->where('element_type', 2)->values()->all(),
+                        'midfielders' => $captainizedRows->where('element_type', 3)->values()->all(),
+                        'forwards' => $captainizedRows->where('element_type', 4)->values()->all(),
+                        'total_points' => $totalPoints,
+                    ];
+                }
+            }
+
+            if ($bestTeam === null) {
+                return null;
+            }
+
+            return [
+                'gameweek' => (int) $gameweek,
+                'formation' => $bestTeam['formation'],
+                'goalkeeper' => $bestTeam['goalkeeper'],
+                'defenders' => $bestTeam['defenders'],
+                'midfielders' => $bestTeam['midfielders'],
+                'forwards' => $bestTeam['forwards'],
+                'total_points' => $bestTeam['total_points'],
+            ];
+        })->filter()->values()->all();
+    }
+
+    /**
+     * @param  Collection<int, ManagerPick>  $gameweekPicks
+     * @return Collection<int, array<string, mixed>>
+     */
+    private function bestPlayerRowsForGameweek(Collection $gameweekPicks): Collection
+    {
+        return $gameweekPicks
+            ->filter(fn (ManagerPick $pick): bool => $pick->player !== null)
+            ->groupBy('player_id')
+            ->map(function (Collection $rows): ?array {
+                /** @var ManagerPick|null $pick */
+                $pick = $rows->sortByDesc(function (ManagerPick $candidate): int {
+                    return (int) ($candidate->event_points ?? 0);
+                })->first();
+
+                if ($pick === null || $pick->player === null) {
+                    return null;
+                }
+
+                $teamShortName = $pick->player->team?->short_name;
+                $teamName = $pick->player->team?->name;
+
+                return [
+                    'player_id' => (int) $pick->player_id,
+                    'web_name' => (string) $pick->player->web_name,
+                    'points' => (int) ($pick->event_points ?? 0),
+                    'element_type' => (int) ($pick->player->element_type ?? 0),
+                    'team_name' => (string) ($teamName ?? 'Unknown'),
+                    'team_short_name' => (string) ($teamShortName ?? ''),
+                    'team_color' => TeamColorHelper::primary($teamShortName),
+                ];
+            })
+            ->filter()
+            ->values();
+    }
+
+    /**
+     * @param  Collection<int, array<string, mixed>>  $lineupRows
+     */
+    private function captainBonusPoints(Collection $lineupRows): int
+    {
+        $captain = $lineupRows
+            ->sortByDesc(fn (array $row): int => (int) ($row['points'] ?? 0))
+            ->first();
+
+        return (int) ($captain['points'] ?? 0);
+    }
+
+    /**
+     * @param  Collection<int, array<string, mixed>>  $lineupRows
+     * @return Collection<int, array<string, mixed>>
+     */
+    private function captainizeRows(Collection $lineupRows): Collection
+    {
+        $captain = $lineupRows
+            ->sortByDesc(fn (array $row): int => (int) ($row['points'] ?? 0))
+            ->first();
+        $captainPlayerId = (int) ($captain['player_id'] ?? 0);
+
+        return $lineupRows
+            ->map(function (array $row) use ($captainPlayerId): array {
+                $isCaptain = (int) ($row['player_id'] ?? 0) === $captainPlayerId;
+
+                $row['is_captain'] = $isCaptain;
+                $row['points'] = $isCaptain
+                    ? (int) ($row['points'] ?? 0) * 2
+                    : (int) ($row['points'] ?? 0);
+
+                return $row;
+            })
+            ->values();
     }
 
     private function formatChipName(string $chipName): string
