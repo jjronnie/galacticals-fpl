@@ -43,7 +43,7 @@ class ManagerPublicProfileTest extends TestCase
             ->assertOk()
             ->assertSee('Public Team')
             ->assertSee((string) $manager->entry_id)
-            ->assertSee('Claimed Profile')
+            ->assertSee('Claimed')
             ->assertSee('Login to Report')
             ->assertDontSee('This profile is verified because they confirmed ownership of the team.');
     }
@@ -165,7 +165,7 @@ class ManagerPublicProfileTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee('Unclaimed Profile')
+            ->assertSee('Unclaimed')
             ->assertSee('claim it from your account')
             ->assertDontSee('Total Points');
     }
@@ -202,7 +202,7 @@ class ManagerPublicProfileTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee('Report Claimed Profile');
+            ->assertSee('Report Claim');
     }
 
     public function test_authenticated_user_does_not_see_complaint_button_on_verified_claimed_public_profile(): void
@@ -238,7 +238,7 @@ class ManagerPublicProfileTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertDontSee('Report Claimed Profile')
+            ->assertDontSee('Report Claim')
             ->assertDontSee('Claim Complaint');
     }
 }

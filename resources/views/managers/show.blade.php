@@ -1,20 +1,31 @@
 <x-app-layout>
     @php
         $isOverview = $activeSection === 'overview';
+        $complaintStartsOpen = $errors->has('subject') || $errors->has('message') || $errors->has('complaint');
+        $isOwnedByAuthenticatedUser = (bool) ($isOwnedByAuthenticatedUser ?? false);
+        $showClaimButton = $isOverview && ! $isClaimed && ! $isVerified;
+        $showComplaintButton = $isOverview && $isClaimed && ! $isVerified && ! $isOwnedByAuthenticatedUser;
+        $showVerificationButton = $isOverview && $isClaimed && ! $isVerified && $isOwnedByAuthenticatedUser;
+        $showDynamicActionButton = $showClaimButton || $showVerificationButton;
     @endphp
 
-    <div class="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
-        <section class="rounded-2xl border border-gray-700 bg-card p-6">
-            <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-                <div>
-                    @if ($isOverview)
-                        <div class="flex flex-wrap items-center gap-2">
-                            <h1 class="text-2xl font-bold text-white">{{ $manager->team_name }}</h1>
-                            @if ($isVerified)
-                                <x-verified-badge />
-                            @endif
-                        </div>
-                    @else
+    <div class="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8" x-data="{ complaintOpen: {{ $complaintStartsOpen ? 'true' : 'false' }} }">
+        <section class="rounded-3xl border border-indigo-500/30 bg-gradient-to-br from-indigo-700/55 via-indigo-600/40 to-blue-600/35 p-6 sm:p-7">
+            <div class="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+                <div class="space-y-3">
+                    <div class="flex flex-wrap items-center gap-2">
+                        @if ($isClaimed)
+                            <span class="rounded-full border border-green-400/30 bg-green-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-green-200">Claimed</span>
+                        @else
+                            <span class="rounded-full border border-yellow-400/30 bg-yellow-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-yellow-100">Unclaimed</span>
+                        @endif
+
+                        @if ($isVerified)
+                            <x-verified-badge />
+                        @endif
+                    </div>
+
+                    @if (! $isOverview)
                         <div class="flex items-center gap-3">
                             <a
                                 href="{{ route('managers.show', ['entryId' => $manager->entry_id]) }}"
@@ -26,17 +37,38 @@
                             <h1 class="text-xl font-bold text-white">{{ data_get($profileSections, (string) $activeSection, 'Insight') }}</h1>
                         </div>
                     @endif
-                    <p class="mt-2 text-sm text-gray-300">{{ $manager->player_name }}</p>
-                    <p class="mt-1 text-xs text-gray-400">Entry {{ $manager->entry_id }}</p>
+
+                    <h1 class="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">{{ $manager->team_name }}</h1>
+                    <p class="text-sm text-blue-100/80 sm:text-base">{{ $manager->player_name }}</p>
+
+                    @if ($showDynamicActionButton)
+                        <div class="pt-1">
+                            @if ($showClaimButton)
+                                @auth
+                                    <a href="{{ route('profile.search') }}" class="inline-flex rounded-xl bg-green-500 px-5 py-2.5 text-sm font-semibold text-primary transition hover:bg-green-400">
+                                        Claim Profile
+                                    </a>
+                                @else
+                                    <a href="{{ route('login') }}" class="inline-flex rounded-xl bg-green-500 px-5 py-2.5 text-sm font-semibold text-primary transition hover:bg-green-400">
+                                        Claim Profile
+                                    </a>
+                                @endauth
+                            @elseif ($showVerificationButton)
+                                <a href="{{ route('profile.verification.create') }}" class="inline-flex rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-primary transition hover:bg-cyan-300">
+                                    Get Verified
+                                </a>
+                            @endif
+                        </div>
+                    @endif
                 </div>
 
-                <div>
+                @if (! $isOverview)
                     @if ($isClaimed)
                         <span class="rounded-full bg-green-500/20 px-3 py-1 text-xs font-semibold text-green-200">Claimed Profile</span>
                     @else
                         <span class="rounded-full bg-yellow-500/20 px-3 py-1 text-xs font-semibold text-yellow-200">Unclaimed Profile</span>
                     @endif
-                </div>
+                @endif
             </div>
         </section>
 
@@ -59,40 +91,26 @@
                     If this is your real FPL team, claim it from your account to unlock personal analytics.
                     Please do not claim profiles that do not belong to you.
                 </p>
-
-                <div class="mt-4">
-                    @auth
-                        <a href="{{ route('profile.search') }}" class="inline-flex rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-primary hover:bg-cyan-300">
-                            Claim Now
-                        </a>
-                    @else
-                        <a href="{{ route('login') }}" class="inline-flex rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-primary hover:bg-cyan-300">
-                            Login to Claim
-                        </a>
-                    @endauth
-                </div>
             </section>
         @else
             @if ($isOverview)
-                @include('profile.partials.share', ['profileShareManager' => $manager])
-
                 <x-adsense />
 
-                @if (! $isVerified)
-                    <section class="rounded-2xl border border-gray-700 bg-card p-6" x-data="{ complaintOpen: {{ $errors->has('subject') || $errors->has('message') || $errors->has('complaint') ? 'true' : 'false' }} }">
-                        <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                @if (! $isVerified && ! $isOwnedByAuthenticatedUser)
+                    <section id="claim-complaint" class="rounded-2xl border border-gray-700 bg-card p-6">
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div>
                                 <h2 class="text-lg font-semibold text-white">Claim Complaint</h2>
                                 <p class="mt-1 text-sm text-gray-300">Report wrong ownership claims for admin review.</p>
                             </div>
-
                             @auth
                                 <button
                                     type="button"
-                                    class="inline-flex rounded-lg bg-red-700 px-4 py-2 text-sm font-semibold text-white hover:bg-red-600"
+                                    class="inline-flex rounded-lg bg-red-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-600"
                                     @click="complaintOpen = !complaintOpen"
                                 >
-                                    Report Claimed Profile
+                                    <span x-show="!complaintOpen">Report Claim</span>
+                                    <span x-show="complaintOpen">Hide Form</span>
                                 </button>
                             @else
                                 <a href="{{ route('login') }}" class="inline-flex rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-primary hover:bg-cyan-300">
@@ -140,7 +158,7 @@
                                 </div>
 
                                 <div class="flex justify-end">
-                                    <button type="submit" class="rounded-lg bg-red-700 px-4 py-2 text-sm font-semibold text-white hover:bg-red-600">
+                                    <button type="submit" class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-secondary">
                                         Submit Complaint
                                     </button>
                                 </div>
@@ -235,10 +253,10 @@
                                             <i data-lucide="{{ $block['icon'] }}" class="h-4 w-4 text-accent"></i>
                                         @endif
                                     </div>
-                                    <p class="mt-3 text-xs font-semibold text-accent">{{ $block['preview'] }}</p>
+                                    <p class="mt-3 text-sm font-semibold text-accent">{{ $block['preview'] }}</p>
 
                                     @if ($block['key'] === 'contributions')
-                                        <div class="mt-3 space-y-1 text-xs text-gray-300">
+                                        <div class="mt-3 space-y-1 text-sm text-gray-300">
                                             @forelse ($contributionRows as $row)
                                                 <div class="flex items-center justify-between rounded-md bg-card px-2 py-1">
                                                     <span class="truncate">{{ $row['player'] }} <span class="text-gray-400">({{ $row['team'] }})</span></span>
@@ -251,7 +269,7 @@
                                     @endif
 
                                     @if ($block['key'] === 'chips')
-                                        <div class="mt-3 space-y-1 text-xs text-gray-300">
+                                        <div class="mt-3 space-y-1 text-sm text-gray-300">
                                             @forelse ($chipRows as $row)
                                                 <div class="flex items-center justify-between rounded-md bg-card px-2 py-1">
                                                     <span>GW{{ $row['gameweek'] }} · {{ $row['chip'] }}</span>
@@ -267,7 +285,7 @@
 
                                     @if ($block['key'] === 'captaincy')
                                         <div class="mt-3 overflow-x-auto">
-                                            <table class="min-w-full text-xs text-gray-300">
+                                            <table class="min-w-full text-sm text-gray-300">
                                                 <thead>
                                                     <tr class="border-b border-gray-700/70 text-[10px] uppercase tracking-wide text-gray-400">
                                                         <th class="px-2 py-1 text-left">GW</th>
@@ -293,7 +311,7 @@
                                     @endif
 
                                     @if ($block['key'] === 'transfers')
-                                        <div class="mt-3 space-y-1 text-xs text-gray-300">
+                                        <div class="mt-3 space-y-1 text-sm text-gray-300">
                                             @forelse ($transferRows as $row)
                                                 <div class="flex items-center justify-between rounded-md bg-card px-2 py-1">
                                                     <span>GW{{ $row['gameweek'] }} · {{ $row['transfers'] }} tr</span>
@@ -306,7 +324,7 @@
                                     @endif
 
                                     @if ($block['key'] === 'value')
-                                        <div class="mt-3 space-y-1 text-xs text-gray-300">
+                                        <div class="mt-3 space-y-1 text-sm text-gray-300">
                                             @forelse ($valueRows as $row)
                                                 <div class="flex items-center justify-between rounded-md bg-card px-2 py-1">
                                                     <span>GW{{ $row['gameweek'] }}</span>
@@ -328,7 +346,7 @@
                                     @endif
 
                                     @if ($block['key'] === 'history')
-                                        <div class="mt-3 space-y-1 text-xs text-gray-300">
+                                        <div class="mt-3 space-y-1 text-sm text-gray-300">
                                             @forelse ($historyRows as $row)
                                                 <div class="flex items-center justify-between rounded-md bg-card px-2 py-1">
                                                     <span>GW{{ $row['gameweek'] }}</span>
@@ -341,11 +359,11 @@
                                     @endif
 
                                     @if ($block['cta'] === 'button')
-                                        <span class="mt-4 inline-flex w-full justify-center rounded-lg bg-card px-3 py-2 text-xs font-semibold text-gray-200 transition group-hover:bg-accent group-hover:text-primary">
+                                        <span class="mt-4 inline-flex w-full justify-center rounded-lg bg-card px-3 py-2 text-sm font-semibold text-gray-200 transition group-hover:bg-accent group-hover:text-primary">
                                             View More Details
                                         </span>
                                     @else
-                                        <span class="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-accent">
+                                        <span class="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-accent">
                                             View Details <span>→</span>
                                         </span>
                                     @endif
@@ -606,5 +624,8 @@
             @endif
         @endif
 
+        @if ($isOverview)
+            @include('profile.partials.share', ['profileShareManager' => $manager])
+        @endif
     </div>
 </x-app-layout>

@@ -2,6 +2,11 @@
     @php
         $isOverview = $activeSection === 'overview';
         $managerQuery = $selectedManager ? ['manager' => $selectedManager->id] : [];
+        $showProfileVerificationAction = $isOverview
+            && ! $profileSuspended
+            && $profileVerificationState !== null
+            && $profileVerificationState !== 'verified';
+        $profileVerificationActionLabel = $profileVerificationState === 'rejected' ? 'Retry Verification' : 'Get Verified';
     @endphp
 
     <div class="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
@@ -26,12 +31,10 @@
                 </a>
             </section>
         @elseif ($selectedManager)
-            <section class="rounded-2xl border border-gray-700 bg-card p-6">
+            <section class="rounded-3xl border border-indigo-500/30 bg-gradient-to-br from-indigo-700/55 via-indigo-600/40 to-blue-600/35 p-6 sm:p-7">
                 <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-                    <div>
-                        @if ($isOverview)
-                            <h1 class="text-2xl font-bold text-white">Personal Profile</h1>
-                        @else
+                    <div class="space-y-3">
+                        @if (! $isOverview)
                             <div class="flex items-center gap-3">
                                 <a
                                     href="{{ route('profile.index', $managerQuery) }}"
@@ -44,34 +47,42 @@
                             </div>
                         @endif
 
-                        <div class="mt-3 flex flex-wrap items-center gap-2">
-                            <p class="text-sm font-semibold text-white">{{ $selectedManager->team_name }}</p>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="rounded-full border border-green-400/30 bg-green-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-green-200">Claimed</span>
                             @if ($selectedManager->isVerified())
                                 <x-verified-badge />
                             @endif
                         </div>
-                        <p class="mt-1 text-xs text-gray-400">
-                            {{ $selectedManager->player_name }} / Entry {{ $selectedManager->entry_id }}
-                        </p>
+
+                        <h1 class="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">{{ $selectedManager->team_name }}</h1>
+                        <p class="text-sm text-blue-100/80 sm:text-base">{{ $selectedManager->player_name }}</p>
                     </div>
 
-                    @if ($claimedManagers->isNotEmpty())
-                        <form method="GET" action="{{ $isOverview ? route('profile.index') : route('profile.section', ['section' => $activeSection]) }}" class="w-full md:w-auto">
-                            <label for="manager" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-400">Claimed Team</label>
-                            <select
-                                id="manager"
-                                name="manager"
-                                onchange="this.form.submit()"
-                                class="w-full rounded-lg border border-gray-600 bg-primary px-4 py-2 text-sm text-white focus:border-accent focus:ring-accent md:min-w-80"
-                            >
-                                @foreach ($claimedManagers as $claimedManager)
-                                    <option value="{{ $claimedManager->id }}" @selected($selectedManager->id === $claimedManager->id)>
-                                        {{ $claimedManager->team_name }} ({{ $claimedManager->entry_id }})
-                                    </option>
-                                @endforeach
-                            </select>
-                        </form>
-                    @endif
+                    <div class="flex w-full flex-col gap-3 md:w-auto md:items-end">
+                        @if ($showProfileVerificationAction)
+                            <a href="{{ route('profile.verification.create') }}" class="inline-flex rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-primary transition hover:bg-cyan-300">
+                                {{ $profileVerificationActionLabel }}
+                            </a>
+                        @endif
+
+                        @if ($claimedManagers->count() > 1)
+                            <form method="GET" action="{{ $isOverview ? route('profile.index') : route('profile.section', ['section' => $activeSection]) }}" class="w-full md:w-auto">
+                                <label for="manager" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-blue-100/70">Switch Team</label>
+                                <select
+                                    id="manager"
+                                    name="manager"
+                                    onchange="this.form.submit()"
+                                    class="w-full rounded-lg border border-indigo-300/30 bg-primary/70 px-4 py-2 text-sm text-white focus:border-accent focus:ring-accent md:min-w-80"
+                                >
+                                    @foreach ($claimedManagers as $claimedManager)
+                                        <option value="{{ $claimedManager->id }}" @selected($selectedManager->id === $claimedManager->id)>
+                                            {{ $claimedManager->team_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </form>
+                        @endif
+                    </div>
                 </div>
             </section>
 
@@ -112,8 +123,6 @@
                 </section>
             @elseif ($stats)
                 @if ($isOverview)
-                    @include('profile.partials.share', ['profileShareManager' => $selectedManager])
-
                     <x-adsense />
 
                     <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -199,10 +208,10 @@
                                             <i data-lucide="{{ $block['icon'] }}" class="h-4 w-4 text-accent"></i>
                                         @endif
                                     </div>
-                                    <p class="mt-3 text-xs font-semibold text-accent">{{ $block['preview'] }}</p>
+                                    <p class="mt-3 text-sm font-semibold text-accent">{{ $block['preview'] }}</p>
 
                                     @if ($block['key'] === 'contributions')
-                                        <div class="mt-3 space-y-1 text-xs text-gray-300">
+                                        <div class="mt-3 space-y-1 text-sm text-gray-300">
                                             @forelse ($contributionRows as $row)
                                                 <div class="flex items-center justify-between rounded-md bg-card px-2 py-1">
                                                     <span class="truncate">{{ $row['player'] }} <span class="text-gray-400">({{ $row['team'] }})</span></span>
@@ -215,7 +224,7 @@
                                     @endif
 
                                     @if ($block['key'] === 'chips')
-                                        <div class="mt-3 space-y-1 text-xs text-gray-300">
+                                        <div class="mt-3 space-y-1 text-sm text-gray-300">
                                             @forelse ($chipRows as $row)
                                                 <div class="flex items-center justify-between rounded-md bg-card px-2 py-1">
                                                     <span>GW{{ $row['gameweek'] }} · {{ $row['chip'] }}</span>
@@ -231,7 +240,7 @@
 
                                     @if ($block['key'] === 'captaincy')
                                         <div class="mt-3 overflow-x-auto">
-                                            <table class="min-w-full text-xs text-gray-300">
+                                            <table class="min-w-full text-sm text-gray-300">
                                                 <thead>
                                                     <tr class="border-b border-gray-700/70 text-[10px] uppercase tracking-wide text-gray-400">
                                                         <th class="px-2 py-1 text-left">GW</th>
@@ -257,7 +266,7 @@
                                     @endif
 
                                     @if ($block['key'] === 'transfers')
-                                        <div class="mt-3 space-y-1 text-xs text-gray-300">
+                                        <div class="mt-3 space-y-1 text-sm text-gray-300">
                                             @forelse ($transferRows as $row)
                                                 <div class="flex items-center justify-between rounded-md bg-card px-2 py-1">
                                                     <span>GW{{ $row['gameweek'] }} · {{ $row['transfers'] }} tr</span>
@@ -270,7 +279,7 @@
                                     @endif
 
                                     @if ($block['key'] === 'value')
-                                        <div class="mt-3 space-y-1 text-xs text-gray-300">
+                                        <div class="mt-3 space-y-1 text-sm text-gray-300">
                                             @forelse ($valueRows as $row)
                                                 <div class="flex items-center justify-between rounded-md bg-card px-2 py-1">
                                                     <span>GW{{ $row['gameweek'] }}</span>
@@ -292,7 +301,7 @@
                                     @endif
 
                                     @if ($block['key'] === 'history')
-                                        <div class="mt-3 space-y-1 text-xs text-gray-300">
+                                        <div class="mt-3 space-y-1 text-sm text-gray-300">
                                             @forelse ($historyRows as $row)
                                                 <div class="flex items-center justify-between rounded-md bg-card px-2 py-1">
                                                     <span>GW{{ $row['gameweek'] }}</span>
@@ -305,11 +314,11 @@
                                     @endif
 
                                     @if ($block['cta'] === 'button')
-                                        <span class="mt-4 inline-flex w-full justify-center rounded-lg bg-card px-3 py-2 text-xs font-semibold text-gray-200 transition group-hover:bg-accent group-hover:text-primary">
+                                        <span class="mt-4 inline-flex w-full justify-center rounded-lg bg-card px-3 py-2 text-sm font-semibold text-gray-200 transition group-hover:bg-accent group-hover:text-primary">
                                             View More Details
                                         </span>
                                     @else
-                                        <span class="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-accent">
+                                        <span class="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-accent">
                                             View Details <span>→</span>
                                         </span>
                                     @endif
@@ -563,6 +572,10 @@
                             Back to Overview
                         </a>
                     </div>
+                @endif
+
+                @if ($isOverview)
+                    @include('profile.partials.share', ['profileShareManager' => $selectedManager])
                 @endif
             @endif
         @endif

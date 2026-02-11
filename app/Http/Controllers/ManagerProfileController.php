@@ -61,6 +61,12 @@ class ManagerProfileController extends Controller
 
         $isClaimed = $managerRows->contains(fn (Manager $candidate): bool => $candidate->user_id !== null);
         $isVerified = $managerRows->contains(fn (Manager $candidate): bool => $candidate->user_id !== null && $candidate->verified_at !== null);
+        $claimedUserId = $managerRows
+            ->first(fn (Manager $candidate): bool => $candidate->user_id !== null)
+            ?->user_id;
+        $isOwnedByAuthenticatedUser = auth()->check()
+            && $claimedUserId !== null
+            && (int) auth()->id() === (int) $claimedUserId;
         $stats = $isClaimed ? $this->profileStatsService->getProfileStats($manager, $section) : null;
 
         $leagueMemberships = Manager::query()
@@ -80,6 +86,7 @@ class ManagerProfileController extends Controller
             'stats' => $stats,
             'isClaimed' => $isClaimed,
             'isVerified' => $isVerified,
+            'isOwnedByAuthenticatedUser' => $isOwnedByAuthenticatedUser,
             'leagueMemberships' => $leagueMemberships,
             'activeSection' => $section,
             'profileSections' => self::PROFILE_SECTIONS,

@@ -46,6 +46,11 @@ class LeagueStatsService
             }
 
             $managerIds = $managers->pluck('id')->all();
+            $managerDirectory = $managers
+                ->groupBy('player_name')
+                ->map(fn (Collection $rows): int => (int) ($rows->first()?->entry_id ?? 0))
+                ->filter(fn (int $entryId): bool => $entryId > 0)
+                ->toArray();
             $seasonYear = (int) ($league->season ?? now()->year);
 
             $allScores = GameweekScore::query()
@@ -230,17 +235,20 @@ class LeagueStatsService
                 $longestStreakStartGW = $streakStartGW;
             }
 
-            $maxLeadCount = collect($managerLeads)->max();
             $mostGWLeads = collect($managerLeads)
-                ->filter(fn (int $count): bool => $count === $maxLeadCount && $maxLeadCount > 0)
                 ->sortDesc()
+                ->take(5)
                 ->toArray();
 
-            $maxLastCount = collect($managerLasts)->max();
             $mostGWLasts = collect($managerLasts)
-                ->filter(fn (int $count): bool => $count === $maxLastCount && $maxLastCount > 0)
                 ->sortDesc()
+                ->take(5)
                 ->toArray();
+
+            $highestGwScores = $this->topManagerExtremeScores($allScores, true);
+            $lowestGwScores = $this->topManagerExtremeScores($allScores, false);
+            $highestGwScore = $highestGwScores[0] ?? ['manager' => 'N/A', 'points' => 0, 'gw' => null];
+            $lowestGwScore = $lowestGwScores[0] ?? ['manager' => 'N/A', 'points' => 0, 'gw' => null];
 
             $allManagerNames = $managers->pluck('player_name')->all();
             $bestOrWorstNames = array_keys($managerLeads + $managerLasts);
@@ -259,6 +267,7 @@ class LeagueStatsService
                 ->filter(fn (int $count): bool => $count > 0)
                 ->sortDesc()
                 ->toArray();
+            $mostValuableTeams = $this->mostValuableTeams($managers, $allScores);
 
             $chipStats = ManagerChip::query()
                 ->whereHas('manager', fn ($query) => $query->where('league_id', $league->id))
@@ -296,6 +305,8 @@ class LeagueStatsService
                     'most_gw_last' => $mostGWLasts,
                     'highest_gw_score' => $highestGwScore,
                     'lowest_gw_score' => $lowestGwScore,
+                    'highest_gw_scores' => $highestGwScores,
+                    'lowest_gw_scores' => $lowestGwScores,
                     'longest_top_streak' => [
                         'manager' => $longestStreakManager,
                         'length' => $longestTopStreak,
@@ -310,9 +321,18 @@ class LeagueStatsService
                     'never_best_in_gw' => array_values(array_diff($allManagerNames, array_keys($managerLeads))),
                     'hall_of_shame' => collect($managerLasts)->filter(fn (int $count): bool => $count >= 3)->sortDesc()->toArray(),
                     'hundred_plus_league' => $allScores
-                        ->where('points', '>=', 100)
-                        ->map(fn ($score): string => $score->manager->player_name.' ('.$score->points.' pts in GW '.$score->gameweek.')')
-                        ->unique()
+                        ->filter(fn (GameweekScore $score): bool => $score->manager !== null && (int) $score->points >= 100)
+                        ->map(fn (GameweekScore $score): array => [
+                            'name' => (string) $score->manager->player_name,
+                            'entry_id' => (int) $score->manager->entry_id,
+                            'points' => (int) $score->points,
+                            'gw' => (int) $score->gameweek,
+                        ])
+                        ->unique(fn (array $row): string => $row['entry_id'].'-'.$row['gw'].'-'.$row['points'])
+                        ->sortBy([
+                            ['points', 'desc'],
+                            ['gw', 'asc'],
+                        ])
                         ->values()
                         ->all(),
                     'country_distribution' => $countryDistribution,
@@ -321,6 +341,8 @@ class LeagueStatsService
                     'most_effective_chip' => $mostEffectiveChip,
                     'points_gained_by_chip' => $pointsGainedByChip,
                     'favourite_team_totals' => $favouriteTeamTotals,
+                    'most_valuable_teams' => $mostValuableTeams,
+                    'manager_directory' => $managerDirectory,
                 ],
             ];
         });
@@ -535,6 +557,8 @@ class LeagueStatsService
             'most_gw_last' => [],
             'highest_gw_score' => ['manager' => 'N/A', 'points' => 0, 'gw' => null],
             'lowest_gw_score' => ['manager' => 'N/A', 'points' => 0, 'gw' => null],
+            'highest_gw_scores' => [],
+            'lowest_gw_scores' => [],
             'longest_top_streak' => ['manager' => null, 'length' => 0, 'start_gw' => null, 'end_gw' => null],
             'the_blowout' => ['difference' => 0, 'gw' => null],
             'wooden_spoon_contenders' => [],
@@ -554,7 +578,103 @@ class LeagueStatsService
             'most_effective_chip' => null,
             'points_gained_by_chip' => [],
             'favourite_team_totals' => [],
+            'most_valuable_teams' => [],
+            'manager_directory' => [],
         ];
+    }
+
+    /**
+     * @param  Collection<int, \App\Models\Manager>  $managers
+     * @param  Collection<int, \App\Models\GameweekScore>  $allScores
+     * @return array<int, array<string, mixed>>
+     */
+    private function mostValuableTeams(Collection $managers, Collection $allScores): array
+    {
+        $latestScoresByManager = $allScores
+            ->filter(fn (GameweekScore $score): bool => (int) ($score->value ?? 0) > 0)
+            ->sortByDesc('gameweek')
+            ->sortByDesc('id')
+            ->groupBy('manager_id')
+            ->map(fn (Collection $rows): ?GameweekScore => $rows->first());
+
+        if ($latestScoresByManager->isEmpty()) {
+            return [];
+        }
+
+        $managersById = $managers->keyBy('id');
+        $bestByEntry = collect();
+
+        foreach ($latestScoresByManager as $managerId => $score) {
+            if ($score === null) {
+                continue;
+            }
+
+            $manager = $managersById->get((int) $managerId);
+
+            if ($manager === null) {
+                continue;
+            }
+
+            $entryId = (int) $manager->entry_id;
+            $teamValue = round(((int) ($score->value ?? 0)) / 10, 1);
+
+            if (! $bestByEntry->has($entryId) || $teamValue > (float) $bestByEntry->get($entryId)['value']) {
+                $bestByEntry->put($entryId, [
+                    'entry_id' => $entryId,
+                    'team_name' => (string) $manager->team_name,
+                    'manager_name' => (string) $manager->player_name,
+                    'value' => $teamValue,
+                ]);
+            }
+        }
+
+        return $bestByEntry
+            ->values()
+            ->sortByDesc('value')
+            ->take(5)
+            ->values()
+            ->map(function (array $row, int $index): array {
+                $row['position'] = $index + 1;
+
+                return $row;
+            })
+            ->all();
+    }
+
+    /**
+     * @return array<int, array{manager:string,entry_id:int,points:int,gw:int|null}>
+     */
+    private function topManagerExtremeScores(Collection $scores, bool $highest): array
+    {
+        $rows = $scores
+            ->filter(fn (GameweekScore $score): bool => $score->manager !== null && (int) $score->gameweek > 0)
+            ->groupBy('manager_id')
+            ->map(function (Collection $managerScores) use ($highest): array {
+                /** @var GameweekScore|null $selectedScore */
+                $selectedScore = $managerScores
+                    ->sortBy([
+                        ['points', $highest ? 'desc' : 'asc'],
+                        ['gameweek', 'asc'],
+                    ])
+                    ->first();
+
+                return [
+                    'manager' => (string) ($selectedScore?->manager?->player_name ?? 'N/A'),
+                    'entry_id' => (int) ($selectedScore?->manager?->entry_id ?? 0),
+                    'points' => (int) ($selectedScore?->points ?? 0),
+                    'gw' => $selectedScore?->gameweek !== null ? (int) $selectedScore->gameweek : null,
+                ];
+            })
+            ->values();
+
+        return $rows
+            ->sortBy([
+                ['points', $highest ? 'desc' : 'asc'],
+                ['gw', 'asc'],
+            ])
+            ->take(5)
+            ->values()
+            ->all();
     }
 
     /**

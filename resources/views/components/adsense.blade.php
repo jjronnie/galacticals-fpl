@@ -16,19 +16,21 @@
             }
         }, 5000);
     }, 10);
-" x-show="!adFailed" class="w-full flex justify-center items-center py-6">
-    <div class="w-[728px] h-[90px] relative overflow-hidden">
-        <div x-show="!adLoaded" class="absolute inset-0 flex items-center justify-center text-sm text-white">
+" x-show="!adFailed" class="flex w-full justify-center py-4">
+    <div class="relative w-full max-w-[728px] overflow-hidden rounded-lg">
+        <div x-show="!adLoaded" class="absolute inset-0 z-10 flex min-h-[90px] items-center justify-center text-sm text-white">
             AD
         </div>
 
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1640926658118061"
             crossorigin="anonymous"></script>
 
-        <ins class="adsbygoogle block w-[728px] h-[90px]"
+        <ins class="adsbygoogle block w-full"
             data-ad-client="ca-pub-1640926658118061"
             data-ad-slot="2252213454"
-            style="display:inline-block;width:728px;height:90px;"></ins>
+            data-ad-format="auto"
+            data-full-width-responsive="true"
+            style="display:block;min-height:90px;"></ins>
 
         <script>
             (adsbygoogle = window.adsbygoogle || []).push({});

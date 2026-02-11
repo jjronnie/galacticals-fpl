@@ -159,10 +159,63 @@ class AdminDataSyncTest extends TestCase
         Queue::assertPushed(FetchLeagueStandings::class, 1);
     }
 
+    public function test_admin_can_delete_specific_league_via_json_endpoint(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin',
+        ]);
+
+        $leagueOwner = User::factory()->create();
+
+        $league = League::create([
+            'user_id' => $leagueOwner->id,
+            'league_id' => 5401,
+            'name' => 'Delete League',
+            'admin_name' => 'Owner',
+            'current_gameweek' => 1,
+            'season' => 2025,
+        ]);
+
+        $manager = Manager::create([
+            'league_id' => $league->id,
+            'entry_id' => 777888,
+            'player_name' => 'Delete Manager',
+            'team_name' => 'Delete Team',
+            'rank' => 1,
+            'total_points' => 99,
+        ]);
+
+        $response = $this
+            ->actingAs($admin)
+            ->deleteJson(route('admin.data.destroyLeague', $league));
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('message', 'League Delete League deleted successfully.');
+
+        $this->assertDatabaseMissing('leagues', [
+            'id' => $league->id,
+        ]);
+
+        $this->assertDatabaseMissing('managers', [
+            'id' => $manager->id,
+        ]);
+    }
+
     public function test_non_admin_cannot_access_admin_data_sync_json_endpoints(): void
     {
         $user = User::factory()->create([
             'role' => 'user',
+        ]);
+
+        $owner = User::factory()->create();
+        $league = League::create([
+            'user_id' => $owner->id,
+            'league_id' => 5501,
+            'name' => 'Forbidden League',
+            'admin_name' => 'Owner',
+            'current_gameweek' => 1,
+            'season' => 2025,
         ]);
 
         $this
@@ -173,6 +226,11 @@ class AdminDataSyncTest extends TestCase
         $this
             ->actingAs($user)
             ->postJson(route('admin.data.syncAll'))
+            ->assertForbidden();
+
+        $this
+            ->actingAs($user)
+            ->deleteJson(route('admin.data.destroyLeague', $league))
             ->assertForbidden();
     }
 }

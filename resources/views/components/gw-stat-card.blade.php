@@ -4,9 +4,9 @@
     'tooltip' => null,
 ])
 
-<div class="rounded-lg border-2 border-gray-700 bg-card p-4">
+<div class="w-full min-w-0 rounded-lg border-2 border-gray-700 bg-card p-4">
     <div class="mb-1 flex items-center gap-2">
-        <p class="text-sm font-bold uppercase text-{{ $color }}-400">
+        <p class="min-w-0 break-words text-sm font-bold uppercase text-{{ $color }}-400">
             {{ $title }}
         </p>
         @if ($tooltip)
@@ -46,7 +46,7 @@
         @endif
     </div>
 
-    <div class="text-sm leading-relaxed text-gray-200">
+    <div class="break-words text-sm leading-relaxed text-gray-200">
         {{ $slot }}
     </div>
 </div>

@@ -204,10 +204,10 @@
                 return a ? a : function(b, c) {
                     if (this == null) throw new TypeError(
                         "The 'this' value for String.prototype.includes must not be null or undefined"
-                        );
+                    );
                     if (b instanceof RegExp) throw new TypeError(
                         "First argument to String.prototype.includes must not be a regular expression"
-                        );
+                    );
                     return this.indexOf(b, c || 0) !== -1
                 }
             });
@@ -403,7 +403,7 @@
                 else E() ? c = "" + (BigInt(b) << BigInt(32) | BigInt(a)) : (c = (a >>> 24 | b << 8) & 16777215, b =
                     b >> 16 & 65535, a = (a & 16777215) + c * 6777216 + b * 6710656, c += b * 8147497, b *= 2, a >=
                     1E7 && (c += a / 1E7 >>> 0, a %= 1E7), c >= 1E7 && (b += c / 1E7 >>> 0, c %= 1E7), c = b + Ja(
-                    c) + Ja(a));
+                        c) + Ja(a));
                 return c
             }
 
@@ -889,10 +889,10 @@
             };
             var nb = u.atob(
                     "aHR0cHM6Ly93d3cuZ3N0YXRpYy5jb20vaW1hZ2VzL2ljb25zL21hdGVyaWFsL3N5c3RlbS8xeC93YXJuaW5nX2FtYmVyXzI0ZHAucG5n"
-                    ),
+                ),
                 ob = u.atob(
                     "WW91IGFyZSBzZWVpbmcgdGhpcyBtZXNzYWdlIGJlY2F1c2UgYWQgb3Igc2NyaXB0IGJsb2NraW5nIHNvZnR3YXJlIGlzIGludGVyZmVyaW5nIHdpdGggdGhpcyBwYWdlLg=="
-                    ),
+                ),
                 pb = u.atob("RGlzYWJsZSBhbnkgYWQgb3Igc2NyaXB0IGJsb2NraW5nIHNvZnR3YXJlLCB0aGVuIHJlbG9hZCB0aGlzIHBhZ2Uu");
 
             function qb(a, b, c) {
@@ -1124,7 +1124,7 @@
 
         window.__h82AlnkH6D91__(
             "WyJwdWItMTY0MDkyNjY1ODExODA2MSIsW251bGwsbnVsbCxudWxsLCJodHRwczovL2Z1bmRpbmdjaG9pY2VzbWVzc2FnZXMuZ29vZ2xlLmNvbS9iL3B1Yi0xNjQwOTI2NjU4MTE4MDYxIl0sbnVsbCxudWxsLCJodHRwczovL2Z1bmRpbmdjaG9pY2VzbWVzc2FnZXMuZ29vZ2xlLmNvbS9lbC9BR1NLV3hXS1c1TXFsMmE5SDJRXzBMMHVxQ2IxRUd4bTZIZ0hWRl80UEdtbThsVEEwTnVYc3c5cnZDaHpwSlJzRWE4aUxJMmJIM1E0cGlTV3ZraHNUNXF0X0VzNVZ3XHUwMDNkXHUwMDNkP3RlXHUwMDNkVE9LRU5fRVhQT1NFRCIsImh0dHBzOi8vZnVuZGluZ2Nob2ljZXNtZXNzYWdlcy5nb29nbGUuY29tL2VsL0FHU0tXeFdyTm5jMmMydzhFMlRjSC1SOXBpZ1otclhXZFA5a2FEMURPbXhtWG9HRkI4c1pyNEJ0U1RBUXQxVXpCelhnZ0QwQjlzSzY5Q0YyeFE0a2txdlVENHJLY3dcdTAwM2RcdTAwM2Q/YWJcdTAwM2QxXHUwMDI2c2JmXHUwMDNkMSIsImh0dHBzOi8vZnVuZGluZ2Nob2ljZXNtZXNzYWdlcy5nb29nbGUuY29tL2VsL0FHU0tXeFdNWVpLWUFUZjBEYVZCem9WazlrT2hMbHljbFhpa2x4Z0hVNDJZSjN0akt3M3FuZ09MY3BOSDdHUFZpZDhCZmIzOVB0OXkzMnVjak5iMVUwY0hkOTllTXdcdTAwM2RcdTAwM2Q/YWJcdTAwM2QyXHUwMDI2c2JmXHUwMDNkMSIsImh0dHBzOi8vZnVuZGluZ2Nob2ljZXNtZXNzYWdlcy5nb29nbGUuY29tL2VsL0FHU0tXeFY4S09faDBCcHU0RXdybmJsdWVDZlJaaVRFcUt2RzI0NWFXNWQtWmhyUWxkYS1rcExFbjlvV1I1SW9HS2tXaDg1V2s3YVNZSzFhWS0xZ1FzbjFOa2xpd3dcdTAwM2RcdTAwM2Q/c2JmXHUwMDNkMiIsImRpdi1ncHQtYWQiLDIwLDEwMCwiY0hWaUxURTJOREE1TWpZMk5UZ3hNVGd3TmpFXHUwMDNkIixbbnVsbCxudWxsLG51bGwsImh0dHBzOi8vd3d3LmdzdGF0aWMuY29tLzBlbW4vZi9wL3B1Yi0xNjQwOTI2NjU4MTE4MDYxLmpzP3VzcXBcdTAwM2RDQWsiXSwiaHR0cHM6Ly9mdW5kaW5nY2hvaWNlc21lc3NhZ2VzLmdvb2dsZS5jb20vZWwvQUdTS1d4WDFCMHVqWXRqLVpBc0h2UXp4NHdRTjJHc3BENHI5bDNGTFlDOVowMFlFMlJBLVkzcGd1WWFoTjlyeFlndlpUME5fOUhuNVBWV2k1QWkxcC04Q2Y4WDBZd1x1MDAzZFx1MDAzZCJd"
-            );
+        );
     </script>
 
 
@@ -1134,8 +1134,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Sans:ital,wght@0,100..800;1,100..800&display=swap"
         rel="stylesheet">
 
 

@@ -1,6 +1,5 @@
 <x-app-layout>
     @php
-        $sortedGameweeks = collect($availableGameweeks)->sortDesc()->values();
         $standingsRows = collect($gameweekStandings)->values();
         $gameweekAveragePoints = $standingsRows->isNotEmpty()
             ? round((float) $standingsRows->avg('points'), 2)
@@ -11,108 +10,140 @@
 
     <main class="mx-auto max-w-7xl space-y-6 px-2 py-8 sm:px-6 lg:px-8">
         <section class="rounded-2xl border border-gray-700 bg-card p-5">
-            <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                <div>
-                    <h1 class="text-2xl font-extrabold text-white">{{ $league->name }}</h1>
-                    <p class="mt-1 text-sm text-gray-300">Gameweek {{ $targetGW }} Overview</p>
-                </div>
-
-                <div class="flex flex-wrap items-end gap-3">
-                    <a href="{{ route('public.leagues.show', ['slug' => $league->slug]) }}" class="rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-gray-200 hover:bg-secondary">
-                        League Page
-                    </a>
-
-                    <div class="w-full sm:w-auto">
-                        <label for="gameweek-select" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-400">Switch GW</label>
-                        <select
-                            id="gameweek-select"
-                            class="w-full rounded-lg border border-gray-600 bg-primary px-3 py-2 text-sm text-white focus:border-accent focus:ring-accent"
-                            onchange="if (this.value) { window.location.href = this.value; }"
-                        >
-                            @foreach ($sortedGameweeks as $gameweek)
-                                <option
-                                    value="{{ route('public.leagues.gameweek.show', ['slug' => $league->slug, 'gameweek' => $gameweek]) }}"
-                                    @selected($targetGW === $gameweek)
-                                >
-                                    GW {{ $gameweek }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
+            <div class="text-center">
+                <h1 class="text-2xl font-extrabold text-white">{{ $league->name }}</h1>
+                <p class="mt-1 text-sm text-gray-300">Gameweek {{ $targetGW }} Overview</p>
             </div>
         </section>
 
-        @include('leagues.partials.share')
+        @include('leagues.partials.tabs', [
+            'league' => $league,
+            'activeTab' => 'gameweeks',
+            'availableGameweeks' => $availableGameweeks,
+            'selectedGameweek' => $targetGW,
+        ])
 
-        <x-adsense />
 
         @if ($gameweekInsights)
-            <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                <x-gw-stat-card title="Best Manager" color="green" tooltip="Manager(s) with highest points in this gameweek.">
-                    @foreach ($gameweekInsights['best_managers'] as $manager)
-                        <div>
-                            <a href="{{ route('managers.show', $manager['entry_id']) }}" class="text-sm text-green-300 hover:text-green-200">
-                                {{ $manager['name'] }}
-                            </a>
-                            <p class="text-xs text-gray-400">{{ $manager['team_name'] }}</p>
-                        </div>
-                    @endforeach
-                    <p class="mt-2 text-xs text-gray-300">{{ $gameweekInsights['best_points'] }} pts</p>
-                </x-gw-stat-card>
+            <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                <article class="min-w-0 rounded-2xl border border-gray-700 bg-card p-5">
+                    <div class="flex items-start justify-between gap-3">
+                        <h3 class="text-sm font-semibold text-white">BEST MANAGER</h3>
+                        <i data-lucide="award" class="h-4 w-4 text-accent"></i>
+                    </div>
+                    <div class="mt-3 space-y-2 text-sm text-gray-300">
+                        @foreach ($gameweekInsights['best_managers'] as $manager)
+                            <div class="rounded-lg bg-primary px-3 py-2">
+                                <a href="{{ route('managers.show', $manager['entry_id']) }}" class="font-semibold text-green-300 hover:text-green-200">
+                                    {{ $manager['name'] }}
+                                </a>
+                                <p class="text-xs text-gray-400">{{ $manager['team_name'] }}</p>
+                            </div>
+                        @endforeach
+                        <p class="inline-flex rounded-md bg-green-500/20 px-3 py-1 text-sm font-semibold text-green-300">{{ $gameweekInsights['best_points'] }} pts</p>
+                    </div>
+                </article>
 
-                <x-gw-stat-card title="Worst Manager" color="red" tooltip="Manager(s) with lowest points in this gameweek.">
-                    @foreach ($gameweekInsights['worst_managers'] as $manager)
-                        <div>
-                            <a href="{{ route('managers.show', $manager['entry_id']) }}" class="text-sm text-red-300 hover:text-red-200">
-                                {{ $manager['name'] }}
-                            </a>
-                            <p class="text-xs text-gray-400">{{ $manager['team_name'] }}</p>
-                        </div>
-                    @endforeach
-                    <p class="mt-2 text-xs text-gray-300">{{ $gameweekInsights['worst_points'] }} pts</p>
-                </x-gw-stat-card>
+                <article class="min-w-0 rounded-2xl border border-gray-700 bg-card p-5">
+                    <div class="flex items-start justify-between gap-3">
+                        <h3 class="text-sm font-semibold text-white">WORST MANAGER</h3>
+                        <i data-lucide="badge-x" class="h-4 w-4 text-accent"></i>
+                    </div>
+                    <div class="mt-3 space-y-2 text-sm text-gray-300">
+                        @foreach ($gameweekInsights['worst_managers'] as $manager)
+                            <div class="rounded-lg bg-primary px-3 py-2">
+                                <a href="{{ route('managers.show', $manager['entry_id']) }}" class="font-semibold text-red-300 hover:text-red-200">
+                                    {{ $manager['name'] }}
+                                </a>
+                                <p class="text-xs text-gray-400">{{ $manager['team_name'] }}</p>
+                            </div>
+                        @endforeach
+                        <p class="inline-flex rounded-md bg-red-500/20 px-3 py-1 text-sm font-semibold text-red-300">{{ $gameweekInsights['worst_points'] }} pts</p>
+                    </div>
+                </article>
 
-                <x-gw-stat-card title="Average" color="blue" tooltip="Average points scored in this gameweek.">
-                    <p class="text-sm">
-                        {{ $gameweekAveragePoints !== null ? rtrim(rtrim(number_format($gameweekAveragePoints, 2), '0'), '.') : 'N/A' }} pts
-                    </p>
-                </x-gw-stat-card>
+                <article class="min-w-0 rounded-2xl border border-gray-700 bg-card p-5">
+                    <div class="flex items-start justify-between gap-3">
+                        <h3 class="text-sm font-semibold text-white">AVERAGE</h3>
+                        <i data-lucide="bar-chart-3" class="h-4 w-4 text-accent"></i>
+                    </div>
+                    <div class="mt-3 text-sm text-gray-300">
+                        <p class="rounded-lg bg-primary px-3 py-2 font-semibold text-accent">
+                            {{ $gameweekAveragePoints !== null ? rtrim(rtrim(number_format($gameweekAveragePoints, 2), '0'), '.') : 'N/A' }} pts
+                        </p>
+                    </div>
+                </article>
             </section>
         @endif
 
-        <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <x-gw-stat-card title="Most Captained" color="purple" tooltip="Most captained players.">
-                @forelse (($ownershipTrends['most_captained'] ?? []) as $captain)
-                    <p class="text-sm">{{ $captain['player'] }} - &copy; by {{ $captain['count'] }} manager(s)</p>
-                @empty
-                    <p class="text-sm">No data.</p>
-                @endforelse
-            </x-gw-stat-card>
+        <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <article class="min-w-0 rounded-2xl border border-gray-700 bg-card p-5">
+                <div class="flex items-start justify-between gap-3">
+                    <h3 class="text-sm font-semibold text-white">MOST CAPTAINED</h3>
+                    <i data-lucide="captain" class="h-4 w-4 text-accent"></i>
+                </div>
+                <div class="mt-3 space-y-1 text-sm text-gray-300">
+                    @forelse (($ownershipTrends['most_captained'] ?? []) as $captain)
+                        <div class="flex items-center justify-between rounded-lg bg-primary px-3 py-2">
+                            <span class="truncate">{{ $captain['player'] }}</span>
+                            <span class="font-semibold text-accent">{{ $captain['count'] }}</span>
+                        </div>
+                    @empty
+                        <p class="text-gray-400">No data.</p>
+                    @endforelse
+                </div>
+            </article>
 
-            <x-gw-stat-card title="Most Transferred In" color="green" tooltip="Most transferred in players.">
-                @forelse (($ownershipTrends['most_transferred_in'] ?? []) as $player)
-                    <p class="text-sm">{{ $player['player'] }} - {{ $player['count'] }} time(s)</p>
-                @empty
-                    <p class="text-sm">No data.</p>
-                @endforelse
-            </x-gw-stat-card>
+            <article class="min-w-0 rounded-2xl border border-gray-700 bg-card p-5">
+                <div class="flex items-start justify-between gap-3">
+                    <h3 class="text-sm font-semibold text-white">MOST TRANSFERRED IN</h3>
+                    <i data-lucide="arrow-down-left" class="h-4 w-4 text-accent"></i>
+                </div>
+                <div class="mt-3 space-y-1 text-sm text-gray-300">
+                    @forelse (($ownershipTrends['most_transferred_in'] ?? []) as $player)
+                        <div class="flex items-center justify-between rounded-lg bg-primary px-3 py-2">
+                            <span class="truncate">{{ $player['player'] }}</span>
+                            <span class="font-semibold text-accent">{{ $player['count'] }}</span>
+                        </div>
+                    @empty
+                        <p class="text-gray-400">No data.</p>
+                    @endforelse
+                </div>
+            </article>
 
-            <x-gw-stat-card title="Most Transferred Out" color="red" tooltip="Most transferred out players.">
-                @forelse (($ownershipTrends['most_transferred_out'] ?? []) as $player)
-                    <p class="text-sm">{{ $player['player'] }} - {{ $player['count'] }} time(s)</p>
-                @empty
-                    <p class="text-sm">No data.</p>
-                @endforelse
-            </x-gw-stat-card>
+            <article class="min-w-0 rounded-2xl border border-gray-700 bg-card p-5">
+                <div class="flex items-start justify-between gap-3">
+                    <h3 class="text-sm font-semibold text-white">MOST TRANSFERRED OUT</h3>
+                    <i data-lucide="arrow-up-right" class="h-4 w-4 text-accent"></i>
+                </div>
+                <div class="mt-3 space-y-1 text-sm text-gray-300">
+                    @forelse (($ownershipTrends['most_transferred_out'] ?? []) as $player)
+                        <div class="flex items-center justify-between rounded-lg bg-primary px-3 py-2">
+                            <span class="truncate">{{ $player['player'] }}</span>
+                            <span class="font-semibold text-accent">{{ $player['count'] }}</span>
+                        </div>
+                    @empty
+                        <p class="text-gray-400">No data.</p>
+                    @endforelse
+                </div>
+            </article>
 
-            <x-gw-stat-card title="Chips" color="yellow" tooltip="Chip usage in this gameweek.">
-                @forelse (($ownershipTrends['chips_played'] ?? []) as $chip => $count)
-                    <p class="text-sm">{{ $chip }} - {{ $count }}</p>
-                @empty
-                    <p class="text-sm">No data.</p>
-                @endforelse
-            </x-gw-stat-card>
+            <article class="min-w-0 rounded-2xl border border-gray-700 bg-card p-5">
+                <div class="flex items-start justify-between gap-3">
+                    <h3 class="text-sm font-semibold text-white">CHIPS</h3>
+                    <i data-lucide="package" class="h-4 w-4 text-accent"></i>
+                </div>
+                <div class="mt-3 space-y-1 text-sm text-gray-300">
+                    @forelse (($ownershipTrends['chips_played'] ?? []) as $chip => $count)
+                        <div class="flex items-center justify-between rounded-lg bg-primary px-3 py-2">
+                            <span class="truncate">{{ $chip }}</span>
+                            <span class="font-semibold text-accent">{{ $count }}</span>
+                        </div>
+                    @empty
+                        <p class="text-gray-400">No data.</p>
+                    @endforelse
+                </div>
+            </article>
         </section>
 
         @include('leagues.partials.team-of-week-list', [
@@ -122,7 +153,7 @@
 
         <div x-data="{ visibleRows: 50, totalRows: {{ $standingsRows->count() }} }" class="space-y-4">
             <section class="-mx-2 overflow-x-auto rounded-lg border border-gray-700 bg-card p-2 sm:mx-0">
-        <h2 class="text-2xl p-2 text-center font-bold text-white">Gameweek Leaderboard</h2>
+                <h2 class="p-2 text-center text-2xl font-bold text-white">Gameweek Leaderboard</h2>
 
                 <table class="min-w-full whitespace-nowrap text-sm text-gray-200">
                     <thead>

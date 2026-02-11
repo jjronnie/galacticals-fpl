@@ -6,6 +6,7 @@
             csrfToken: '{{ csrf_token() }}',
             statusUrl: '{{ route('admin.data.status') }}',
             refreshLeagueUrlTemplate: '{{ route('admin.data.refreshLeague', ['league' => '__LEAGUE_ID__']) }}',
+            destroyLeagueUrlTemplate: '{{ route('admin.data.destroyLeague', ['league' => '__LEAGUE_ID__']) }}',
             computeGameweeksUrl: '{{ route('admin.data.computeGameweeks') }}',
             publicLeagueUrlTemplate: '{{ route('public.leagues.show', ['slug' => '__LEAGUE_SLUG__']) }}',
         })"
@@ -155,6 +156,14 @@
                                         >
                                             Compute GW
                                         </button>
+                                        <button
+                                            type="button"
+                                            class="rounded-lg bg-red-700 px-3 py-2 text-xs font-semibold text-white hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+                                            :disabled="busyAction !== null"
+                                            @click="deleteLeague(league)"
+                                        >
+                                            Delete
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -223,19 +232,38 @@
                 async computeLeagueGameweek(leagueId) {
                     await this.postAction(config.computeGameweeksUrl, { league_id: leagueId }, 'League gameweek computation queued.');
                 },
-                async postAction(url, payload = {}, fallbackMessage = 'Action queued.') {
+                async deleteLeague(league) {
+                    const managersCount = Number(league.managers_count || 0);
+                    const isConfirmed = window.confirm(
+                        `Delete "${league.name}" and ${managersCount} manager record(s)? This action cannot be undone.`
+                    );
+
+                    if (!isConfirmed) {
+                        return;
+                    }
+
+                    const url = config.destroyLeagueUrlTemplate.replace('__LEAGUE_ID__', String(league.id));
+
+                    await this.postAction(url, {}, `League ${league.name} deleted successfully.`, 'DELETE');
+                },
+                async postAction(url, payload = {}, fallbackMessage = 'Action queued.', method = 'POST') {
                     this.busyAction = url;
 
                     try {
-                        const response = await fetch(url, {
-                            method: 'POST',
+                        const requestOptions = {
+                            method,
                             headers: {
                                 Accept: 'application/json',
                                 'Content-Type': 'application/json',
                                 'X-CSRF-TOKEN': config.csrfToken,
                             },
-                            body: JSON.stringify(payload),
-                        });
+                        };
+
+                        if (method !== 'DELETE') {
+                            requestOptions.body = JSON.stringify(payload);
+                        }
+
+                        const response = await fetch(url, requestOptions);
 
                         const data = await response.json().catch(() => ({}));
 

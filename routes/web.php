@@ -88,6 +88,7 @@ Route::middleware(['auth', 'can:admin'])->group(function (): void {
     Route::post('/admin/data/fetch-managers', [AdminDataController::class, 'fetchManagers'])->name('admin.data.fetchManagers');
     Route::post('/admin/data/compute-gameweeks', [AdminDataController::class, 'computeGameweeks'])->name('admin.data.computeGameweeks');
     Route::post('/admin/data/refresh-league/{league}', [AdminDataController::class, 'refreshLeague'])->name('admin.data.refreshLeague');
+    Route::delete('/admin/data/leagues/{league}', [AdminDataController::class, 'destroyLeague'])->name('admin.data.destroyLeague');
 
     Route::get('/admin/managers', [AdminManagerController::class, 'index'])->name('admin.managers.index');
     Route::get('/admin/managers/all', [AdminManagerController::class, 'all'])->name('admin.managers.all');
@@ -111,6 +112,9 @@ Route::middleware(['auth', 'can:admin'])->group(function (): void {
 Route::get('/leagues/{slug}/gameweeks/{gameweek}', [LeagueController::class, 'showGameweek'])
     ->whereNumber('gameweek')
     ->name('public.leagues.gameweek.show');
+
+Route::get('/leagues/{slug}/performance', [LeagueController::class, 'showPerformance'])
+    ->name('public.leagues.performance');
 
 Route::get('/leagues/{slug}/{gameweek?}', [LeagueController::class, 'show'])
     ->where('gameweek', '[0-9]+')

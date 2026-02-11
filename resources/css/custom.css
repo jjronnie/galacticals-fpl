@@ -32,6 +32,10 @@ html {
   scroll-behavior: smooth;
 }
 
+body {
+  font-family: "Ubuntu Sans", sans-serif;
+}
+
 
 
 /* custom css */

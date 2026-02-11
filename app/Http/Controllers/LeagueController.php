@@ -244,6 +244,24 @@ class LeagueController extends Controller
         ]);
     }
 
+    public function showPerformance(string $slug): View
+    {
+        $league = League::query()->where('slug', $slug)->firstOrFail();
+
+        $availableGameweeks = $this->statsService->getAvailableGameweeks($league);
+        $currentGW = $availableGameweeks !== [] ? max($availableGameweeks) : (int) ($league->current_gameweek ?? 0);
+        $data = $this->statsService->getLeagueStats($league);
+
+        $this->seoService->setLeague($league);
+
+        return view('leagues.performance', [
+            'league' => $league,
+            'currentGW' => $currentGW,
+            'availableGameweeks' => $availableGameweeks,
+            'gwPerformance' => $data['gwPerformance'],
+        ]);
+    }
+
     public function showGameweek(string $slug, int $gameweek): View|RedirectResponse
     {
         $league = League::query()->where('slug', $slug)->firstOrFail();

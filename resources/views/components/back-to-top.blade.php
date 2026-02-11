@@ -1,4 +1,4 @@
-<button id="backToTop" 
+{{-- <button id="backToTop" 
     class="hidden fixed bottom-6 right-6 p-3 rounded-full text-white bg-navgradient shadow-lg cursor-pointer z-50">
     <i data-lucide="arrow-up" class="w-5 h-5"></i>
 </button>
@@ -20,4 +20,4 @@
             behavior: 'smooth'
         });
     });
-</script>
+</script> --}}

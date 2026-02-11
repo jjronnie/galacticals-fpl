@@ -195,6 +195,27 @@ class AdminDataController extends Controller
         return $this->actionResponse($request, "League refresh queued for {$league->name}.");
     }
 
+    public function destroyLeague(Request $request, League $league): RedirectResponse|JsonResponse
+    {
+        $leagueName = (string) $league->name;
+
+        try {
+            $league->delete();
+        } catch (\Throwable $exception) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Failed to delete league. Please try again.',
+                ], 422);
+            }
+
+            return back()->withErrors([
+                'league' => 'Failed to delete league. Please try again.',
+            ]);
+        }
+
+        return $this->actionResponse($request, "League {$leagueName} deleted successfully.");
+    }
+
     public function syncAll(Request $request): RedirectResponse|JsonResponse
     {
         $leagues = League::query()->get(['id', 'name', 'season']);
