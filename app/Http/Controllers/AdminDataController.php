@@ -15,6 +15,7 @@ use App\Services\SyncJobProgressService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\View\View;
 
 class AdminDataController extends Controller
@@ -235,7 +236,6 @@ class AdminDataController extends Controller
             3,
             'Full update queued: syncing FPL teams and players.'
         );
-        FetchFplDataJob::dispatch();
 
         if ($profileEntryCount > 0) {
             SyncJobProgressService::queue(
@@ -243,8 +243,14 @@ class AdminDataController extends Controller
                 $profileEntryCount,
                 "Full update queued: syncing {$profileEntryCount} claimed profile entries."
             );
-            FetchManagerProfilesJob::dispatch($managerIds);
+
+            Bus::chain([
+                new FetchFplDataJob,
+                new FetchManagerProfilesJob($managerIds),
+            ])->dispatch();
         } else {
+            FetchFplDataJob::dispatch();
+
             SyncJobProgressService::complete(
                 SyncJobProgressService::FETCH_MANAGER_PROFILES,
                 'No claimed profiles found during full update.'

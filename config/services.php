@@ -55,6 +55,13 @@ return [
 
     'fpl' => [
         'base_url' => env('FPL_BASE_URL', 'https://fantasy.premierleague.com/api'),
+        'connect_timeout_seconds' => (int) env('FPL_CONNECT_TIMEOUT_SECONDS', 10),
+        'request_timeout_seconds' => (int) env('FPL_REQUEST_TIMEOUT_SECONDS', 45),
+        'retry_attempts' => (int) env('FPL_RETRY_ATTEMPTS', 4),
+        'retry_initial_delay_ms' => (int) env('FPL_RETRY_INITIAL_DELAY_MS', 750),
+        'force_ipv4' => env('FPL_FORCE_IPV4', false),
+        'catalog_min_teams' => (int) env('FPL_CATALOG_MIN_TEAMS', 20),
+        'catalog_min_players' => (int) env('FPL_CATALOG_MIN_PLAYERS', 700),
         'manager_request_interval_ms' => (int) env('FPL_MANAGER_REQUEST_INTERVAL_MS', 300),
         'page_request_interval_ms' => (int) env('FPL_PAGE_REQUEST_INTERVAL_MS', 200),
     ],

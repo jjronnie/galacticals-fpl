@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\AdminCacheHelper;
 use App\Jobs\FetchLeagueStandings;
 use App\Models\League;
 use App\Models\User;
@@ -11,7 +12,6 @@ use App\Services\SeoService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
 use Illuminate\View\View;
@@ -471,7 +471,7 @@ class LeagueController extends Controller
 
         $cacheKey = "league_{$league->id}_managers_page_{$page}";
 
-        $data = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($league, $perPage): array {
+        $data = AdminCacheHelper::remember($cacheKey, now()->addMinutes(10), function () use ($league, $perPage): array {
             $managers = $league->managers()
                 ->with('gameweekScores')
                 ->orderBy('total_points', 'desc')

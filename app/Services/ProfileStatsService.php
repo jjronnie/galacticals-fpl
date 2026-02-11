@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Helpers\AdminCacheHelper;
 use App\Models\GameweekScore;
 use App\Models\LeagueGameweekStanding;
 use App\Models\Manager;
@@ -31,7 +32,7 @@ class ProfileStatsService
         $entryId = (int) $manager->entry_id;
         $cacheKey = "profile_stats_entry_v3_{$entryId}_{$section}";
 
-        return Cache::remember($cacheKey, now()->addMinutes(15), function () use ($manager, $entryId, $section): array {
+        return AdminCacheHelper::remember($cacheKey, now()->addMinutes(15), function () use ($manager, $entryId, $section): array {
             $relatedManagerIds = Manager::query()
                 ->where('entry_id', $entryId)
                 ->pluck('id');

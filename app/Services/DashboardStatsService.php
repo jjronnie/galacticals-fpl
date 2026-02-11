@@ -2,13 +2,13 @@
 
 namespace App\Services;
 
+use App\Helpers\AdminCacheHelper;
 use App\Helpers\TeamColorHelper;
 use App\Models\GameweekScore;
 use App\Models\League;
 use App\Models\Manager;
 use App\Models\ManagerPick;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache;
 
 class DashboardStatsService
 {
@@ -31,7 +31,7 @@ class DashboardStatsService
      */
     public function getGlobalDashboardStats(): array
     {
-        return Cache::remember('dashboard_global_stats_v2', now()->addMinutes(15), function (): array {
+        return AdminCacheHelper::remember('dashboard_global_stats_v2', now()->addMinutes(15), function (): array {
             $latestGameweek = (int) (ManagerPick::query()->max('gameweek') ?? 0);
 
             if ($latestGameweek <= 0) {
@@ -69,7 +69,7 @@ class DashboardStatsService
      */
     public function getPlayerOfWeekHistory(int $limit = 40): array
     {
-        return Cache::remember("dashboard_player_of_week_history_v1_{$limit}", now()->addMinutes(15), function () use ($limit): array {
+        return AdminCacheHelper::remember("dashboard_player_of_week_history_v1_{$limit}", now()->addMinutes(15), function () use ($limit): array {
             $gameweeks = ManagerPick::query()
                 ->whereNotNull('event_points')
                 ->select('gameweek')
@@ -100,7 +100,7 @@ class DashboardStatsService
      */
     public function getTeamOfWeekHistory(int $limit = 40): array
     {
-        return Cache::remember("dashboard_team_of_week_history_v1_{$limit}", now()->addMinutes(15), function () use ($limit): array {
+        return AdminCacheHelper::remember("dashboard_team_of_week_history_v1_{$limit}", now()->addMinutes(15), function () use ($limit): array {
             $gameweeks = ManagerPick::query()
                 ->whereNotNull('event_points')
                 ->select('gameweek')

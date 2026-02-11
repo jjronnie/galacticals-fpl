@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\AdminCacheHelper;
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Jobs\FetchFplDataJob;
 use App\Jobs\FetchManagerProfilesJob;
@@ -135,7 +136,7 @@ class ProfileController extends Controller
 
         $cacheKey = 'profile_search_live_'.md5(mb_strtolower($query));
 
-        $payload = Cache::remember($cacheKey, now()->addSeconds(30), function () use ($query): array {
+        $payload = AdminCacheHelper::remember($cacheKey, now()->addSeconds(30), function () use ($query): array {
             $results = Manager::query()
                 ->with(['latestGameweekScore', 'user:id,name'])
                 ->where(function ($builder) use ($query): void {
@@ -318,6 +319,7 @@ class ProfileController extends Controller
 
         foreach (array_keys(self::PROFILE_SECTIONS) as $section) {
             Cache::forget("profile_stats_entry_{$entryId}_{$section}");
+            Cache::forget("profile_stats_entry_v3_{$entryId}_{$section}");
         }
     }
 }

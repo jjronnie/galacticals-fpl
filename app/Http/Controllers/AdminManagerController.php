@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\AdminCacheHelper;
 use App\Http\Requests\AdminManagerActionRequest;
 use App\Models\Manager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class AdminManagerController extends Controller
@@ -124,7 +124,7 @@ class AdminManagerController extends Controller
     {
         $cacheKey = 'admin_manager_overview_v2_'.md5(strtolower($search).'|'.$page.'|'.$perPage);
 
-        return Cache::remember($cacheKey, now()->addMinutes(15), function () use ($search, $page, $perPage): array {
+        return AdminCacheHelper::remember($cacheKey, now()->addMinutes(15), function () use ($search, $page, $perPage): array {
             $results = Manager::query()
                 ->from('managers as m')
                 ->leftJoin('leagues as l', 'l.id', '=', 'm.league_id')

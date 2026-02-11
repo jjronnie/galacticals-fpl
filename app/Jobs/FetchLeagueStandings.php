@@ -10,6 +10,9 @@ use App\Services\SyncJobProgressService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
@@ -152,22 +155,68 @@ class FetchLeagueStandings implements ShouldQueue
         $maxPages = 100;
 
         do {
-            $response = Http::timeout(15)->get($this->endpoint("leagues-classic/{$league->league_id}/standings/"), [
-                'page_standings' => $page,
-            ]);
+            $path = "leagues-classic/{$league->league_id}/standings/";
+            $url = $this->endpoint($path);
+
+            try {
+                $response = $this->fplRequest()->get($url, [
+                    'page_standings' => $page,
+                ]);
+            } catch (\Throwable $exception) {
+                Log::warning('Transport error while fetching league standings page.', [
+                    'league_id' => $league->league_id,
+                    'path' => $path,
+                    'url' => $url,
+                    'page' => $page,
+                    'exception_class' => $exception::class,
+                    'error' => $exception->getMessage(),
+                ]);
+
+                if ($page === 1) {
+                    throw $exception;
+                }
+
+                break;
+            }
 
             if ($response->failed()) {
-                Log::warning('Failed to fetch league standings page.', [
+                $statusCode = $response->status();
+                $bodySnippet = $this->responseBodySnippet($response->body());
+
+                Log::warning('FPL API returned non-success for league standings page.', [
                     'league_id' => $league->league_id,
+                    'path' => $path,
+                    'url' => $url,
                     'page' => $page,
+                    'status' => $statusCode,
+                    'body_snippet' => $bodySnippet,
                 ]);
+
+                if ($page === 1) {
+                    throw new \RuntimeException(
+                        "Failed to fetch standings for league {$league->league_id} (status {$statusCode})."
+                    );
+                }
 
                 break;
             }
 
             $data = $response->json();
 
-            if (! isset($data['league'], $data['standings']['results'])) {
+            if (! is_array($data) || ! isset($data['league'], $data['standings']['results'])) {
+                Log::warning('Invalid league standings payload received.', [
+                    'league_id' => $league->league_id,
+                    'path' => $path,
+                    'url' => $url,
+                    'page' => $page,
+                ]);
+
+                if ($page === 1) {
+                    throw new \RuntimeException(
+                        "Invalid standings payload for league {$league->league_id} page {$page}."
+                    );
+                }
+
                 break;
             }
 
@@ -196,10 +245,16 @@ class FetchLeagueStandings implements ShouldQueue
     private function processManager(League $league, array $entry): void
     {
         try {
+            $entryId = (int) ($entry['entry'] ?? 0);
+
+            if ($entryId <= 0) {
+                return;
+            }
+
             $manager = Manager::updateOrCreate(
                 [
                     'league_id' => $league->id,
-                    'entry_id' => (int) $entry['entry'],
+                    'entry_id' => $entryId,
                 ],
                 [
                     'player_name' => (string) $entry['player_name'],
@@ -209,13 +264,52 @@ class FetchLeagueStandings implements ShouldQueue
                 ]
             );
 
-            $historyResponse = Http::timeout(20)->get($this->endpoint("entry/{$entry['entry']}/history/"));
+            $path = "entry/{$entryId}/history/";
+            $url = $this->endpoint($path);
+
+            try {
+                $historyResponse = $this->fplRequest()->get($url);
+            } catch (\Throwable $exception) {
+                Log::warning('Transport error while fetching manager history during standings sync.', [
+                    'league_id' => $league->id,
+                    'entry_id' => $entryId,
+                    'path' => $path,
+                    'url' => $url,
+                    'exception_class' => $exception::class,
+                    'error' => $exception->getMessage(),
+                ]);
+
+                return;
+            }
 
             if ($historyResponse->failed()) {
+                $statusCode = $historyResponse->status();
+                $bodySnippet = $this->responseBodySnippet($historyResponse->body());
+
+                Log::warning('FPL API returned non-success for manager history during standings sync.', [
+                    'league_id' => $league->id,
+                    'entry_id' => $entryId,
+                    'path' => $path,
+                    'url' => $url,
+                    'status' => $statusCode,
+                    'body_snippet' => $bodySnippet,
+                ]);
+
                 return;
             }
 
             $historyData = $historyResponse->json();
+
+            if (! is_array($historyData)) {
+                Log::warning('Invalid manager history payload received during standings sync.', [
+                    'league_id' => $league->id,
+                    'entry_id' => $entryId,
+                    'path' => $path,
+                    'url' => $url,
+                ]);
+
+                return;
+            }
 
             foreach (($historyData['current'] ?? []) as $week) {
                 GameweekScore::updateOrCreate(
@@ -248,18 +342,38 @@ class FetchLeagueStandings implements ShouldQueue
     private function fetchCurrentGameweek(): int
     {
         try {
-            $response = Http::timeout(15)->get($this->endpoint('bootstrap-static/'));
+            $path = 'bootstrap-static/';
+            $url = $this->endpoint($path);
+            $response = $this->fplRequest()->get($url);
 
             if ($response->failed()) {
+                Log::warning('FPL API returned non-success while fetching current gameweek.', [
+                    'path' => $path,
+                    'url' => $url,
+                    'status' => $response->status(),
+                ]);
+
                 return 0;
             }
 
-            $current = collect($response->json('events', []))
+            $payload = $response->json();
+
+            if (! is_array($payload)) {
+                return 0;
+            }
+
+            $current = collect($payload['events'] ?? [])
                 ->filter(fn (array $event): bool => (bool) ($event['finished'] ?? false))
                 ->max('id');
 
             return (int) ($current ?? 0);
-        } catch (\Throwable) {
+        } catch (\Throwable $exception) {
+            Log::warning('Transport error while fetching current gameweek.', [
+                'league_id' => $this->leagueId,
+                'exception_class' => $exception::class,
+                'error' => $exception->getMessage(),
+            ]);
+
             return 0;
         }
     }
@@ -283,6 +397,83 @@ class FetchLeagueStandings implements ShouldQueue
         $milliseconds = (int) config('services.fpl.page_request_interval_ms', 200);
 
         return max($milliseconds, 0) * 1000;
+    }
+
+    private function fplRequest(): PendingRequest
+    {
+        $request = Http::acceptJson()
+            ->connectTimeout($this->connectTimeoutSeconds())
+            ->timeout($this->requestTimeoutSeconds())
+            ->retry(
+                $this->requestRetryAttempts(),
+                fn (int $attempt): int => $this->retryDelayMilliseconds($attempt),
+                fn ($exception): bool => $this->shouldRetryException($exception),
+                throw: false
+            );
+
+        if ($this->forceIpv4()) {
+            $request = $request->withOptions([
+                'force_ip_resolve' => 'v4',
+            ]);
+        }
+
+        return $request;
+    }
+
+    private function requestRetryAttempts(): int
+    {
+        $attempts = (int) config('services.fpl.retry_attempts', 4);
+
+        return max($attempts, 1);
+    }
+
+    private function retryDelayMilliseconds(int $attempt): int
+    {
+        $baseDelay = max((int) config('services.fpl.retry_initial_delay_ms', 750), 100);
+
+        return min((int) ($baseDelay * (2 ** max($attempt - 1, 0))), 10000);
+    }
+
+    private function requestTimeoutSeconds(): int
+    {
+        $timeout = (int) config('services.fpl.request_timeout_seconds', 45);
+
+        return max($timeout, 5);
+    }
+
+    private function connectTimeoutSeconds(): int
+    {
+        $timeout = (int) config('services.fpl.connect_timeout_seconds', 10);
+
+        return max($timeout, 2);
+    }
+
+    private function forceIpv4(): bool
+    {
+        $value = config('services.fpl.force_ipv4', false);
+
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        return filter_var($value, FILTER_VALIDATE_BOOL) === true;
+    }
+
+    private function shouldRetryException(mixed $exception): bool
+    {
+        return $exception instanceof ConnectionException
+            || $exception instanceof RequestException;
+    }
+
+    private function responseBodySnippet(string $body): string
+    {
+        $normalizedBody = trim(preg_replace('/\s+/', ' ', $body) ?? '');
+
+        if (mb_strlen($normalizedBody) <= 180) {
+            return $normalizedBody;
+        }
+
+        return rtrim(mb_substr($normalizedBody, 0, 177)).'...';
     }
 
     public function failed(\Throwable $exception): void

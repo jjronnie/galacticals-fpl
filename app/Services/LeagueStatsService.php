@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Helpers\AdminCacheHelper;
 use App\Helpers\TeamColorHelper;
 use App\Models\FplPlayer;
 use App\Models\GameweekScore;
@@ -32,7 +33,7 @@ class LeagueStatsService
     {
         $cacheKey = $this->getCacheKey($league->id);
 
-        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($league): array {
+        return AdminCacheHelper::remember($cacheKey, now()->addMinutes(30), function () use ($league): array {
             $managers = $league->managers()->with('favouriteTeam')->get();
 
             if ($managers->isEmpty()) {
@@ -352,7 +353,7 @@ class LeagueStatsService
     {
         $cacheKey = "league_gameweek_standings_{$league->id}_{$gameweek}";
 
-        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($league, $gameweek): Collection {
+        return AdminCacheHelper::remember($cacheKey, now()->addMinutes(30), function () use ($league, $gameweek): Collection {
             return LeagueGameweekStanding::query()
                 ->where('league_id', $league->id)
                 ->where('gameweek', $gameweek)
@@ -369,7 +370,7 @@ class LeagueStatsService
     {
         $cacheKey = 'league_available_gameweeks_'.$league->id;
 
-        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($league): array {
+        return AdminCacheHelper::remember($cacheKey, now()->addMinutes(30), function () use ($league): array {
             $gameweeks = LeagueGameweekStanding::query()
                 ->where('league_id', $league->id)
                 ->select('gameweek')
@@ -398,7 +399,7 @@ class LeagueStatsService
     {
         $cacheKey = "league_trends_{$league->id}_{$gameweek}";
 
-        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($league, $gameweek): array {
+        return AdminCacheHelper::remember($cacheKey, now()->addMinutes(30), function () use ($league, $gameweek): array {
             $query = ManagerPick::query()
                 ->where('gameweek', $gameweek)
                 ->whereHas('manager', fn ($builder) => $builder->where('league_id', $league->id));

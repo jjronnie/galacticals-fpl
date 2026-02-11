@@ -11,7 +11,7 @@ use App\Models\Manager;
 use App\Models\User;
 use App\Services\SyncJobProgressService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Bus;
 use Tests\TestCase;
 
 class AdminDataSyncTest extends TestCase
@@ -20,7 +20,7 @@ class AdminDataSyncTest extends TestCase
 
     public function test_admin_can_queue_full_application_sync_from_data_panel(): void
     {
-        Queue::fake();
+        Bus::fake();
 
         $admin = User::factory()->create([
             'role' => 'admin',
@@ -79,10 +79,12 @@ class AdminDataSyncTest extends TestCase
             ->assertJsonPath('payload.summary.total_leagues', 2)
             ->assertJsonPath('payload.summary.claimed_managers', 2);
 
-        Queue::assertPushed(FetchFplDataJob::class, 1);
-        Queue::assertPushed(FetchManagerProfilesJob::class, 1);
-        Queue::assertPushed(FetchLeagueStandings::class, 2);
-        Queue::assertPushed(ComputeLeagueGameweekStandingsJob::class, 2);
+        Bus::assertChained([
+            FetchFplDataJob::class,
+            FetchManagerProfilesJob::class,
+        ]);
+        Bus::assertDispatched(FetchLeagueStandings::class, 2);
+        Bus::assertDispatched(ComputeLeagueGameweekStandingsJob::class, 2);
     }
 
     public function test_admin_data_status_endpoint_returns_job_and_league_progress_payload(): void
@@ -126,7 +128,7 @@ class AdminDataSyncTest extends TestCase
 
     public function test_admin_can_refresh_specific_league_via_json_without_full_page_redirect(): void
     {
-        Queue::fake();
+        Bus::fake();
 
         $admin = User::factory()->create([
             'role' => 'admin',
@@ -156,7 +158,7 @@ class AdminDataSyncTest extends TestCase
             'sync_status' => 'processing',
         ]);
 
-        Queue::assertPushed(FetchLeagueStandings::class, 1);
+        Bus::assertDispatched(FetchLeagueStandings::class, 1);
     }
 
     public function test_admin_can_delete_specific_league_via_json_endpoint(): void
