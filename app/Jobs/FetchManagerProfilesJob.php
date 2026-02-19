@@ -11,6 +11,7 @@ use App\Models\ManagerPick;
 use App\Services\SyncJobProgressService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
@@ -59,7 +60,7 @@ class FetchManagerProfilesJob implements ShouldQueue
         if ($managers->isEmpty()) {
             SyncJobProgressService::complete(
                 SyncJobProgressService::FETCH_MANAGER_PROFILES,
-                'No claimed profiles found to sync.'
+                'No manager profiles found to sync.'
             );
 
             return;
@@ -70,12 +71,12 @@ class FetchManagerProfilesJob implements ShouldQueue
         $totalEntries = $managersByEntry->count();
         $processedEntries = 0;
         $failedEntries = 0;
-        $finishedGameweeks = $this->finishedGameweeks();
+        $syncableGameweeks = $this->finishedGameweeks();
 
         SyncJobProgressService::start(
             SyncJobProgressService::FETCH_MANAGER_PROFILES,
             $totalEntries,
-            'Starting claimed profile sync...'
+            'Starting manager profile sync...'
         );
 
         foreach ($managersByEntry as $entryId => $entryManagers) {
@@ -101,42 +102,70 @@ class FetchManagerProfilesJob implements ShouldQueue
                 $this->syncGameweekHistory($entryManagers, $historyPayload['current'] ?? []);
                 $this->syncChips($entryManagers, $historyPayload['chips'] ?? []);
 
-                $gameweeksToSync = $this->gameweeksToSync($entryManagers, $finishedGameweeks);
+                $gameweeksToSync = $this->gameweeksToSync($entryManagers, $syncableGameweeks);
+                $failedGameweeks = [];
                 $currentStep = 'picks';
 
                 foreach ($gameweeksToSync as $gameweek) {
-                    $currentGameweek = $gameweek;
-                    $currentPath = "entry/{$entryIdInt}/event/{$gameweek}/picks/";
-                    $picksPayload = $this->fetchJson($currentPath);
-                    $currentStep = 'event_points';
-                    $currentPath = "event/{$gameweek}/live/";
-                    $pointsMap = $this->eventPointsForGameweek($gameweek);
-                    $currentStep = 'persist_picks';
+                    try {
+                        $currentGameweek = $gameweek;
+                        $currentPath = "entry/{$entryIdInt}/event/{$gameweek}/picks/";
+                        $picksPayload = $this->fetchJson($currentPath);
+                        $currentStep = 'event_points';
+                        $currentPath = "event/{$gameweek}/live/";
+                        $pointsMap = $this->eventPointsForGameweek($gameweek);
+                        $currentStep = 'persist_picks';
 
-                    foreach ($entryManagers as $entryManager) {
-                        if (! $entryManager instanceof Manager) {
-                            Log::warning('Skipping profile picks sync for non-manager row.', [
-                                'entry_id' => $entryIdInt,
-                                'gameweek' => $gameweek,
-                                'row_type' => get_debug_type($entryManager),
-                            ]);
+                        foreach ($entryManagers as $entryManager) {
+                            if (! $entryManager instanceof Manager) {
+                                Log::warning('Skipping profile picks sync for non-manager row.', [
+                                    'entry_id' => $entryIdInt,
+                                    'gameweek' => $gameweek,
+                                    'row_type' => get_debug_type($entryManager),
+                                ]);
 
-                            continue;
+                                continue;
+                            }
+
+                            $this->syncPicksForManager($entryManager, $gameweek, $picksPayload, $pointsMap);
                         }
+                    } catch (\Throwable $exception) {
+                        $failedGameweeks[] = $gameweek;
 
-                        $this->syncPicksForManager($entryManager, $gameweek, $picksPayload, $pointsMap);
+                        Log::warning('Failed to sync manager profile gameweek picks; continuing with remaining gameweeks.', [
+                            'entry_id' => $entryIdInt,
+                            'manager_ids' => $managerIds,
+                            'gameweek' => $gameweek,
+                            'path' => $currentPath,
+                            'step' => $currentStep,
+                            'exception_class' => $exception::class,
+                            'error' => $exception->getMessage(),
+                        ]);
+                    } finally {
+                        $currentStep = 'picks';
                     }
-
-                    $currentStep = 'picks';
                 }
+
+                $syncMessage = $failedGameweeks === []
+                    ? "Profile synced ({$processedEntries}/{$totalEntries})"
+                    : $this->truncateMessage(
+                        sprintf(
+                            'Profile synced with gaps in GW %s (%d/%d)',
+                            implode(', ', array_slice(array_unique($failedGameweeks), 0, 6)),
+                            $processedEntries,
+                            $totalEntries
+                        ),
+                        255
+                    );
 
                 Manager::whereIn('id', $managerIds)->update([
                     'sync_status' => 'completed',
-                    'sync_message' => "Profile synced ({$processedEntries}/{$totalEntries})",
+                    'sync_message' => $syncMessage,
                     'last_synced_at' => now(),
                 ]);
 
                 $this->forgetProfileCaches($entryIdInt, $managerIds);
+                $this->forgetLeagueAndDashboardCaches($entryManagers, $gameweeksToSync);
             } catch (\Throwable $exception) {
                 $failedEntries++;
                 $stepLabel = str_replace('_', ' ', $currentStep);
@@ -188,7 +217,7 @@ class FetchManagerProfilesJob implements ShouldQueue
 
         SyncJobProgressService::complete(
             SyncJobProgressService::FETCH_MANAGER_PROFILES,
-            sprintf('Successfully synced %d claimed profile entries.', $totalEntries)
+            sprintf('Successfully synced %d manager profile entries.', $totalEntries)
         );
     }
 
@@ -200,7 +229,7 @@ class FetchManagerProfilesJob implements ShouldQueue
             return $query->whereIn('id', $this->managerIds);
         }
 
-        return $query->whereNotNull('user_id');
+        return $query;
     }
 
     /**
@@ -210,6 +239,7 @@ class FetchManagerProfilesJob implements ShouldQueue
     {
         $fullName = trim(($profilePayload['player_first_name'] ?? '').' '.($profilePayload['player_last_name'] ?? ''));
         $favouriteTeamKey = $this->favouriteTeamPayloadKey($profilePayload);
+        $managerIds = $entryManagers->pluck('id')->all();
 
         $attributes = [
             'player_first_name' => $profilePayload['player_first_name'] ?? null,
@@ -225,7 +255,24 @@ class FetchManagerProfilesJob implements ShouldQueue
             $attributes['player_name'] = $fullName;
         }
 
-        Manager::whereIn('id', $entryManagers->pluck('id')->all())->update($attributes);
+        try {
+            Manager::whereIn('id', $managerIds)->update($attributes);
+        } catch (QueryException $exception) {
+            if (! array_key_exists('favourite_team_id', $attributes)) {
+                throw $exception;
+            }
+
+            Log::warning('Failed to persist favourite_team_id for manager profile identity sync; retrying without favourite team.', [
+                'manager_ids' => $managerIds,
+                'favourite_team_id' => $attributes['favourite_team_id'],
+                'exception_class' => $exception::class,
+                'error' => $exception->getMessage(),
+            ]);
+
+            unset($attributes['favourite_team_id']);
+
+            Manager::whereIn('id', $managerIds)->update($attributes);
+        }
     }
 
     /**
@@ -444,7 +491,7 @@ class FetchManagerProfilesJob implements ShouldQueue
         }
 
         return collect($bootstrapData['events'] ?? [])
-            ->filter(fn (array $event): bool => (bool) ($event['finished'] ?? false))
+            ->filter(fn (array $event): bool => (bool) ($event['finished'] ?? false) || (bool) ($event['is_current'] ?? false))
             ->pluck('id')
             ->map(fn ($gameweek): int => (int) $gameweek)
             ->values()
@@ -712,6 +759,35 @@ class FetchManagerProfilesJob implements ShouldQueue
         }
     }
 
+    /**
+     * @param  Collection<int, Manager>  $entryManagers
+     * @param  array<int>  $gameweeks
+     */
+    private function forgetLeagueAndDashboardCaches(Collection $entryManagers, array $gameweeks): void
+    {
+        $leagueIds = $entryManagers
+            ->pluck('league_id')
+            ->filter(fn ($leagueId): bool => is_numeric($leagueId))
+            ->map(fn ($leagueId): int => (int) $leagueId)
+            ->unique()
+            ->values()
+            ->all();
+
+        foreach ($leagueIds as $leagueId) {
+            Cache::forget("league_stats_{$leagueId}");
+            Cache::forget("league_available_gameweeks_{$leagueId}");
+            Cache::forget("dashboard_global_stats_v3_league_{$leagueId}");
+
+            foreach ($gameweeks as $gameweek) {
+                Cache::forget("league_gameweek_standings_{$leagueId}_{$gameweek}");
+                Cache::forget("league_trends_{$leagueId}_{$gameweek}");
+            }
+        }
+
+        Cache::forget('dashboard_global_stats_v3_all');
+        Cache::forget('dashboard_global_stats_v2');
+    }
+
     public function failed(\Throwable $exception): void
     {
         Log::error('FetchManagerProfilesJob failed permanently.', [
@@ -720,7 +796,7 @@ class FetchManagerProfilesJob implements ShouldQueue
 
         SyncJobProgressService::fail(
             SyncJobProgressService::FETCH_MANAGER_PROFILES,
-            'Claimed profile sync failed after retries.'
+            'Manager profile sync failed after retries.'
         );
     }
 

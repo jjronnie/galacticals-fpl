@@ -44,7 +44,7 @@ class LeagueController extends Controller
             ->orderBy('gameweek_scores.updated_at', 'desc')
             ->value('gameweek_scores.updated_at');
 
-        $dashboardStats = $this->dashboardStatsService->getGlobalDashboardStats();
+        $dashboardStats = $this->dashboardStatsService->getGlobalDashboardStats($league);
 
         return view('leagues.dashboard', [
             'league' => $league,

@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\AdminCacheHelper;
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Jobs\FetchFplDataJob;
 use App\Jobs\FetchManagerProfilesJob;
+use App\Models\GameweekScore;
 use App\Models\Manager;
 use App\Models\ProfileVerificationSubmission;
 use App\Services\ProfileStatsService;
@@ -134,45 +134,60 @@ class ProfileController extends Controller
             return response()->json(['data' => []]);
         }
 
-        $cacheKey = 'profile_search_live_'.md5(mb_strtolower($query));
+        $results = Manager::query()
+            ->with('user:id,name')
+            ->where(function ($builder) use ($query): void {
+                $builder
+                    ->where('team_name', 'like', "%{$query}%")
+                    ->orWhere('player_name', 'like', "%{$query}%")
+                    ->orWhereRaw("CONCAT(player_first_name, ' ', player_last_name) like ?", ["%{$query}%"])
+                    ->orWhere('entry_id', $query);
+            })
+            ->orderByDesc('total_points')
+            ->limit(250)
+            ->get()
+            ->unique('entry_id')
+            ->values()
+            ->take(30);
 
-        $payload = AdminCacheHelper::remember($cacheKey, now()->addSeconds(30), function () use ($query): array {
-            $results = Manager::query()
-                ->with(['latestGameweekScore', 'user:id,name'])
-                ->where(function ($builder) use ($query): void {
-                    $builder
-                        ->where('team_name', 'like', "%{$query}%")
-                        ->orWhere('player_name', 'like', "%{$query}%")
-                        ->orWhereRaw("CONCAT(player_first_name, ' ', player_last_name) like ?", ["%{$query}%"])
-                        ->orWhere('entry_id', $query);
-                })
-                ->orderByDesc('total_points')
-                ->limit(250)
-                ->get()
-                ->unique('entry_id')
-                ->values()
-                ->take(30);
+        $entryManagers = Manager::query()
+            ->whereIn('entry_id', $results->pluck('entry_id')->all())
+            ->get(['id', 'entry_id']);
 
-            $claimedByEntry = Manager::query()
-                ->whereIn('entry_id', $results->pluck('entry_id')->all())
-                ->whereNotNull('user_id')
-                ->selectRaw('entry_id, MIN(user_id) as claimed_user_id')
-                ->groupBy('entry_id')
-                ->pluck('claimed_user_id', 'entry_id');
+        $entryByManagerId = $entryManagers
+            ->pluck('entry_id', 'id')
+            ->map(fn ($entryId): int => (int) $entryId);
 
-            return $results->map(function (Manager $manager) use ($claimedByEntry): array {
-                return [
-                    'id' => $manager->id,
-                    'entry_id' => (int) $manager->entry_id,
-                    'team_name' => $manager->team_name,
-                    'player_name' => $manager->player_name,
-                    'total_points' => (int) ($manager->total_points ?? 0),
-                    'rank' => (int) ($manager->rank ?? 0),
-                    'overall_rank' => (int) ($manager->latestGameweekScore?->overall_rank ?? 0),
-                    'claimed_user_id' => $claimedByEntry[(int) $manager->entry_id] ?? null,
-                ];
-            })->values()->all();
-        });
+        $latestOverallRanksByEntry = GameweekScore::query()
+            ->whereIn('manager_id', $entryManagers->pluck('id')->all())
+            ->orderByDesc('gameweek')
+            ->orderByDesc('id')
+            ->get(['manager_id', 'overall_rank'])
+            ->groupBy(function ($score) use ($entryByManagerId): int {
+                return (int) ($entryByManagerId[(int) $score->manager_id] ?? 0);
+            })
+            ->filter(fn ($rows, int $entryId): bool => $entryId > 0)
+            ->map(fn ($rows): int => (int) ($rows->first()?->overall_rank ?? 0));
+
+        $claimedByEntry = Manager::query()
+            ->whereIn('entry_id', $results->pluck('entry_id')->all())
+            ->whereNotNull('user_id')
+            ->selectRaw('entry_id, MIN(user_id) as claimed_user_id')
+            ->groupBy('entry_id')
+            ->pluck('claimed_user_id', 'entry_id');
+
+        $payload = $results->map(function (Manager $manager) use ($claimedByEntry, $latestOverallRanksByEntry): array {
+            return [
+                'id' => $manager->id,
+                'entry_id' => (int) $manager->entry_id,
+                'team_name' => $manager->team_name,
+                'player_name' => $manager->player_name,
+                'total_points' => (int) ($manager->total_points ?? 0),
+                'rank' => (int) ($manager->rank ?? 0),
+                'overall_rank' => (int) ($latestOverallRanksByEntry[(int) $manager->entry_id] ?? 0),
+                'claimed_user_id' => $claimedByEntry[(int) $manager->entry_id] ?? null,
+            ];
+        })->values()->all();
 
         return response()->json([
             'data' => $payload,
@@ -236,7 +251,7 @@ class ProfileController extends Controller
         $this->forgetProfileCaches($entryId, $managerIds);
 
         FetchFplDataJob::dispatch();
-        FetchManagerProfilesJob::dispatch($managerIds);
+        FetchManagerProfilesJob::dispatch($managerIds)->delay(now()->addSeconds(5));
 
         return Redirect::route('profile.index')->with('status', 'Team claimed successfully. Syncing fresh profile data now.');
     }

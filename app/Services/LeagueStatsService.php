@@ -93,10 +93,9 @@ class LeagueStatsService
 
             $currentTopStreak = 0;
             $currentTopManager = null;
-            $longestTopStreak = 0;
-            $longestStreakManager = null;
-            $longestStreakStartGW = null;
             $streakStartGW = null;
+            $lastProcessedGameweek = null;
+            $bestTopStreakByManager = [];
 
             $theBlowout = ['difference' => 0, 'gw' => null];
             $gwPerformance = [];
@@ -104,6 +103,29 @@ class LeagueStatsService
             $managerLasts = [];
             $highestGwScore = ['manager' => null, 'points' => 0, 'gw' => null];
             $lowestGwScore = ['manager' => null, 'points' => 9999, 'gw' => null];
+
+            $commitTopStreak = function (?int $endGameweek) use (&$bestTopStreakByManager, &$currentTopManager, &$currentTopStreak, &$streakStartGW): void {
+                if ($currentTopManager === null || $currentTopStreak <= 0 || $streakStartGW === null || $endGameweek === null) {
+                    return;
+                }
+
+                $existing = $bestTopStreakByManager[$currentTopManager] ?? null;
+
+                if (
+                    $existing === null
+                    || $currentTopStreak > (int) ($existing['length'] ?? 0)
+                    || (
+                        $currentTopStreak === (int) ($existing['length'] ?? 0)
+                        && (int) $streakStartGW < (int) ($existing['start_gw'] ?? PHP_INT_MAX)
+                    )
+                ) {
+                    $bestTopStreakByManager[$currentTopManager] = [
+                        'length' => $currentTopStreak,
+                        'start_gw' => (int) $streakStartGW,
+                        'end_gw' => (int) $endGameweek,
+                    ];
+                }
+            };
 
             foreach ($gameweeks as $gw => $scores) {
                 if ($scores->isEmpty() || (int) $gw === 0) {
@@ -209,32 +231,54 @@ class LeagueStatsService
                     'name'
                 );
 
-                if (count($leaderNames) === 1 && $leaderNames[0] === $currentTopManager) {
-                    $currentTopStreak++;
-                } else {
-                    if ($currentTopStreak > $longestTopStreak) {
-                        $longestTopStreak = $currentTopStreak;
-                        $longestStreakManager = $currentTopManager;
-                        $longestStreakStartGW = $streakStartGW;
-                    }
+                if (count($leaderNames) === 1) {
+                    $leaderName = $leaderNames[0];
 
-                    if (count($leaderNames) === 1) {
-                        $currentTopManager = $leaderNames[0];
+                    if ($leaderName === $currentTopManager) {
+                        $currentTopStreak++;
+                    } else {
+                        $commitTopStreak($lastProcessedGameweek);
+                        $currentTopManager = $leaderName;
                         $currentTopStreak = 1;
                         $streakStartGW = (int) $gw;
-                    } else {
-                        $currentTopManager = null;
-                        $currentTopStreak = 0;
-                        $streakStartGW = null;
                     }
+                } else {
+                    $commitTopStreak($lastProcessedGameweek);
+                    $currentTopManager = null;
+                    $currentTopStreak = 0;
+                    $streakStartGW = null;
                 }
+
+                $lastProcessedGameweek = (int) $gw;
             }
 
-            if ($currentTopStreak > $longestTopStreak) {
-                $longestTopStreak = $currentTopStreak;
-                $longestStreakManager = $currentTopManager;
-                $longestStreakStartGW = $streakStartGW;
-            }
+            $commitTopStreak($lastProcessedGameweek);
+
+            $longestTopStreaks = collect($bestTopStreakByManager)
+                ->map(function (array $row, string $managerName): array {
+                    return [
+                        'manager' => $managerName,
+                        'length' => (int) ($row['length'] ?? 0),
+                        'start_gw' => (int) ($row['start_gw'] ?? 0),
+                        'end_gw' => (int) ($row['end_gw'] ?? 0),
+                    ];
+                })
+                ->filter(fn (array $row): bool => (int) ($row['length'] ?? 0) > 1)
+                ->sortBy([
+                    ['length', 'desc'],
+                    ['start_gw', 'asc'],
+                    ['manager', 'asc'],
+                ])
+                ->take(3)
+                ->values()
+                ->all();
+
+            $primaryLongestTopStreak = $longestTopStreaks[0] ?? [
+                'manager' => null,
+                'length' => 0,
+                'start_gw' => null,
+                'end_gw' => null,
+            ];
 
             $mostGWLeads = collect($managerLeads)
                 ->sortDesc()
@@ -308,12 +352,8 @@ class LeagueStatsService
                     'lowest_gw_score' => $lowestGwScore,
                     'highest_gw_scores' => $highestGwScores,
                     'lowest_gw_scores' => $lowestGwScores,
-                    'longest_top_streak' => [
-                        'manager' => $longestStreakManager,
-                        'length' => $longestTopStreak,
-                        'start_gw' => $longestStreakStartGW,
-                        'end_gw' => $longestTopStreak > 0 ? ($longestStreakStartGW + $longestTopStreak - 1) : null,
-                    ],
+                    'longest_top_streak' => $primaryLongestTopStreak,
+                    'longest_top_streaks' => $longestTopStreaks,
                     'the_blowout' => $theBlowout,
                     'wooden_spoon_contenders' => $relegationManagers->pluck('name')->all(),
                     'league_zones' => $leagueZones,
@@ -537,6 +577,9 @@ class LeagueStatsService
     {
         Cache::forget($this->getCacheKey($league->id));
         Cache::forget('league_available_gameweeks_'.$league->id);
+        Cache::forget("dashboard_global_stats_v3_league_{$league->id}");
+        Cache::forget('dashboard_global_stats_v3_all');
+        Cache::forget('dashboard_global_stats_v2');
 
         $gameweeks = $this->getAvailableGameweeks($league);
 
@@ -561,6 +604,7 @@ class LeagueStatsService
             'highest_gw_scores' => [],
             'lowest_gw_scores' => [],
             'longest_top_streak' => ['manager' => null, 'length' => 0, 'start_gw' => null, 'end_gw' => null],
+            'longest_top_streaks' => [],
             'the_blowout' => ['difference' => 0, 'gw' => null],
             'wooden_spoon_contenders' => [],
             'league_zones' => [

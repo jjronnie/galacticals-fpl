@@ -227,27 +227,36 @@
                         <h3 class="text-sm font-semibold text-white">LONGEST TOP STREAK</h3>
                         <i data-lucide="flame" class="h-4 w-4 text-accent"></i>
                     </div>
-                    <div class="mt-3 text-sm text-gray-300">
-                        @if (($stats['longest_top_streak']['length'] ?? 0) > 0)
-                            @php
-                                $streakManager = $stats['longest_top_streak']['manager'] ?? null;
-                                $profileUrl = $managerProfileUrl($streakManager);
-                            @endphp
-                            <div class="rounded-lg bg-card px-3 py-2">
-                                @if ($profileUrl)
-                                    <a href="{{ $profileUrl }}" class="font-semibold text-white hover:text-accent hover:underline">
-                                        {{ $streakManager }}
-                                    </a>
-                                @else
-                                    <span class="font-semibold text-white">{{ $streakManager }}</span>
-                                @endif
-                                <span class="text-gray-300"> led for {{ $stats['longest_top_streak']['length'] }} gameweeks</span>
-                            </div>
-                            <p class="mt-2 text-xs text-gray-400">
-                                GW {{ $stats['longest_top_streak']['start_gw'] }} to GW {{ $stats['longest_top_streak']['end_gw'] }}
-                            </p>
+                    <div class="mt-3 space-y-2 text-sm text-gray-300">
+                        @php
+                            $longestTopStreaks = collect($stats['longest_top_streaks'] ?? [])
+                                ->filter(fn ($row): bool => (int) ($row['length'] ?? 0) > 1)
+                                ->values();
+                        @endphp
+
+                        @if ($longestTopStreaks->isNotEmpty())
+                            @foreach ($longestTopStreaks as $index => $streakRow)
+                                @php
+                                    $streakManager = $streakRow['manager'] ?? null;
+                                    $profileUrl = $managerProfileUrl($streakManager);
+                                @endphp
+                                <div class="rounded-lg bg-card px-3 py-2">
+                                    <p class="text-xs text-gray-400">#{{ $index + 1 }}</p>
+                                    @if ($profileUrl)
+                                        <a href="{{ $profileUrl }}" class="font-semibold text-white hover:text-accent hover:underline">
+                                            {{ $streakManager }}
+                                        </a>
+                                    @else
+                                        <span class="font-semibold text-white">{{ $streakManager }}</span>
+                                    @endif
+                                    <span class="text-gray-300"> led for {{ (int) ($streakRow['length'] ?? 0) }} gameweeks</span>
+                                    <p class="mt-1 text-xs text-gray-400">
+                                        GW {{ (int) ($streakRow['start_gw'] ?? 0) }} to GW {{ (int) ($streakRow['end_gw'] ?? 0) }}
+                                    </p>
+                                </div>
+                            @endforeach
                         @else
-                            <p class="text-gray-400">No clear single-manager top streak yet.</p>
+                            <p class="text-gray-400">No top-streak records above 1 gameweek yet.</p>
                         @endif
                     </div>
                 </article>

@@ -15,7 +15,9 @@ use App\Services\SyncJobProgressService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class AdminDataController extends Controller
@@ -94,10 +96,11 @@ class AdminDataController extends Controller
         ]);
 
         $managerIds = $request->input('manager_ids');
+        $syncingAllManagers = false;
 
         if ($managerIds === null) {
+            $syncingAllManagers = true;
             $managerIds = Manager::query()
-                ->whereNotNull('user_id')
                 ->pluck('id')
                 ->all();
         }
@@ -110,21 +113,26 @@ class AdminDataController extends Controller
         if ($entryCount === 0) {
             SyncJobProgressService::complete(
                 SyncJobProgressService::FETCH_MANAGER_PROFILES,
-                'No claimed profiles found to sync.'
+                'No manager profiles found to sync.'
             );
 
-            return $this->actionResponse($request, 'No claimed profiles found to sync.');
+            return $this->actionResponse($request, 'No manager profiles found to sync.');
         }
+
+        $scopeLabel = $syncingAllManagers ? 'all' : 'selected';
 
         SyncJobProgressService::queue(
             SyncJobProgressService::FETCH_MANAGER_PROFILES,
             $entryCount,
-            "Manager profile sync queued for {$entryCount} claimed entries."
+            "Manager profile sync queued for {$entryCount} {$scopeLabel} entries."
         );
 
-        FetchManagerProfilesJob::dispatch($managerIds);
+        Bus::chain([
+            new FetchFplDataJob,
+            new FetchManagerProfilesJob($managerIds),
+        ])->dispatch();
 
-        return $this->actionResponse($request, "Manager profile sync queued for {$entryCount} claimed entries.");
+        return $this->actionResponse($request, "Manager profile sync queued for {$entryCount} {$scopeLabel} entries.");
     }
 
     public function computeGameweeks(Request $request): RedirectResponse|JsonResponse
@@ -222,7 +230,6 @@ class AdminDataController extends Controller
         $leagues = League::query()->get(['id', 'name', 'season']);
 
         $managerIds = Manager::query()
-            ->whereNotNull('user_id')
             ->pluck('id')
             ->all();
 
@@ -241,7 +248,7 @@ class AdminDataController extends Controller
             SyncJobProgressService::queue(
                 SyncJobProgressService::FETCH_MANAGER_PROFILES,
                 $profileEntryCount,
-                "Full update queued: syncing {$profileEntryCount} claimed profile entries."
+                "Full update queued: syncing {$profileEntryCount} manager profile entries."
             );
 
             Bus::chain([
@@ -253,7 +260,7 @@ class AdminDataController extends Controller
 
             SyncJobProgressService::complete(
                 SyncJobProgressService::FETCH_MANAGER_PROFILES,
-                'No claimed profiles found during full update.'
+                'No manager profiles found during full update.'
             );
         }
 
@@ -293,6 +300,26 @@ class AdminDataController extends Controller
         }
 
         return $this->actionResponse($request, 'Full application data update queued successfully.');
+    }
+
+    public function flushCache(Request $request): RedirectResponse|JsonResponse
+    {
+        try {
+            Cache::flush();
+            Artisan::call('optimize:clear');
+        } catch (\Throwable $exception) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Failed to clear application cache. Please try again.',
+                ], 422);
+            }
+
+            return back()->withErrors([
+                'cache' => 'Failed to clear application cache. Please try again.',
+            ]);
+        }
+
+        return $this->actionResponse($request, 'Application cache flushed for all users.');
     }
 
     private function formatChipName(string $chipName): string

@@ -71,7 +71,7 @@ class ClaimComplaintController extends Controller
 
         $complaint->load(['reporter', 'manager']);
 
-        Mail::to('ronaldjjuuko7@gmail.com')->queue(new ClaimComplaintSubmittedMail($complaint));
+        Mail::to((string) config('mail.admin_address'))->queue(new ClaimComplaintSubmittedMail($complaint));
 
         return back()->with('status', 'Complaint submitted. The admin team will review it.');
     }

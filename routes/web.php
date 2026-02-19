@@ -84,6 +84,7 @@ Route::middleware(['auth', 'can:admin'])->group(function (): void {
     Route::get('/admin/data/leagues', [AdminDataController::class, 'leagues'])->name('admin.data.leagues');
     Route::get('/admin/data/observer', [AdminDataController::class, 'observer'])->name('admin.data.observer');
     Route::post('/admin/data/sync-all', [AdminDataController::class, 'syncAll'])->name('admin.data.syncAll');
+    Route::post('/admin/data/flush-cache', [AdminDataController::class, 'flushCache'])->name('admin.data.flushCache');
     Route::post('/admin/data/fetch-fpl', [AdminDataController::class, 'fetchFpl'])->name('admin.data.fetchFpl');
     Route::post('/admin/data/fetch-managers', [AdminDataController::class, 'fetchManagers'])->name('admin.data.fetchManagers');
     Route::post('/admin/data/compute-gameweeks', [AdminDataController::class, 'computeGameweeks'])->name('admin.data.computeGameweeks');

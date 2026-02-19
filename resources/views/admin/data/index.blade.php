@@ -6,6 +6,7 @@
             csrfToken: '{{ csrf_token() }}',
             statusUrl: '{{ route('admin.data.status') }}',
             syncAllUrl: '{{ route('admin.data.syncAll') }}',
+            flushCacheUrl: '{{ route('admin.data.flushCache') }}',
             fetchFplUrl: '{{ route('admin.data.fetchFpl') }}',
             fetchManagersUrl: '{{ route('admin.data.fetchManagers') }}',
             computeGameweeksUrl: '{{ route('admin.data.computeGameweeks') }}',
@@ -57,7 +58,7 @@
 
         <section class="rounded-2xl border border-gray-700 bg-card p-5">
             <h2 class="text-lg font-semibold text-white">Queue Actions</h2>
-            <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
                 <button
                     type="button"
                     class="w-full rounded-lg bg-cyan-500 px-4 py-3 text-sm font-semibold text-primary hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60"
@@ -80,9 +81,9 @@
                     type="button"
                     class="w-full rounded-lg bg-green-600 px-4 py-3 text-sm font-semibold text-white hover:bg-green-500 disabled:cursor-not-allowed disabled:opacity-60"
                     :disabled="busyAction !== null"
-                    @click="postAction(fetchManagersUrl, {}, 'Claimed profile sync queued.')"
+                    @click="postAction(fetchManagersUrl, {}, 'Manager profile sync queued.')"
                 >
-                    Sync Claimed Profiles
+                    Sync Manager Profiles
                 </button>
 
                 <button
@@ -94,7 +95,14 @@
                     Compute All GW Tables
                 </button>
 
-              
+                <button
+                    type="button"
+                    class="w-full rounded-lg bg-red-600 px-4 py-3 text-sm font-semibold text-white hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-60"
+                    :disabled="busyAction !== null"
+                    @click="postAction(flushCacheUrl, {}, 'Application cache flushed.')"
+                >
+                    Flush All Cache
+                </button>
             </div>
         </section>
 
@@ -152,6 +160,7 @@
                 fetchFplUrl: config.fetchFplUrl,
                 fetchManagersUrl: config.fetchManagersUrl,
                 computeGameweeksUrl: config.computeGameweeksUrl,
+                flushCacheUrl: config.flushCacheUrl,
                 leaguesUrl: config.leaguesUrl,
                 observerUrl: config.observerUrl,
                 summary: config.initialPayload.summary,

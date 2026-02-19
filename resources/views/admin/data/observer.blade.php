@@ -1,6 +1,6 @@
 <x-app-layout>
     <div class="space-y-6">
-        <x-page-title title="PL Teams and Players" />
+        <x-page-title title="FPL DB Observer" />
 
         @if (session('status'))
             <div class="rounded-xl border border-green-700 bg-green-900/30 px-4 py-3 text-sm text-green-200">

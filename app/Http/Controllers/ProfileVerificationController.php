@@ -102,7 +102,7 @@ class ProfileVerificationController extends Controller
             'status' => 'pending',
         ]);
 
-        Mail::to('ronaldjjuuko7@gmail.com')->queue(new ProfileVerificationSubmittedMail($submission));
+        Mail::to((string) config('mail.admin_address'))->queue(new ProfileVerificationSubmittedMail($submission));
 
         return redirect()
             ->route('profile.index')

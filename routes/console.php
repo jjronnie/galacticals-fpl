@@ -4,12 +4,17 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 
-
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-
-Schedule::command('leagues:update-all')
+$nightlySync = Schedule::command('app:run-nightly-app-sync')
     ->dailyAt('03:00')
-    ->emailOutputTo('ronaldjjuuko7@gmail.com');
+    ->timezone('Africa/Kampala')
+    ->withoutOverlapping();
+
+$adminEmail = (string) config('mail.admin_address');
+
+if ($adminEmail !== '') {
+    $nightlySync->emailOutputTo($adminEmail);
+}

@@ -29,15 +29,19 @@ class DashboardStatsService
     /**
      * @return array<string, mixed>
      */
-    public function getGlobalDashboardStats(): array
+    public function getGlobalDashboardStats(?League $league = null): array
     {
-        return AdminCacheHelper::remember('dashboard_global_stats_v2', now()->addMinutes(15), function (): array {
+        $cacheKey = $league !== null
+            ? "dashboard_global_stats_v3_league_{$league->id}"
+            : 'dashboard_global_stats_v3_all';
+
+        return AdminCacheHelper::remember($cacheKey, now()->addMinutes(15), function () use ($league): array {
             $latestGameweek = (int) (ManagerPick::query()->max('gameweek') ?? 0);
 
             if ($latestGameweek <= 0) {
                 return [
                     'best_leagues' => $this->bestLeagues(),
-                    'most_valuable_teams' => $this->mostValuableTeams(),
+                    'most_valuable_teams' => $this->mostValuableTeams($league),
                     'player_of_week_cards' => [],
                     'team_of_week_rows' => [],
                 ];
@@ -57,7 +61,7 @@ class DashboardStatsService
 
             return [
                 'best_leagues' => $this->bestLeagues(),
-                'most_valuable_teams' => $this->mostValuableTeams(),
+                'most_valuable_teams' => $this->mostValuableTeams($league),
                 'player_of_week_cards' => $this->playerOfWeekCards($picksByGameweek),
                 'team_of_week_rows' => $this->teamOfWeekRows($picksByGameweek),
             ];
@@ -166,13 +170,29 @@ class DashboardStatsService
     /**
      * @return array<int, array<string, mixed>>
      */
-    private function mostValuableTeams(): array
+    private function mostValuableTeams(?League $league = null): array
     {
-        $latestScoresByManager = GameweekScore::query()
+        $leagueManagerIds = null;
+
+        if ($league !== null) {
+            $leagueManagerIds = $league->managers()->pluck('id')->all();
+
+            if ($leagueManagerIds === []) {
+                return [];
+            }
+        }
+
+        $latestScoresQuery = GameweekScore::query()
             ->whereNotNull('value')
             ->where('value', '>', 0)
             ->orderByDesc('gameweek')
-            ->orderByDesc('id')
+            ->orderByDesc('id');
+
+        if ($leagueManagerIds !== null) {
+            $latestScoresQuery->whereIn('manager_id', $leagueManagerIds);
+        }
+
+        $latestScoresByManager = $latestScoresQuery
             ->get(['manager_id', 'value'])
             ->groupBy('manager_id')
             ->map(fn (Collection $rows) => $rows->first());
@@ -181,9 +201,15 @@ class DashboardStatsService
             return [];
         }
 
-        $managers = Manager::query()
+        $managersQuery = Manager::query()
             ->whereIn('id', $latestScoresByManager->keys()->all())
-            ->get(['id', 'entry_id', 'team_name']);
+            ->select(['id', 'entry_id', 'team_name']);
+
+        if ($league !== null) {
+            $managersQuery->where('league_id', $league->id);
+        }
+
+        $managers = $managersQuery->get();
 
         $bestByEntry = collect();
 

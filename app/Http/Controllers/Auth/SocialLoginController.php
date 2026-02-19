@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Mail\NewUserAdminNotificationMail;
+use App\Mail\WelcomeUserMail;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
-use Laravel\Socialite\Facades\Socialite;
-use App\Mail\NewUserAdminNotificationMail;
-use App\Mail\WelcomeUserMail;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Laravel\Socialite\Facades\Socialite;
 
 class SocialLoginController extends Controller
 {
@@ -36,7 +36,7 @@ class SocialLoginController extends Controller
             $user = User::where($providerColumn, $providerId)->first();
 
             // 2. If not found, try email
-            if (!$user && $email) {
+            if (! $user && $email) {
                 $user = User::where('email', $email)->first();
             }
 
@@ -57,9 +57,9 @@ class SocialLoginController extends Controller
                 $user->save();
             } else {
                 // Redirect back if email is missing
-                if (!$email) {
+                if (! $email) {
                     return redirect(route('login'))->withErrors([
-                        "{$provider}_error" => "Unable to authenticate with {$provider}. Email is required."
+                        "{$provider}_error" => "Unable to authenticate with {$provider}. Email is required.",
                     ]);
                 }
 
@@ -76,7 +76,7 @@ class SocialLoginController extends Controller
                 ]);
 
                 Mail::to($user->email)->queue(new WelcomeUserMail($user));
-                Mail::to('ronaldjjuuko7@gmail.com')->queue(new NewUserAdminNotificationMail($user));
+                Mail::to((string) config('mail.admin_address'))->queue(new NewUserAdminNotificationMail($user));
             }
 
             Auth::login($user);
@@ -86,10 +86,10 @@ class SocialLoginController extends Controller
                 ->with('show_welcome', true)
                 ->with('success', "Login successful. Welcome back {$user->name}.");
         } catch (\Throwable $e) {
-            Log::error(ucfirst($provider) . ' login error: ' . $e->getMessage());
+            Log::error(ucfirst($provider).' login error: '.$e->getMessage());
 
             return redirect(route('login'))->withErrors([
-                "{$provider}_error" => "Unable to authenticate with {$provider}. Try again."
+                "{$provider}_error" => "Unable to authenticate with {$provider}. Try again.",
             ]);
         }
     }

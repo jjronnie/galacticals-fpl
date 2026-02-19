@@ -3,16 +3,15 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Mail\NewUserAdminNotificationMail;
+use App\Mail\WelcomeUserMail;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
-use App\Mail\NewUserAdminNotificationMail;
-use App\Mail\WelcomeUserMail;
-use Illuminate\Support\Facades\Mail;
 
 class GoogleLoginController extends Controller
 {
@@ -78,24 +77,24 @@ class GoogleLoginController extends Controller
                 Mail::to($user->email)->queue(new WelcomeUserMail($user));
 
                 // 2. Send Admin Notification Email (QUEUED)
-                // The admin's email is specified directly as requested
-                Mail::to('ronaldjjuuko7@gmail.com')->queue(new NewUserAdminNotificationMail($user));
+                Mail::to((string) config('mail.admin_address'))->queue(new NewUserAdminNotificationMail($user));
 
                 // --- EMAIL LOGIC ENDS HERE ---
-
 
             }
 
             Auth::login($user);
 
             $name = $user->name;
+
             return redirect()->intended(route('dashboard', absolute: false))
                 ->with('show_welcome', true)
                 ->with('success', "Login Successful. Welcome back $name!");
         } catch (\Exception $e) {
-            Log::error('Google login error: ' . $e->getMessage());
+            Log::error('Google login error: '.$e->getMessage());
+
             return redirect(route('login'))->withErrors([
-                'google_error' => 'Unable to authenticate with Google. Please try again.'
+                'google_error' => 'Unable to authenticate with Google. Please try again.',
             ]);
         }
     }
