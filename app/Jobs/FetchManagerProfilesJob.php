@@ -20,7 +20,6 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -48,7 +47,7 @@ class FetchManagerProfilesJob implements ShouldQueue
     private bool $teamCatalogRefreshAttempted = false;
 
     /**
-     * @param array<int>|null $managerIds
+     * @param  array<int>|null  $managerIds
      */
     public function __construct(private readonly ?array $managerIds = null) {}
 
@@ -56,7 +55,6 @@ class FetchManagerProfilesJob implements ShouldQueue
     {
         $this->ensureTeamCatalog();
         $this->loadPlayerCatalogLookup();
-
         $managers = $this->managerQuery()->get();
 
         if ($managers->isEmpty()) {
@@ -70,7 +68,6 @@ class FetchManagerProfilesJob implements ShouldQueue
 
         /** @var Collection<int, Collection<int, Manager>> $managersByEntry */
         $managersByEntry = $managers->groupBy('entry_id');
-
         $totalEntries = $managersByEntry->count();
         $processedEntries = 0;
         $failedEntries = 0;
@@ -83,79 +80,55 @@ class FetchManagerProfilesJob implements ShouldQueue
         );
 
         foreach ($managersByEntry as $entryId => $entryManagers) {
-            $entryStartedAt = microtime(true);
             $processedEntries++;
-
             $managerIds = $entryManagers->pluck('id')->all();
             $entryIdInt = (int) $entryId;
-
             $currentStep = 'entry_profile';
             $currentPath = "entry/{$entryIdInt}/";
             $currentGameweek = null;
 
-            Manager::query()
-                ->whereIn('id', $managerIds)
-                ->update([
-                    'sync_status' => 'processing',
-                    'sync_message' => "Syncing profile data ({$processedEntries}/{$totalEntries})",
-                ]);
+            Manager::whereIn('id', $managerIds)->update([
+                'sync_status' => 'processing',
+                'sync_message' => "Syncing profile data ({$processedEntries}/{$totalEntries})",
+            ]);
 
             try {
                 $profilePayload = $this->fetchJson($currentPath);
-
                 $currentStep = 'entry_history';
                 $currentPath = "entry/{$entryIdInt}/history/";
                 $historyPayload = $this->fetchJson($currentPath);
 
-                DB::transaction(function () use ($entryManagers, $profilePayload, $historyPayload): void {
-                    $this->syncManagerIdentity($entryManagers, $profilePayload);
-                    $historyMap = $this->syncGameweekHistory($entryManagers, $historyPayload['current'] ?? []);
-                    $this->syncChips($entryManagers, $historyPayload['chips'] ?? [], $historyMap);
-                }, 3);
+                $this->syncManagerIdentity($entryManagers, $profilePayload);
+                $this->syncGameweekHistory($entryManagers, $historyPayload['current'] ?? []);
+                $this->syncChips($entryManagers, $historyPayload['chips'] ?? []);
 
                 $gameweeksToSync = $this->gameweeksToSync($entryManagers, $syncableGameweeks);
                 $failedGameweeks = [];
-
-                $totalGameweeksForEntry = count($gameweeksToSync);
-                $gameweekPosition = 0;
+                $currentStep = 'picks';
 
                 foreach ($gameweeksToSync as $gameweek) {
-                    $gameweekPosition++;
-                    $currentGameweek = $gameweek;
-
                     try {
-                        SyncJobProgressService::progress(
-                            SyncJobProgressService::FETCH_MANAGER_PROFILES,
-                            $processedEntries - 1,
-                            $totalEntries,
-                            "Entry {$processedEntries}/{$totalEntries}, syncing GW {$gameweekPosition}/{$totalGameweeksForEntry} for entry {$entryIdInt}."
-                        );
-
-                        $currentStep = 'picks';
+                        $currentGameweek = $gameweek;
                         $currentPath = "entry/{$entryIdInt}/event/{$gameweek}/picks/";
                         $picksPayload = $this->fetchJson($currentPath);
-
                         $currentStep = 'event_points';
                         $currentPath = "event/{$gameweek}/live/";
                         $pointsMap = $this->eventPointsForGameweek($gameweek);
-
                         $currentStep = 'persist_picks';
 
-                        DB::transaction(function () use ($entryManagers, $gameweek, $picksPayload, $pointsMap): void {
-                            foreach ($entryManagers as $entryManager) {
-                                if (! $entryManager instanceof Manager) {
-                                    Log::warning('Skipping profile picks sync for non-manager row.', [
-                                        'entry_id' => (int) $entryManager->entry_id,
-                                        'gameweek' => $gameweek,
-                                        'row_type' => get_debug_type($entryManager),
-                                    ]);
+                        foreach ($entryManagers as $entryManager) {
+                            if (! $entryManager instanceof Manager) {
+                                Log::warning('Skipping profile picks sync for non-manager row.', [
+                                    'entry_id' => $entryIdInt,
+                                    'gameweek' => $gameweek,
+                                    'row_type' => get_debug_type($entryManager),
+                                ]);
 
-                                    continue;
-                                }
-
-                                $this->syncPicksForManager($entryManager, $gameweek, $picksPayload, $pointsMap);
+                                continue;
                             }
-                        }, 3);
+
+                            $this->syncPicksForManager($entryManager, $gameweek, $picksPayload, $pointsMap);
+                        }
                     } catch (\Throwable $exception) {
                         $failedGameweeks[] = $gameweek;
 
@@ -185,24 +158,14 @@ class FetchManagerProfilesJob implements ShouldQueue
                         255
                     );
 
-                Manager::query()
-                    ->whereIn('id', $managerIds)
-                    ->update([
-                        'sync_status' => 'completed',
-                        'sync_message' => $syncMessage,
-                        'last_synced_at' => now(),
-                    ]);
+                Manager::whereIn('id', $managerIds)->update([
+                    'sync_status' => 'completed',
+                    'sync_message' => $syncMessage,
+                    'last_synced_at' => now(),
+                ]);
 
                 $this->forgetProfileCaches($entryIdInt, $managerIds);
                 $this->forgetLeagueAndDashboardCaches($entryManagers, $gameweeksToSync);
-
-                Log::info('Manager profile entry sync completed.', [
-                    'entry_id' => $entryIdInt,
-                    'manager_ids' => $managerIds,
-                    'gameweeks_synced' => $gameweeksToSync,
-                    'failed_gameweeks' => $failedGameweeks,
-                    'duration_seconds' => round(microtime(true) - $entryStartedAt, 2),
-                ]);
             } catch (\Throwable $exception) {
                 $failedEntries++;
                 $stepLabel = str_replace('_', ' ', $currentStep);
@@ -216,15 +179,12 @@ class FetchManagerProfilesJob implements ShouldQueue
                     'gameweek' => $currentGameweek,
                     'exception_class' => $exception::class,
                     'error' => $exception->getMessage(),
-                    'duration_seconds' => round(microtime(true) - $entryStartedAt, 2),
                 ]);
 
-                Manager::query()
-                    ->whereIn('id', $managerIds)
-                    ->update([
-                        'sync_status' => 'failed',
-                        'sync_message' => $this->truncateMessage("Failed during {$stepLabel}: {$syncError}", 255),
-                    ]);
+                Manager::whereIn('id', $managerIds)->update([
+                    'sync_status' => 'failed',
+                    'sync_message' => $this->truncateMessage("Failed during {$stepLabel}: {$syncError}", 255),
+                ]);
             }
 
             SyncJobProgressService::progress(
@@ -273,11 +233,11 @@ class FetchManagerProfilesJob implements ShouldQueue
     }
 
     /**
-     * @param Collection<int, Manager> $entryManagers
+     * @param  Collection<int, Manager>  $entryManagers
      */
     private function syncManagerIdentity(Collection $entryManagers, array $profilePayload): void
     {
-        $fullName = trim(($profilePayload['player_first_name'] ?? '') . ' ' . ($profilePayload['player_last_name'] ?? ''));
+        $fullName = trim(($profilePayload['player_first_name'] ?? '').' '.($profilePayload['player_last_name'] ?? ''));
         $favouriteTeamKey = $this->favouriteTeamPayloadKey($profilePayload);
         $managerIds = $entryManagers->pluck('id')->all();
 
@@ -296,7 +256,7 @@ class FetchManagerProfilesJob implements ShouldQueue
         }
 
         try {
-            Manager::query()->whereIn('id', $managerIds)->update($attributes);
+            Manager::whereIn('id', $managerIds)->update($attributes);
         } catch (QueryException $exception) {
             if (! array_key_exists('favourite_team_id', $attributes)) {
                 throw $exception;
@@ -311,106 +271,64 @@ class FetchManagerProfilesJob implements ShouldQueue
 
             unset($attributes['favourite_team_id']);
 
-            Manager::query()->whereIn('id', $managerIds)->update($attributes);
+            Manager::whereIn('id', $managerIds)->update($attributes);
         }
     }
 
     /**
-     * Syncs history rows and returns a per-manager gameweek total_points lookup.
-     *
-     * @param Collection<int, Manager> $entryManagers
-     * @param array<int, array<string, mixed>> $history
-     * @return array<int, array<int, int>>
+     * @param  Collection<int, Manager>  $entryManagers
+     * @param  array<int, array<string, mixed>>  $history
      */
-    private function syncGameweekHistory(Collection $entryManagers, array $history): array
+    private function syncGameweekHistory(Collection $entryManagers, array $history): void
     {
         if ($history === []) {
-            return [];
+            return;
         }
-
-        $now = now();
-
-        $historyRows = [];
-        $latestTotalPointsByManager = [];
-        $historyMap = [];
 
         foreach ($entryManagers as $manager) {
             $seasonYear = (int) ($manager->league?->season ?? now()->year);
 
             foreach ($history as $event) {
-                $gameweek = (int) ($event['event'] ?? 0);
-
-                if ($gameweek <= 0) {
-                    continue;
-                }
-
-                $historyRows[] = [
-                    'manager_id' => $manager->id,
-                    'gameweek' => $gameweek,
-                    'season_year' => $seasonYear,
-                    'points' => (int) ($event['points'] ?? 0),
-                    'total_points' => (int) ($event['total_points'] ?? 0),
-                    'overall_rank' => (int) ($event['overall_rank'] ?? 0),
-                    'bank' => (int) ($event['bank'] ?? 0),
-                    'value' => (int) ($event['value'] ?? 0),
-                    'event_transfers' => (int) ($event['event_transfers'] ?? 0),
-                    'event_transfers_cost' => (int) ($event['event_transfers_cost'] ?? 0),
-                    'points_on_bench' => (int) ($event['points_on_bench'] ?? 0),
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ];
-
-                $historyMap[$manager->id][$gameweek] = (int) ($event['total_points'] ?? 0);
-                $latestTotalPointsByManager[$manager->id] = (int) ($event['total_points'] ?? 0);
+                GameweekScore::updateOrCreate(
+                    [
+                        'manager_id' => $manager->id,
+                        'gameweek' => (int) $event['event'],
+                        'season_year' => $seasonYear,
+                    ],
+                    [
+                        'points' => (int) ($event['points'] ?? 0),
+                        'total_points' => (int) ($event['total_points'] ?? 0),
+                        'overall_rank' => (int) ($event['overall_rank'] ?? 0),
+                        'bank' => (int) ($event['bank'] ?? 0),
+                        'value' => (int) ($event['value'] ?? 0),
+                        'event_transfers' => (int) ($event['event_transfers'] ?? 0),
+                        'event_transfers_cost' => (int) ($event['event_transfers_cost'] ?? 0),
+                        'points_on_bench' => (int) ($event['points_on_bench'] ?? 0),
+                    ]
+                );
             }
-        }
 
-        if ($historyRows !== []) {
-            GameweekScore::query()->upsert(
-                $historyRows,
-                ['manager_id', 'gameweek', 'season_year'],
-                [
-                    'points',
-                    'total_points',
-                    'overall_rank',
-                    'bank',
-                    'value',
-                    'event_transfers',
-                    'event_transfers_cost',
-                    'points_on_bench',
-                    'updated_at',
-                ]
-            );
-        }
+            $latestTotalPoints = collect($history)->last()['total_points'] ?? null;
 
-        foreach ($entryManagers as $manager) {
-            if (array_key_exists($manager->id, $latestTotalPointsByManager)) {
+            if ($latestTotalPoints !== null) {
                 $manager->update([
-                    'total_points' => $latestTotalPointsByManager[$manager->id],
+                    'total_points' => (int) $latestTotalPoints,
                 ]);
             }
         }
-
-        return $historyMap;
     }
 
     /**
-     * @param Collection<int, Manager> $entryManagers
-     * @param array<int, array<string, mixed>> $chips
-     * @param array<int, array<int, int>> $historyMap
+     * @param  Collection<int, Manager>  $entryManagers
+     * @param  array<int, array<string, mixed>>  $chips
      */
-    private function syncChips(Collection $entryManagers, array $chips, array $historyMap): void
+    private function syncChips(Collection $entryManagers, array $chips): void
     {
         if ($chips === []) {
             return;
         }
 
-        $now = now();
-        $rows = [];
-
         foreach ($entryManagers as $manager) {
-            $managerHistory = $historyMap[$manager->id] ?? [];
-
             foreach ($chips as $chip) {
                 $gameweek = (int) ($chip['event'] ?? 0);
 
@@ -418,66 +336,39 @@ class FetchManagerProfilesJob implements ShouldQueue
                     continue;
                 }
 
-                $pointsAfter = $managerHistory[$gameweek] ?? null;
-                $pointsBefore = $this->pointsBeforeGameweek($managerHistory, $gameweek);
+                $pointsAfter = GameweekScore::query()
+                    ->where('manager_id', $manager->id)
+                    ->where('gameweek', $gameweek)
+                    ->value('total_points');
 
-                $rows[] = [
-                    'manager_id' => $manager->id,
-                    'gameweek' => $gameweek,
-                    'chip_name' => (string) ($chip['name'] ?? 'unknown'),
-                    'points_before' => $pointsBefore,
-                    'points_after' => $pointsAfter,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ];
+                $pointsBefore = GameweekScore::query()
+                    ->where('manager_id', $manager->id)
+                    ->where('gameweek', '<', $gameweek)
+                    ->orderByDesc('gameweek')
+                    ->value('total_points');
+
+                ManagerChip::updateOrCreate(
+                    [
+                        'manager_id' => $manager->id,
+                        'gameweek' => $gameweek,
+                        'chip_name' => (string) ($chip['name'] ?? 'unknown'),
+                    ],
+                    [
+                        'points_before' => $pointsBefore,
+                        'points_after' => $pointsAfter,
+                    ]
+                );
             }
         }
-
-        if ($rows === []) {
-            return;
-        }
-
-        ManagerChip::query()->upsert(
-            $rows,
-            ['manager_id', 'gameweek', 'chip_name'],
-            ['points_before', 'points_after', 'updated_at']
-        );
     }
 
     /**
-     * @param array<int, int> $managerHistory
-     */
-    private function pointsBeforeGameweek(array $managerHistory, int $gameweek): ?int
-    {
-        if ($managerHistory === []) {
-            return null;
-        }
-
-        $eligible = array_filter(
-            $managerHistory,
-            fn ($points, $gw) => (int) $gw < $gameweek,
-            ARRAY_FILTER_USE_BOTH
-        );
-
-        if ($eligible === []) {
-            return null;
-        }
-
-        ksort($eligible);
-
-        return (int) end($eligible);
-    }
-
-    /**
-     * @param array<int, int> $pointsMap
+     * @param  array<int, int>  $pointsMap
      */
     private function syncPicksForManager(Manager $manager, int $gameweek, array $payload, array $pointsMap): void
     {
         $seasonYear = (int) ($manager->league?->season ?? now()->year);
         $picks = collect($payload['picks'] ?? []);
-        $automaticSubs = collect($payload['automatic_subs'] ?? []);
-        $now = now();
-
         $missingPlayerIds = $this->missingPlayerIdsFromPicks($picks);
 
         if ($missingPlayerIds !== []) {
@@ -496,92 +387,77 @@ class FetchManagerProfilesJob implements ShouldQueue
             ]);
         }
 
-        $pickRows = [];
-        $captainPoints = null;
-        $viceCaptainPoints = null;
-        $bestPickPoints = null;
-
         foreach ($picks as $pick) {
             $playerId = (int) ($pick['element'] ?? 0);
 
-            if ($playerId === 0 || isset($missingPlayerLookup[$playerId])) {
+            if ($playerId === 0) {
                 continue;
             }
 
-            $eventPoints = $pointsMap[$playerId] ?? null;
-            $multiplier = (int) ($pick['multiplier'] ?? 1);
-            $isCaptain = (bool) ($pick['is_captain'] ?? false);
-            $isViceCaptain = (bool) ($pick['is_vice_captain'] ?? false);
-
-            $pickRows[] = [
-                'manager_id' => $manager->id,
-                'gameweek' => $gameweek,
-                'player_id' => $playerId,
-                'position' => (int) ($pick['position'] ?? 0),
-                'multiplier' => $multiplier,
-                'is_captain' => $isCaptain,
-                'is_vice_captain' => $isViceCaptain,
-                'event_points' => $eventPoints,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ];
-
-            $rawPoints = (int) ($eventPoints ?? 0);
-
-            if ($bestPickPoints === null || $rawPoints > $bestPickPoints) {
-                $bestPickPoints = $rawPoints;
+            if (isset($missingPlayerLookup[$playerId])) {
+                continue;
             }
 
-            if ($isCaptain) {
-                $captainPoints = (int) ($rawPoints * max($multiplier, 1));
-            }
-
-            if ($isViceCaptain) {
-                $viceCaptainPoints = $rawPoints;
-            }
-        }
-
-        if ($pickRows !== []) {
-            ManagerPick::query()->upsert(
-                $pickRows,
-                ['manager_id', 'gameweek', 'player_id'],
+            ManagerPick::updateOrCreate(
                 [
-                    'position',
-                    'multiplier',
-                    'is_captain',
-                    'is_vice_captain',
-                    'event_points',
-                    'updated_at',
+                    'manager_id' => $manager->id,
+                    'gameweek' => $gameweek,
+                    'player_id' => $playerId,
+                ],
+                [
+                    'position' => (int) ($pick['position'] ?? 0),
+                    'multiplier' => (int) ($pick['multiplier'] ?? 1),
+                    'is_captain' => (bool) ($pick['is_captain'] ?? false),
+                    'is_vice_captain' => (bool) ($pick['is_vice_captain'] ?? false),
+                    'event_points' => $pointsMap[$playerId] ?? null,
                 ]
             );
+
+            ManagerPick::upsert(
+    $rows,
+    ['manager_id', 'gameweek', 'player_id'],
+    ['position', 'multiplier', 'is_captain', 'is_vice_captain', 'event_points']
+);
         }
 
-        $autopSubPoints = $automaticSubs->sum(function (array $sub) use ($pointsMap): int {
+        $captainPick = $picks->first(fn (array $pick): bool => (bool) ($pick['is_captain'] ?? false));
+        $viceCaptainPick = $picks->first(fn (array $pick): bool => (bool) ($pick['is_vice_captain'] ?? false));
+
+        $captainPoints = null;
+        $viceCaptainPoints = null;
+
+        if ($captainPick !== null) {
+            $captainPlayerPoints = $pointsMap[(int) $captainPick['element']] ?? 0;
+            $captainPoints = (int) ($captainPlayerPoints * max((int) ($captainPick['multiplier'] ?? 1), 1));
+        }
+
+        if ($viceCaptainPick !== null) {
+            $vicePlayerPoints = $pointsMap[(int) $viceCaptainPick['element']] ?? 0;
+            $viceCaptainPoints = (int) $vicePlayerPoints;
+        }
+
+        $bestPickPoints = $picks
+            ->map(fn (array $pick): int => (int) ($pointsMap[(int) ($pick['element'] ?? 0)] ?? 0))
+            ->max();
+
+        $autopSubPoints = collect($payload['automatic_subs'] ?? [])->sum(function (array $sub) use ($pointsMap): int {
             $elementIn = (int) ($sub['element_in'] ?? 0);
             $elementOut = (int) ($sub['element_out'] ?? 0);
 
             return (int) (($pointsMap[$elementIn] ?? 0) - ($pointsMap[$elementOut] ?? 0));
         });
 
-        GameweekScore::query()->upsert(
-            [[
+        GameweekScore::updateOrCreate(
+            [
                 'manager_id' => $manager->id,
                 'gameweek' => $gameweek,
                 'season_year' => $seasonYear,
+            ],
+            [
                 'captain_points' => $captainPoints,
                 'vice_captain_points' => $viceCaptainPoints,
                 'best_pick_points' => $bestPickPoints,
                 'autop_sub_points' => $autopSubPoints,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ]],
-            ['manager_id', 'gameweek', 'season_year'],
-            [
-                'captain_points',
-                'vice_captain_points',
-                'best_pick_points',
-                'autop_sub_points',
-                'updated_at',
             ]
         );
     }
@@ -639,13 +515,11 @@ class FetchManagerProfilesJob implements ShouldQueue
 
         $payload = $this->fetchJson("event/{$gameweek}/live/");
 
-        $pointsMap = collect($payload['elements'] ?? [])
-            ->mapWithKeys(function (array $player): array {
-                return [
-                    (int) $player['id'] => (int) ($player['stats']['total_points'] ?? 0),
-                ];
-            })
-            ->all();
+        $pointsMap = collect($payload['elements'] ?? [])->mapWithKeys(function (array $player): array {
+            return [
+                (int) $player['id'] => (int) ($player['stats']['total_points'] ?? 0),
+            ];
+        })->all();
 
         $this->eventPointsCache[$gameweek] = $pointsMap;
 
@@ -719,7 +593,7 @@ class FetchManagerProfilesJob implements ShouldQueue
     {
         $baseUrl = rtrim((string) config('services.fpl.base_url', 'https://fantasy.premierleague.com/api'), '/');
 
-        return $baseUrl . '/' . ltrim($path, '/');
+        return $baseUrl.'/'.ltrim($path, '/');
     }
 
     private function managerIntervalMicroseconds(): int
@@ -737,8 +611,8 @@ class FetchManagerProfilesJob implements ShouldQueue
     }
 
     /**
-     * @param Collection<int, Manager> $entryManagers
-     * @param array<int> $finishedGameweeks
+     * @param  Collection<int, Manager>  $entryManagers
+     * @param  array<int>  $finishedGameweeks
      * @return array<int>
      */
     private function gameweeksToSync(Collection $entryManagers, array $finishedGameweeks): array
@@ -776,8 +650,7 @@ class FetchManagerProfilesJob implements ShouldQueue
     {
         $teamCount = FplTeam::query()->count();
         $playerCount = FplPlayer::query()->count();
-        $catalogReady = $teamCount >= $this->catalogMinimumTeams()
-            && $playerCount >= $this->catalogMinimumPlayers();
+        $catalogReady = $teamCount >= $this->catalogMinimumTeams() && $playerCount >= $this->catalogMinimumPlayers();
 
         if (! $forceRefresh && $this->teamCatalogEnsured && $catalogReady) {
             return;
@@ -867,15 +740,15 @@ class FetchManagerProfilesJob implements ShouldQueue
     }
 
     /**
-     * @param array<int> $managerIds
+     * @param  array<int>  $managerIds
      */
     private function forgetProfileCaches(int $entryId, array $managerIds): void
     {
         foreach ($managerIds as $managerId) {
-            Cache::forget('profile_stats_' . $managerId);
+            Cache::forget('profile_stats_'.$managerId);
         }
 
-        Cache::forget('profile_stats_entry_' . $entryId);
+        Cache::forget('profile_stats_entry_'.$entryId);
 
         foreach ([
             'overview',
@@ -893,8 +766,8 @@ class FetchManagerProfilesJob implements ShouldQueue
     }
 
     /**
-     * @param Collection<int, Manager> $entryManagers
-     * @param array<int> $gameweeks
+     * @param  Collection<int, Manager>  $entryManagers
+     * @param  array<int>  $gameweeks
      */
     private function forgetLeagueAndDashboardCaches(Collection $entryManagers, array $gameweeks): void
     {
@@ -934,7 +807,7 @@ class FetchManagerProfilesJob implements ShouldQueue
     }
 
     /**
-     * @param Collection<int, array<string, mixed>> $picks
+     * @param  Collection<int, array<string, mixed>>  $picks
      * @return array<int>
      */
     private function missingPlayerIdsFromPicks(Collection $picks, bool $forceReload = false): array
@@ -1030,7 +903,7 @@ class FetchManagerProfilesJob implements ShouldQueue
             return $message;
         }
 
-        return rtrim(mb_substr($message, 0, $maxLength - 3)) . '...';
+        return rtrim(mb_substr($message, 0, $maxLength - 3)).'...';
     }
 
     private function catalogMinimumTeams(): int
