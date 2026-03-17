@@ -9,7 +9,7 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 $nightlySync = Schedule::command('app:run-nightly-app-sync')
-    ->dailyAt('03:00')
+    ->dailyAt('08:25')
     ->timezone('Africa/Kampala')
     ->withoutOverlapping();
 
