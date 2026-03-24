@@ -12,12 +12,15 @@ use App\Models\League;
 use App\Models\Manager;
 use App\Models\ManagerChip;
 use App\Services\SyncJobProgressService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Queue\QueueManager;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class AdminDataController extends Controller
@@ -329,6 +332,132 @@ class AdminDataController extends Controller
         return $this->actionResponse($request, 'Application cache flushed for all users.');
     }
 
+    public function jobs(): View
+    {
+        $failedJobs = DB::table('failed_jobs')
+            ->orderByDesc('failed_at')
+            ->get()
+            ->map(function (object $row): array {
+                $payload = json_decode($row->payload, true);
+                $command = $payload['data']['command'] ?? null;
+                $jobClass = 'Unknown';
+
+                if ($command !== null) {
+                    if (is_string($command)) {
+                        $unserialized = @unserialize($command);
+
+                        if ($unserialized !== false) {
+                            $jobClass = get_class($unserialized);
+                        }
+                    } else {
+                        $jobClass = get_class($command);
+                    }
+                }
+
+                $displayName = class_basename($jobClass);
+                $exceptionPreview = mb_substr($row->exception, 0, 300);
+
+                return [
+                    'id' => $row->id,
+                    'uuid' => $row->uuid,
+                    'queue' => $row->queue,
+                    'job' => $displayName,
+                    'job_class' => $jobClass,
+                    'exception' => $exceptionPreview,
+                    'failed_at' => $row->failed_at,
+                    'failed_at_human' => Carbon::parse($row->failed_at)->diffForHumans(),
+                ];
+            });
+
+        $totalFailed = $failedJobs->count();
+        $byJobClass = $failedJobs->groupBy('job')->map->count();
+
+        return view('admin.data.jobs', [
+            'failedJobs' => $failedJobs,
+            'totalFailed' => $totalFailed,
+            'byJobClass' => $byJobClass,
+        ]);
+    }
+
+    public function retryJob(int $id, QueueManager $queue): RedirectResponse|JsonResponse
+    {
+        $row = DB::table('failed_jobs')->where('id', $id)->first();
+
+        if ($row === null) {
+            return $this->jobActionResponse('Job not found. It may have already been deleted.', 404);
+        }
+
+        $payload = json_decode($row->payload, true);
+
+        try {
+            $queue->connection($row->connection)->pushRaw(
+                $row->payload,
+                $row->queue,
+                ['delay' => 0]
+            );
+
+            DB::table('failed_jobs')->where('id', $id)->delete();
+        } catch (\Throwable $exception) {
+            return $this->jobActionResponse('Failed to retry job: '.$exception->getMessage(), 422);
+        }
+
+        return $this->jobActionResponse('Job requeued successfully.');
+    }
+
+    public function deleteJob(int $id): RedirectResponse|JsonResponse
+    {
+        $deleted = DB::table('failed_jobs')->where('id', $id)->delete();
+
+        if ($deleted === 0) {
+            return $this->jobActionResponse('Job not found. It may have already been deleted.', 404);
+        }
+
+        return $this->jobActionResponse('Failed job deleted.');
+    }
+
+    public function retryAllJobs(QueueManager $queue): RedirectResponse|JsonResponse
+    {
+        $rows = DB::table('failed_jobs')->get();
+
+        if ($rows->isEmpty()) {
+            return $this->jobActionResponse('No failed jobs to retry.');
+        }
+
+        $retried = 0;
+        $failed = 0;
+
+        foreach ($rows as $row) {
+            try {
+                $queue->connection($row->connection)->pushRaw(
+                    $row->payload,
+                    $row->queue,
+                    ['delay' => 0]
+                );
+
+                DB::table('failed_jobs')->where('id', $row->id)->delete();
+                $retried++;
+            } catch (\Throwable) {
+                $failed++;
+            }
+        }
+
+        $message = "Requeued {$retried} jobs.";
+
+        if ($failed > 0) {
+            $message .= " {$failed} failed to requeue.";
+        }
+
+        return $this->jobActionResponse($message);
+    }
+
+    public function flushJobs(): RedirectResponse|JsonResponse
+    {
+        $count = DB::table('failed_jobs')->count();
+        DB::table('failed_jobs')->delete();
+
+        return $this->jobActionResponse("Deleted {$count} failed jobs.");
+    }
+
     private function formatChipName(string $chipName): string
     {
         return match (strtolower($chipName)) {
@@ -413,5 +542,10 @@ class AdminDataController extends Controller
         }
 
         return back()->with('status', $message);
+    }
+
+    private function jobActionResponse(string $message, int $status = 200): JsonResponse
+    {
+        return response()->json(['message' => $message], $status);
     }
 }

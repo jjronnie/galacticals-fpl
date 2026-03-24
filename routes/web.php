@@ -91,6 +91,12 @@ Route::middleware(['auth', 'can:admin'])->group(function (): void {
     Route::post('/admin/data/refresh-league/{league}', [AdminDataController::class, 'refreshLeague'])->name('admin.data.refreshLeague');
     Route::delete('/admin/data/leagues/{league}', [AdminDataController::class, 'destroyLeague'])->name('admin.data.destroyLeague');
 
+    Route::get('/admin/jobs', [AdminDataController::class, 'jobs'])->name('admin.jobs');
+    Route::post('/admin/jobs/{id}/retry', [AdminDataController::class, 'retryJob'])->name('admin.jobs.retry');
+    Route::delete('/admin/jobs/{id}', [AdminDataController::class, 'deleteJob'])->name('admin.jobs.delete');
+    Route::post('/admin/jobs/retry-all', [AdminDataController::class, 'retryAllJobs'])->name('admin.jobs.retryAll');
+    Route::delete('/admin/jobs/flush', [AdminDataController::class, 'flushJobs'])->name('admin.jobs.flush');
+
     Route::get('/admin/managers', [AdminManagerController::class, 'index'])->name('admin.managers.index');
     Route::get('/admin/managers/all', [AdminManagerController::class, 'all'])->name('admin.managers.all');
     Route::get('/admin/managers/all/results', [AdminManagerController::class, 'allResults'])->name('admin.managers.all.results');
