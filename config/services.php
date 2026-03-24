@@ -64,6 +64,8 @@ return [
         'catalog_min_players' => (int) env('FPL_CATALOG_MIN_PLAYERS', 700),
         'manager_request_interval_ms' => (int) env('FPL_MANAGER_REQUEST_INTERVAL_MS', 300),
         'page_request_interval_ms' => (int) env('FPL_PAGE_REQUEST_INTERVAL_MS', 200),
+        'profile_batch_size' => (int) env('FPL_PROFILE_BATCH_SIZE', 50),
+        'profile_cooldown_seconds' => (int) env('FPL_PROFILE_COOLDOWN_SECONDS', 60),
     ],
 
 ];

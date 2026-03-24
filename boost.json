@@ -2,11 +2,11 @@
     "agents": [
         "codex",
         "copilot",
-        "cursor"
+        "opencode"
     ],
     "editors": [
         "codex",
-        "cursor",
+        "opencode",
         "vscode"
     ],
     "guidelines": [],

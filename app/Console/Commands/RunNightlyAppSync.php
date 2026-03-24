@@ -54,6 +54,7 @@ class RunNightlyAppSync extends Command
 
         $this->info('Nightly sync started.');
 
+        // Step 1: Sync FPL teams and players catalog (foundation for all other syncs)
         try {
             FetchFplDataJob::dispatchSync();
             $summary['fpl_synced'] = true;
@@ -68,6 +69,31 @@ class RunNightlyAppSync extends Command
             ]);
         }
 
+        // Step 2: Sync league standings
+        $leagues = League::query()->get(['id', 'name', 'season']);
+        $summary['leagues_total'] = $leagues->count();
+
+        foreach ($leagues as $league) {
+            try {
+                FetchLeagueStandings::dispatchSync($league->id, false);
+                $summary['leagues_synced']++;
+                $this->info("League standings synced: {$league->name}");
+            } catch (\Throwable $exception) {
+                $summary['league_failures'][] = [
+                    'name' => (string) $league->name,
+                    'error' => $exception->getMessage(),
+                ];
+
+                Log::error('Nightly app sync failed for league standings.', [
+                    'league_id' => $league->id,
+                    'league_name' => $league->name,
+                    'exception_class' => $exception::class,
+                    'error' => $exception->getMessage(),
+                ]);
+            }
+        }
+
+        // Step 3: Sync manager profiles (claimed first, with batch cooldown)
         $managerIds = Manager::query()->pluck('id')->all();
         $summary['profile_entries_total'] = (int) Manager::query()
             ->whereIn('id', $managerIds)
@@ -90,22 +116,15 @@ class RunNightlyAppSync extends Command
             }
         }
 
-        $leagues = League::query()->get(['id', 'name', 'season']);
-        $summary['leagues_total'] = $leagues->count();
-
+        // Step 4: Compute gameweek tables
         foreach ($leagues as $league) {
             try {
-                FetchLeagueStandings::dispatchSync($league->id, false);
                 ComputeLeagueGameweekStandingsJob::dispatchSync($league->id, (int) ($league->season ?? now()->year));
-                $summary['leagues_synced']++;
-                $this->info("League synced: {$league->name}");
+                $this->info("Gameweek tables computed: {$league->name}");
             } catch (\Throwable $exception) {
-                $summary['league_failures'][] = [
-                    'name' => (string) $league->name,
-                    'error' => $exception->getMessage(),
-                ];
+                $summary['errors'][] = "Compute tables failed for {$league->name}: ".$exception->getMessage();
 
-                Log::error('Nightly app sync failed for league.', [
+                Log::error('Nightly app sync failed during gameweek table computation.', [
                     'league_id' => $league->id,
                     'league_name' => $league->name,
                     'exception_class' => $exception::class,

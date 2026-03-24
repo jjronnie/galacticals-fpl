@@ -1,5 +1,6 @@
 <?php
 
+use App\Jobs\SendLeagueReminderJob;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -18,3 +19,8 @@ $adminEmail = (string) config('mail.admin_address');
 if ($adminEmail !== '') {
     $nightlySync->emailOutputTo($adminEmail);
 }
+
+Schedule::job(new SendLeagueReminderJob)
+    ->dailyAt('05:00')
+    ->timezone('Africa/Kampala')
+    ->withoutOverlapping();

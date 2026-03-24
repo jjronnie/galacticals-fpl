@@ -81,10 +81,12 @@ class AdminDataSyncTest extends TestCase
 
         Bus::assertChained([
             FetchFplDataJob::class,
+            FetchLeagueStandings::class,
+            FetchLeagueStandings::class,
             FetchManagerProfilesJob::class,
+            ComputeLeagueGameweekStandingsJob::class,
+            ComputeLeagueGameweekStandingsJob::class,
         ]);
-        Bus::assertDispatched(FetchLeagueStandings::class, 2);
-        Bus::assertDispatched(ComputeLeagueGameweekStandingsJob::class, 2);
     }
 
     public function test_admin_data_status_endpoint_returns_job_and_league_progress_payload(): void

@@ -171,9 +171,9 @@
             @if ($stats)
                 @if ($isOverview)
                     <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                        <x-stat-card title="Total Points" :value="$stats['summary']['total_points'] ?? 0" icon="trophy" tooltip="Total points scored by this team this season." />
+                        <x-stat-card title="Total Points" :value="number_format((int) ($stats['summary']['total_points'] ?? 0))" icon="trophy" tooltip="Total points scored by this team this season." />
                         <x-stat-card title="Overall Rank" :value="$stats['summary']['overall_rank'] ? number_format((int) $stats['summary']['overall_rank']) : 'N/A'" icon="chart-no-axes-column" tooltip="Global overall rank from FPL for the latest gameweek." />
-                        <x-stat-card title="Favourite Club" :value="$stats['summary']['favourite_club'] ?? 'No data'" icon="shield" tooltip="Manager's declared favourite Premier League club." />
+                        <x-stat-card title="Favourite Club" :value="$stats['summary']['favourite_club'] ?? 'Not Set'" icon="shield" tooltip="Manager's declared favourite Premier League club." />
                         <x-stat-card title="Squad Value" :value="'€'.number_format((float) ($stats['summary']['current_squad_value'] ?? 0), 1).'m'" icon="coins" tooltip="Current FPL squad value in millions of euros." />
                         <x-stat-card title="Transfers" :value="$stats['summary']['transfers_made'] ?? 0" icon="repeat" tooltip="Number of transfers made during the season." />
                         <x-stat-card title="Transfer Hits" :value="$stats['summary']['transfer_hits'] ?? 0" icon="minus-circle" tooltip="Points spent on extra transfers." />
@@ -570,7 +570,7 @@
                                                     </span>
                                                 </td>
                                                 <td class="px-3 py-2 text-right">{{ $history['points'] }}</td>
-                                                <td class="px-3 py-2 text-right">{{ $history['total_points'] }}</td>
+                                                <td class="px-3 py-2 text-right">{{ number_format((int) $history['total_points']) }}</td>
                                                 <td class="px-3 py-2 text-right">{{ $history['overall_rank'] > 0 ? number_format($history['overall_rank']) : 'N/A' }}</td>
                                             </tr>
                                         @empty

@@ -250,19 +250,15 @@ class AdminDataController extends Controller
                 $profileEntryCount,
                 "Full update queued: syncing {$profileEntryCount} manager profile entries."
             );
-
-            Bus::chain([
-                new FetchFplDataJob,
-                new FetchManagerProfilesJob($managerIds),
-            ])->dispatch();
         } else {
-            FetchFplDataJob::dispatch();
-
             SyncJobProgressService::complete(
                 SyncJobProgressService::FETCH_MANAGER_PROFILES,
                 'No manager profiles found during full update.'
             );
         }
+
+        // Build sequential chain: FPL data → League standings → Manager profiles → Compute tables
+        $chain = [new FetchFplDataJob];
 
         if ($leagues->isNotEmpty()) {
             SyncJobProgressService::queue(
@@ -271,33 +267,44 @@ class AdminDataController extends Controller
                 "Full update queued: syncing standings for {$leagues->count()} leagues."
             );
 
-            SyncJobProgressService::queue(
-                SyncJobProgressService::COMPUTE_GAMEWEEK_TABLES,
-                $leagues->count(),
-                "Full update queued: computing gameweek tables for {$leagues->count()} leagues."
-            );
-
-            $leagues->each(function (League $league): void {
+            foreach ($leagues as $league) {
                 $league->update([
                     'sync_status' => 'processing',
                     'sync_message' => 'Full application sync queued from admin panel.',
                     'synced_managers' => 0,
                 ]);
 
-                FetchLeagueStandings::dispatch($league->id, false);
-                ComputeLeagueGameweekStandingsJob::dispatch($league->id, (int) ($league->season ?? now()->year));
-            });
+                $chain[] = new FetchLeagueStandings($league->id, false);
+            }
         } else {
             SyncJobProgressService::complete(
                 SyncJobProgressService::FETCH_LEAGUE_STANDINGS,
                 'No leagues available during full update.'
             );
+        }
 
+        if ($profileEntryCount > 0) {
+            $chain[] = new FetchManagerProfilesJob($managerIds);
+        }
+
+        if ($leagues->isNotEmpty()) {
+            SyncJobProgressService::queue(
+                SyncJobProgressService::COMPUTE_GAMEWEEK_TABLES,
+                $leagues->count(),
+                "Full update queued: computing gameweek tables for {$leagues->count()} leagues."
+            );
+
+            foreach ($leagues as $league) {
+                $chain[] = new ComputeLeagueGameweekStandingsJob($league->id, (int) ($league->season ?? now()->year));
+            }
+        } else {
             SyncJobProgressService::complete(
                 SyncJobProgressService::COMPUTE_GAMEWEEK_TABLES,
                 'No leagues available for gameweek table computation.'
             );
         }
+
+        Bus::chain($chain)->dispatch();
 
         return $this->actionResponse($request, 'Full application data update queued successfully.');
     }
