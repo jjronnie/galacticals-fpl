@@ -96,6 +96,8 @@ class FetchManagerProfilesJob implements ShouldQueue
 
             $processedEntries++;
 
+            usleep($this->managerIntervalMicroseconds());
+
             SyncJobProgressService::progress(
                 SyncJobProgressService::FETCH_MANAGER_PROFILES,
                 $processedEntries,
@@ -208,6 +210,13 @@ class FetchManagerProfilesJob implements ShouldQueue
                 // Skip failed pre-cache; individual jobs will fetch on demand
             }
         }
+    }
+
+    private function managerIntervalMicroseconds(): int
+    {
+        $milliseconds = (int) config('services.fpl.manager_request_interval_ms', 300);
+
+        return max($milliseconds, 0) * 1000;
     }
 
     private function profileBatchSize(): int
