@@ -10,7 +10,7 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 $nightlySync = Schedule::command('app:run-nightly-app-sync')
-    ->dailyAt('02:30')
+    ->dailyAt('11:30')
     ->timezone('Africa/Kampala')
     ->withoutOverlapping();
 
@@ -21,6 +21,6 @@ if ($adminEmail !== '') {
 }
 
 Schedule::job(new SendLeagueReminderJob)
-    ->dailyAt('05:00')
+    ->dailyAt('08:00')
     ->timezone('Africa/Kampala')
     ->withoutOverlapping();
