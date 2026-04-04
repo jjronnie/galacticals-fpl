@@ -6,11 +6,15 @@ use App\Jobs\ComputeLeagueGameweekStandingsJob;
 use App\Jobs\FetchFplDataJob;
 use App\Jobs\FetchLeagueStandings;
 use App\Jobs\FetchManagerProfilesJob;
+use App\Jobs\SyncFixturesJob;
+use App\Models\FplFixture;
 use App\Models\FplPlayer;
+use App\Models\FplSyncRun;
 use App\Models\FplTeam;
 use App\Models\League;
 use App\Models\Manager;
 use App\Models\ManagerChip;
+use App\Services\FixtureService;
 use App\Services\SyncJobProgressService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -46,19 +50,6 @@ class AdminDataController extends Controller
 
     public function observer(): View
     {
-        $teams = FplTeam::query()
-            ->withCount('players')
-            ->orderBy('name')
-            ->paginate(25, ['*'], 'teams_page')
-            ->withQueryString();
-
-        $players = FplPlayer::query()
-            ->with('team:id,name,short_name')
-            ->orderByDesc('total_points')
-            ->orderBy('web_name')
-            ->paginate(50, ['*'], 'players_page')
-            ->withQueryString();
-
         $chipRecordsCount = ManagerChip::query()->count();
 
         $chipNames = ManagerChip::query()
@@ -71,11 +62,36 @@ class AdminDataController extends Controller
             ->values();
 
         return view('admin.data.observer', [
-            'teams' => $teams,
-            'players' => $players,
             'chipRecordsCount' => $chipRecordsCount,
             'chipNames' => $chipNames,
         ]);
+    }
+
+    public function teams(): View
+    {
+        $teams = FplTeam::query()
+            ->withCount('players')
+            ->orderBy('name')
+            ->paginate(25)
+            ->withQueryString();
+
+        $totalPlayers = FplPlayer::query()->count();
+
+        return view('admin.teams.index', compact('teams', 'totalPlayers'));
+    }
+
+    public function teamPlayers(int $teamId): View
+    {
+        $team = FplTeam::query()->withCount('players')->findOrFail($teamId);
+
+        $players = FplPlayer::query()
+            ->where('team_id', $teamId)
+            ->orderByDesc('total_points')
+            ->orderBy('web_name')
+            ->paginate(50)
+            ->withQueryString();
+
+        return view('admin.teams.players', compact('team', 'players'));
     }
 
     public function fetchFpl(Request $request): RedirectResponse|JsonResponse
@@ -332,6 +348,48 @@ class AdminDataController extends Controller
         return $this->actionResponse($request, 'Application cache flushed for all users.');
     }
 
+    public function fixtures(Request $request): View
+    {
+        $events = FixtureService::getAvailableEvents();
+        $currentEvent = $request->integer('event') ?: FixtureService::getCurrentEvent();
+
+        $query = FplFixture::query()->with(['homeTeam', 'awayTeam']);
+
+        if ($currentEvent) {
+            $query->where('event', $currentEvent);
+        }
+
+        $fixtures = $query->orderBy('kickoff_time')->paginate(50)->withQueryString();
+
+        $totalFixtures = FplFixture::query()->count();
+        $finishedFixtures = FplFixture::query()->where('finished', true)->count();
+        $upcomingFixtures = FplFixture::query()->where('started', false)->count();
+        $liveFixtures = FplFixture::query()->where('started', true)->where('finished', false)->count();
+
+        return view('admin.data.fixtures', compact(
+            'fixtures',
+            'events',
+            'currentEvent',
+            'totalFixtures',
+            'finishedFixtures',
+            'upcomingFixtures',
+            'liveFixtures',
+        ));
+    }
+
+    public function syncFixtures(Request $request): RedirectResponse|JsonResponse
+    {
+        SyncJobProgressService::queue(
+            SyncJobProgressService::SYNC_FIXTURES,
+            1,
+            'Fixtures sync queued.'
+        );
+
+        SyncFixturesJob::dispatch();
+
+        return $this->actionResponse($request, 'Fixtures sync queued.');
+    }
+
     public function jobs(): View
     {
         $failedJobs = DB::table('failed_jobs')
@@ -519,6 +577,31 @@ class AdminDataController extends Controller
             return ($leagueRow['sync_status'] ?? '') === 'processing';
         });
 
+        $syncRuns = FplSyncRun::query()
+            ->orderByDesc('event')
+            ->limit(20)
+            ->get()
+            ->map(function (FplSyncRun $run): array {
+                $meta = $run->meta ?? [];
+
+                return [
+                    'id' => $run->id,
+                    'event' => $run->event,
+                    'status' => $run->status,
+                    'synced_at' => $run->synced_at?->toIso8601String(),
+                    'synced_at_human' => $run->synced_at?->diffForHumans(),
+                    'triggered_by' => $meta['triggered_by'] ?? 'scheduled',
+                    'duration_seconds' => $meta['duration_seconds'] ?? null,
+                    'gameweek' => $meta['gameweek'] ?? $run->event,
+                    'fpl_synced' => (bool) ($meta['fpl_synced'] ?? false),
+                    'profile_synced' => (bool) ($meta['profile_synced'] ?? false),
+                    'leagues_total' => (int) ($meta['leagues_total'] ?? 0),
+                    'leagues_synced' => (int) ($meta['leagues_synced'] ?? 0),
+                    'errors_count' => count($meta['errors'] ?? []),
+                    'league_failures_count' => count($meta['league_failures'] ?? []),
+                ];
+            })->values()->all();
+
         return [
             'summary' => [
                 'total_leagues' => $leagues->count(),
@@ -528,6 +611,7 @@ class AdminDataController extends Controller
             ],
             'jobs' => $jobs,
             'leagues' => $leagueRows,
+            'sync_runs' => $syncRuns,
             'has_running_work' => $hasRunningJob || $hasProcessingLeague,
         ];
     }

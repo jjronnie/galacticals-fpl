@@ -263,8 +263,10 @@ class DashboardStatsService
 
                 return [
                     'gameweek' => (int) $gameweek,
+                    'player_id' => $bestPick['player_id'],
                     'web_name' => $bestPick['web_name'],
                     'points' => $bestPick['points'],
+                    'fpl_photo' => $bestPick['fpl_photo'] ?? null,
                     'team_name' => $bestPick['team_name'],
                     'team_short_name' => $bestPick['team_short_name'],
                     'team_color' => $bestPick['team_color'],
@@ -396,6 +398,7 @@ class DashboardStatsService
                     'web_name' => (string) $pick->player->web_name,
                     'points' => (int) ($pick->event_points ?? 0),
                     'element_type' => (int) ($pick->player->element_type ?? 0),
+                    'fpl_photo' => $pick->player->fpl_photo ?? null,
                     'team_name' => (string) ($teamName ?? 'Unknown'),
                     'team_short_name' => (string) ($teamShortName ?? ''),
                     'team_color' => TeamColorHelper::primary($teamShortName),

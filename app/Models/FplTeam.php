@@ -16,6 +16,7 @@ class FplTeam extends Model
         'id',
         'name',
         'short_name',
+        'fpl_code',
         'code',
         'strength_overall',
     ];
@@ -23,6 +24,15 @@ class FplTeam extends Model
     public $incrementing = false;
 
     protected $keyType = 'int';
+
+    protected function casts(): array
+    {
+        return [
+            'fpl_code' => 'integer',
+            'code' => 'integer',
+            'strength_overall' => 'integer',
+        ];
+    }
 
     public function players(): HasMany
     {
@@ -32,5 +42,14 @@ class FplTeam extends Model
     public function managers(): HasMany
     {
         return $this->hasMany(Manager::class, 'favourite_team_id');
+    }
+
+    public function badgeUrl(): ?string
+    {
+        if (! $this->fpl_code) {
+            return null;
+        }
+
+        return "https://resources.premierleague.com/premierleague/badges/25/t{$this->fpl_code}.png";
     }
 }

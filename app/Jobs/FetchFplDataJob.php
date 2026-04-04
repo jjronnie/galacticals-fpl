@@ -76,6 +76,7 @@ class FetchFplDataJob implements ShouldQueue
                     'id' => $team['id'],
                     'name' => $team['name'],
                     'short_name' => $team['short_name'],
+                    'fpl_code' => $team['code'] ?? null,
                     'code' => $team['code'] ?? null,
                     'strength_overall' => $team['strength_overall_home'] ?? null,
                     'created_at' => now(),
@@ -95,6 +96,7 @@ class FetchFplDataJob implements ShouldQueue
                     'total_points' => $player['total_points'] ?? 0,
                     'selected_by_percent' => (float) ($player['selected_by_percent'] ?? 0),
                     'form' => (float) ($player['form'] ?? 0),
+                    'fpl_photo' => $player['photo'] ?? null,
                     'region' => $player['region'] ?? null,
                     'created_at' => now(),
                     'updated_at' => now(),
@@ -104,7 +106,7 @@ class FetchFplDataJob implements ShouldQueue
             FplTeam::upsert(
                 $teams,
                 ['id'],
-                ['name', 'short_name', 'code', 'strength_overall', 'updated_at']
+                ['name', 'short_name', 'fpl_code', 'code', 'strength_overall', 'updated_at']
             );
 
             SyncJobProgressService::progress(
@@ -127,6 +129,7 @@ class FetchFplDataJob implements ShouldQueue
                     'total_points',
                     'selected_by_percent',
                     'form',
+                    'fpl_photo',
                     'region',
                     'updated_at',
                 ]

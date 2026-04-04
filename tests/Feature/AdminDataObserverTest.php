@@ -15,7 +15,7 @@ class AdminDataObserverTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_admin_can_view_db_observer_page_with_teams_players_and_chips(): void
+    public function test_admin_can_view_db_observer_page_with_chips(): void
     {
         $admin = User::factory()->create([
             'role' => 'admin',
@@ -41,28 +41,6 @@ class AdminDataObserverTest extends TestCase
             'total_points' => 99,
         ]);
 
-        $team = FplTeam::create([
-            'id' => 101,
-            'name' => 'Observer FC',
-            'short_name' => 'OBS',
-            'code' => 9101,
-            'strength_overall' => 4,
-        ]);
-
-        FplPlayer::create([
-            'id' => 501,
-            'team_id' => $team->id,
-            'first_name' => 'Sample',
-            'second_name' => 'Player',
-            'web_name' => 'SPlayer',
-            'element_type' => 3,
-            'now_cost' => 75,
-            'total_points' => 120,
-            'selected_by_percent' => 23.50,
-            'form' => 7.20,
-            'region' => 1,
-        ]);
-
         ManagerChip::create([
             'manager_id' => $manager->id,
             'gameweek' => 5,
@@ -86,10 +64,70 @@ class AdminDataObserverTest extends TestCase
         $response
             ->assertOk()
             ->assertSee('FPL DB Observer')
-            ->assertSee('Observer FC')
-            ->assertSee('SPlayer')
             ->assertSee('Tripple Captain')
             ->assertSee('Bench Boost');
+    }
+
+    public function test_admin_can_view_teams_page(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin',
+        ]);
+
+        FplTeam::create([
+            'id' => 101,
+            'name' => 'Observer FC',
+            'short_name' => 'OBS',
+            'code' => 9101,
+            'strength_overall' => 4,
+        ]);
+
+        $response = $this
+            ->actingAs($admin)
+            ->get(route('admin.teams'));
+
+        $response
+            ->assertOk()
+            ->assertSee('FPL Teams')
+            ->assertSee('Observer FC');
+    }
+
+    public function test_admin_can_view_team_players_page(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin',
+        ]);
+
+        $team = FplTeam::create([
+            'id' => 102,
+            'name' => 'Test FC',
+            'short_name' => 'TFC',
+            'code' => 9102,
+            'strength_overall' => 3,
+        ]);
+
+        FplPlayer::create([
+            'id' => 502,
+            'team_id' => $team->id,
+            'first_name' => 'Test',
+            'second_name' => 'Player',
+            'web_name' => 'TPlayer',
+            'element_type' => 2,
+            'now_cost' => 50,
+            'total_points' => 80,
+            'selected_by_percent' => 12.00,
+            'form' => 5.50,
+            'region' => 1,
+        ]);
+
+        $response = $this
+            ->actingAs($admin)
+            ->get(route('admin.teams.players', $team->id));
+
+        $response
+            ->assertOk()
+            ->assertSee('Test FC')
+            ->assertSee('TPlayer');
     }
 
     public function test_non_admin_cannot_view_db_observer_page(): void
@@ -101,6 +139,19 @@ class AdminDataObserverTest extends TestCase
         $response = $this
             ->actingAs($user)
             ->get(route('admin.data.observer'));
+
+        $response->assertForbidden();
+    }
+
+    public function test_non_admin_cannot_view_teams_page(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'user',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->get(route('admin.teams'));
 
         $response->assertForbidden();
     }

@@ -9,16 +9,15 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-$nightlySync = Schedule::command('app:run-nightly-app-sync')
-    ->dailyAt('11:30')
+Schedule::command('fpl:sync-fixtures')
+    ->hourly()
     ->timezone('Africa/Kampala')
     ->withoutOverlapping();
 
-$adminEmail = (string) config('mail.admin_address');
-
-if ($adminEmail !== '') {
-    $nightlySync->emailOutputTo($adminEmail);
-}
+Schedule::command('fpl:run-sync-if-matchday-complete')
+    ->everyThirtyMinutes()
+    ->timezone('Africa/Kampala')
+    ->withoutOverlapping();
 
 Schedule::job(new SendLeagueReminderJob)
     ->dailyAt('08:00')

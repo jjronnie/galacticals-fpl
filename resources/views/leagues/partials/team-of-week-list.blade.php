@@ -60,12 +60,16 @@
                             <span class="inline-flex h-4 w-4 shrink-0 items-center justify-center text-xs font-semibold text-gray-300">#</span>
 
                             <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md bg-card/70">
-                                <svg viewBox="0 0 64 64" class="h-6 w-6">
-                                    <path
-                                        d="M23 8h18l5 7 8 3-5 13-8-3v26H23V28l-8 3-5-13 8-3 5-7z"
-                                        fill="{{ $player['team_color'] ?? '#6b7280' }}"
-                                    />
-                                </svg>
+                                @if(!empty($player['fpl_photo']))
+                                    <img src="{{ route('img.player', $player['player_id']) }}" alt="{{ $player['web_name'] }}" class="h-full w-full object-contain" loading="lazy" />
+                                @else
+                                    <svg viewBox="0 0 64 64" class="h-6 w-6">
+                                        <path
+                                            d="M23 8h18l5 7 8 3-5 13-8-3v26H23V28l-8 3-5-13 8-3 5-7z"
+                                            fill="{{ $player['team_color'] ?? '#6b7280' }}"
+                                        />
+                                    </svg>
+                                @endif
                             </span>
 
                             <div class="min-w-0">

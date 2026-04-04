@@ -105,14 +105,18 @@
                             class="min-w-[240px] rounded-xl border border-gray-700 bg-card p-3 transition hover:border-gray-500"
                         >
                             <div class="flex items-center justify-between gap-3">
-                                <div class="flex items-center gap-3">
+                            <div class="flex items-center gap-3">
+                                @if(!empty($playerCard['fpl_photo']))
+                                    <img src="{{ route('img.player', $playerCard['player_id']) }}" alt="{{ $playerCard['web_name'] }}" class="h-10 w-10 shrink-0 rounded-md object-contain" loading="lazy" />
+                                @else
                                     <svg viewBox="0 0 64 64" class="h-10 w-10 shrink-0">
                                         <path
                                             d="M23 8h18l5 7 8 3-5 13-8-3v26H23V28l-8 3-5-13 8-3 5-7z"
                                             fill="{{ $playerCard['team_color'] }}"
                                         />
                                     </svg>
-                                    <div>
+                                @endif
+                                <div>
                                         <p class="text-sm font-semibold text-white">{{ $playerCard['web_name'] }}</p>
                                         <p class="text-xs text-gray-400">{{ $playerCard['team_name'] ?? ($playerCard['team_short_name'] ?? 'Unknown') }}</p>
                                     </div>

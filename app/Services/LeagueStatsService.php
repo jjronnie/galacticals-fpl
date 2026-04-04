@@ -8,6 +8,7 @@ use App\Models\FplPlayer;
 use App\Models\GameweekScore;
 use App\Models\League;
 use App\Models\LeagueGameweekStanding;
+use App\Models\Manager;
 use App\Models\ManagerChip;
 use App\Models\ManagerPick;
 use Illuminate\Support\Collection;
@@ -629,8 +630,8 @@ class LeagueStatsService
     }
 
     /**
-     * @param  Collection<int, \App\Models\Manager>  $managers
-     * @param  Collection<int, \App\Models\GameweekScore>  $allScores
+     * @param  Collection<int, Manager>  $managers
+     * @param  Collection<int, GameweekScore>  $allScores
      * @return array<int, array<string, mixed>>
      */
     private function mostValuableTeams(Collection $managers, Collection $allScores): array
@@ -876,6 +877,7 @@ class LeagueStatsService
                     'web_name' => (string) $pick->player->web_name,
                     'points' => (int) ($pick->event_points ?? 0),
                     'element_type' => (int) ($pick->player->element_type ?? 0),
+                    'fpl_photo' => $pick->player->fpl_photo ?? null,
                     'team_name' => (string) ($teamName ?? 'Unknown'),
                     'team_short_name' => (string) ($teamShortName ?? ''),
                     'team_color' => TeamColorHelper::primary($teamShortName),

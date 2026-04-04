@@ -24,6 +24,7 @@ class FplPlayer extends Model
         'total_points',
         'selected_by_percent',
         'form',
+        'fpl_photo',
         'region',
     ];
 
@@ -47,5 +48,16 @@ class FplPlayer extends Model
     public function picks(): HasMany
     {
         return $this->hasMany(ManagerPick::class, 'player_id');
+    }
+
+    public function photoUrl(): ?string
+    {
+        if (! $this->fpl_photo) {
+            return null;
+        }
+
+        $photoId = pathinfo($this->fpl_photo, PATHINFO_FILENAME);
+
+        return "https://resources.premierleague.com/premierleague/photos/players/110x140/p{$photoId}.png";
     }
 }

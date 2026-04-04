@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminDataController;
 use App\Http\Controllers\AdminManagerController;
 use App\Http\Controllers\AdminProfileVerificationController;
 use App\Http\Controllers\ClaimComplaintController;
+use App\Http\Controllers\FplImageController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\LeagueController;
 use App\Http\Controllers\ManagerProfileController;
@@ -14,6 +15,8 @@ use App\Http\Controllers\SystemController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [FrontendController::class, 'home'])->name('home');
+Route::get('/img/team/{teamId}', [FplImageController::class, 'team'])->whereNumber('teamId')->name('img.team');
+Route::get('/img/player/{playerId}', [FplImageController::class, 'player'])->whereNumber('playerId')->name('img.player');
 Route::get('/more', [FrontendController::class, 'more'])->name('more');
 Route::get('/how-to-find-fpl-league-id', [FrontendController::class, 'findLeagueID'])->name('find');
 Route::get('/privacy-policy', [FrontendController::class, 'policy'])->name('privacy.policy');
@@ -83,6 +86,10 @@ Route::middleware(['auth', 'can:admin'])->group(function (): void {
     Route::get('/admin/data/status', [AdminDataController::class, 'status'])->name('admin.data.status');
     Route::get('/admin/data/leagues', [AdminDataController::class, 'leagues'])->name('admin.data.leagues');
     Route::get('/admin/data/observer', [AdminDataController::class, 'observer'])->name('admin.data.observer');
+    Route::get('/admin/teams', [AdminDataController::class, 'teams'])->name('admin.teams');
+    Route::get('/admin/teams/{teamId}/players', [AdminDataController::class, 'teamPlayers'])->whereNumber('teamId')->name('admin.teams.players');
+    Route::get('/admin/data/fixtures', [AdminDataController::class, 'fixtures'])->name('admin.data.fixtures');
+    Route::post('/admin/data/sync-fixtures', [AdminDataController::class, 'syncFixtures'])->name('admin.data.syncFixtures');
     Route::post('/admin/data/sync-all', [AdminDataController::class, 'syncAll'])->name('admin.data.syncAll');
     Route::post('/admin/data/flush-cache', [AdminDataController::class, 'flushCache'])->name('admin.data.flushCache');
     Route::post('/admin/data/fetch-fpl', [AdminDataController::class, 'fetchFpl'])->name('admin.data.fetchFpl');

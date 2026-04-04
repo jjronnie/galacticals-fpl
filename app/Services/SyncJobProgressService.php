@@ -16,6 +16,8 @@ class SyncJobProgressService
 
     public const SEND_LEAGUE_REMINDERS = 'send_league_reminders';
 
+    public const SYNC_FIXTURES = 'sync_fixtures';
+
     private const CACHE_TTL_HOURS = 24;
 
     /**
@@ -29,6 +31,7 @@ class SyncJobProgressService
             self::FETCH_LEAGUE_STANDINGS => 'Sync League Standings',
             self::COMPUTE_GAMEWEEK_TABLES => 'Compute Gameweek Tables',
             self::SEND_LEAGUE_REMINDERS => 'Send League Reminders',
+            self::SYNC_FIXTURES => 'Sync Fixtures',
         ];
     }
 

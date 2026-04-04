@@ -22,12 +22,16 @@
                     <article class="rounded-xl border border-gray-700 bg-card px-4 py-3">
                         <div class="flex items-center justify-between gap-3">
                             <div class="flex min-w-0 items-center gap-3">
-                                <svg viewBox="0 0 64 64" class="h-10 w-10 shrink-0">
-                                    <path
-                                        d="M23 8h18l5 7 8 3-5 13-8-3v26H23V28l-8 3-5-13 8-3 5-7z"
-                                        fill="{{ $row['team_color'] }}"
-                                    />
-                                </svg>
+                                @if(!empty($row['fpl_photo']))
+                                    <img src="{{ route('img.player', $row['player_id']) }}" alt="{{ $row['web_name'] }}" class="h-10 w-10 shrink-0 rounded-md object-contain" loading="lazy" />
+                                @else
+                                    <svg viewBox="0 0 64 64" class="h-10 w-10 shrink-0">
+                                        <path
+                                            d="M23 8h18l5 7 8 3-5 13-8-3v26H23V28l-8 3-5-13 8-3 5-7z"
+                                            fill="{{ $row['team_color'] }}"
+                                        />
+                                    </svg>
+                                @endif
                                 <div class="min-w-0">
                                     <p class="truncate text-base font-semibold text-white">{{ $row['web_name'] }}</p>
                                     <p class="truncate text-sm text-gray-400">{{ $row['team_name'] ?? ($row['team_short_name'] ?? 'Unknown') }}</p>

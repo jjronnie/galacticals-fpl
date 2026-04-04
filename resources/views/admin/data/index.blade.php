@@ -10,6 +10,7 @@
             fetchFplUrl: '{{ route('admin.data.fetchFpl') }}',
             fetchManagersUrl: '{{ route('admin.data.fetchManagers') }}',
             computeGameweeksUrl: '{{ route('admin.data.computeGameweeks') }}',
+            syncFixturesUrl: '{{ route('admin.data.syncFixtures') }}',
             leaguesUrl: '{{ route('admin.data.leagues') }}',
             observerUrl: '{{ route('admin.data.observer') }}'
         })"
@@ -58,7 +59,7 @@
 
         <section class="rounded-2xl border border-gray-700 bg-card p-5">
             <h2 class="text-lg font-semibold text-white">Queue Actions</h2>
-            <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 <button
                     type="button"
                     class="w-full rounded-lg bg-cyan-500 px-4 py-3 text-sm font-semibold text-primary hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60"
@@ -75,6 +76,15 @@
                     @click="postAction(fetchFplUrl, {}, 'FPL data sync queued.')"
                 >
                     Sync FPL Teams/Players
+                </button>
+
+                <button
+                    type="button"
+                    class="w-full rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
+                    :disabled="busyAction !== null"
+                    @click="postAction(syncFixturesUrl, {}, 'Fixtures sync queued.')"
+                >
+                    Sync Fixtures
                 </button>
 
                 <button
@@ -151,6 +161,63 @@
             </div>
         </section>
 
+        <section class="rounded-2xl border border-gray-700 bg-card p-5">
+            <h2 class="text-lg font-semibold text-white">Matchday Sync History</h2>
+            <p class="mt-1 text-sm text-gray-400">Heavy sync runs triggered when matchdays complete and buffer time passes.</p>
+            <div class="mt-4 overflow-x-auto">
+                <table class="min-w-full text-sm text-gray-200">
+                    <thead>
+                        <tr class="border-b border-gray-700 text-xs uppercase tracking-wide text-gray-400">
+                            <th class="px-3 py-2 text-left">GW</th>
+                            <th class="px-3 py-2 text-left">Status</th>
+                            <th class="px-3 py-2 text-left">Trigger</th>
+                            <th class="px-3 py-2 text-left">FPL</th>
+                            <th class="px-3 py-2 text-left">Profiles</th>
+                            <th class="px-3 py-2 text-left">Leagues</th>
+                            <th class="px-3 py-2 text-left">Errors</th>
+                            <th class="px-3 py-2 text-left">Duration</th>
+                            <th class="px-3 py-2 text-left">When</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template x-for="run in syncRuns" :key="run.id">
+                            <tr class="border-b border-gray-800/80">
+                                <td class="px-3 py-3">
+                                    <span class="rounded-full bg-gray-700 px-2 py-1 text-xs font-bold text-white" x-text="'GW' + run.event"></span>
+                                </td>
+                                <td class="px-3 py-3">
+                                    <span class="rounded-full px-2 py-1 text-xs font-semibold" :class="run.status === 'success' ? 'bg-green-900/40 text-green-300' : 'bg-red-900/40 text-red-300'" x-text="run.status === 'success' ? 'Success' : 'Failed'"></span>
+                                </td>
+                                <td class="px-3 py-3 text-xs text-gray-300" x-text="run.triggered_by"></td>
+                                <td class="px-3 py-3">
+                                    <span class="text-xs" :class="run.fpl_synced ? 'text-green-400' : 'text-red-400'" x-text="run.fpl_synced ? '✓' : '✗'"></span>
+                                </td>
+                                <td class="px-3 py-3">
+                                    <span class="text-xs" :class="run.profile_synced ? 'text-green-400' : 'text-red-400'" x-text="run.profile_synced ? '✓' : '✗'"></span>
+                                </td>
+                                <td class="px-3 py-3 text-xs text-gray-300">
+                                    <span x-text="run.leagues_synced + '/' + run.leagues_total"></span>
+                                    <template x-if="run.league_failures_count > 0">
+                                        <span class="text-red-400" x-text="' (' + run.league_failures_count + ' failed)'"></span>
+                                    </template>
+                                </td>
+                                <td class="px-3 py-3">
+                                    <span class="text-xs" :class="run.errors_count > 0 ? 'text-red-400' : 'text-gray-500'" x-text="run.errors_count > 0 ? run.errors_count : '-'"></span>
+                                </td>
+                                <td class="px-3 py-3 text-xs text-gray-400" x-text="run.duration_seconds ? run.duration_seconds + 's' : '-'"></td>
+                                <td class="px-3 py-3 text-xs text-gray-400" x-text="relativeTime(run.synced_at)"></td>
+                            </tr>
+                        </template>
+                        <template x-if="syncRuns.length === 0">
+                            <tr>
+                                <td colspan="9" class="px-3 py-8 text-center text-gray-400">No matchday sync runs recorded yet.</td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
     </div>
 
     <script>
@@ -160,12 +227,14 @@
                 fetchFplUrl: config.fetchFplUrl,
                 fetchManagersUrl: config.fetchManagersUrl,
                 computeGameweeksUrl: config.computeGameweeksUrl,
+                syncFixturesUrl: config.syncFixturesUrl,
                 flushCacheUrl: config.flushCacheUrl,
                 leaguesUrl: config.leaguesUrl,
                 observerUrl: config.observerUrl,
                 summary: config.initialPayload.summary,
                 jobs: config.initialPayload.jobs,
                 leagues: config.initialPayload.leagues,
+                syncRuns: config.initialPayload.sync_runs ?? [],
                 flash: {
                     type: null,
                     message: ''
@@ -210,6 +279,7 @@
                     this.summary = payload.summary ?? this.summary;
                     this.jobs = payload.jobs ?? this.jobs;
                     this.leagues = payload.leagues ?? this.leagues;
+                    this.syncRuns = payload.sync_runs ?? this.syncRuns;
                 },
 
                 async queueFullSync() {
