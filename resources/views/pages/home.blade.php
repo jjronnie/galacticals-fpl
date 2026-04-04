@@ -89,7 +89,7 @@
                     </div>
                 </div>
 
-                <div class="p-5 sm:p-8">
+                <div class="px-3 py-4 sm:p-8">
                     @forelse($groupedByDate as $date => $dateFixtures)
                         <div class="mb-8 last:mb-0">
                             <div class="mb-4 flex items-center gap-3">
@@ -98,48 +98,48 @@
                                 <div class="h-px flex-1 bg-gradient-to-r from-transparent via-gray-700 to-transparent"></div>
                             </div>
 
-                            <div class="space-y-3">
+                            <div class="space-y-2 sm:space-y-3">
                                 @foreach($dateFixtures as $fixture)
-                                    <div class="group rounded-2xl border border-gray-700/50 bg-gray-800/30 p-4 transition hover:border-gray-600 hover:bg-gray-800/50">
-                                        <div class="flex items-center justify-between">
-                                            <div class="flex flex-1 items-center justify-end gap-3">
-                                                <div class="text-right">
-                                                    <span class="block text-sm font-semibold text-white sm:text-base">
+                                    <div class="group w-full rounded-xl border border-gray-700/50 bg-gray-800/30 p-2.5 transition hover:border-gray-600 hover:bg-gray-800/50 sm:rounded-2xl sm:p-4">
+                                        <div class="flex items-center justify-between gap-1.5 sm:gap-3">
+                                            <div class="flex flex-1 min-w-0 items-center justify-end gap-1.5 sm:gap-3">
+                                                <div class="text-right min-w-0">
+                                                    <span class="block truncate text-[11px] font-semibold text-white sm:text-sm md:text-base">
                                                         {{ $fixture->homeTeam?->name ?? 'TBD' }}
                                                     </span>
                                                 </div>
                                                 @if($fixture->homeTeam)
-                                                    <img src="{{ route('img.team', $fixture->homeTeam->id) }}" alt="{{ $fixture->homeTeam->short_name }}" class="h-8 w-8 rounded-md object-contain" loading="lazy" onerror="this.style.display='none'" />
+                                                    <img src="{{ route('img.team', $fixture->homeTeam->id) }}" alt="{{ $fixture->homeTeam->short_name }}" class="h-5 w-5 shrink-0 rounded object-contain sm:h-8 sm:w-8 sm:rounded-md" loading="lazy" onerror="this.style.display='none'" />
                                                 @endif
                                             </div>
 
-                                            <div class="mx-5 flex min-w-[90px] flex-col items-center justify-center">
+                                            <div class="flex min-w-[50px] flex-col items-center justify-center sm:min-w-[90px]">
                                                 @if($fixture->isFinished())
-                                                    <span class="rounded-lg bg-gray-700/80 px-4 py-1.5 text-xl font-extrabold tracking-tight text-white">
+                                                    <span class="rounded bg-gray-700/80 px-1.5 py-0.5 text-xs font-extrabold tracking-tight text-white sm:rounded-lg sm:px-4 sm:py-1.5 sm:text-xl">
                                                         {{ $fixture->team_h_score ?? '-' }} - {{ $fixture->team_a_score ?? '-' }}
                                                     </span>
-                                                    <span class="mt-1 text-[10px] font-bold uppercase tracking-wider text-gray-500">Full Time</span>
+                                                    <span class="mt-0.5 text-[8px] font-bold uppercase tracking-wider text-gray-500 sm:mt-1 sm:text-[10px]">Full Time</span>
                                                 @elseif($fixture->isLive())
-                                                    <span class="rounded-lg bg-red-600/90 px-4 py-1.5 text-xl font-extrabold tracking-tight text-white animate-pulse">
+                                                    <span class="rounded bg-red-600/90 px-1.5 py-0.5 text-xs font-extrabold tracking-tight text-white animate-pulse sm:rounded-lg sm:px-4 sm:py-1.5 sm:text-xl">
                                                         {{ $fixture->team_h_score ?? 0 }} - {{ $fixture->team_a_score ?? 0 }}
                                                     </span>
-                                                    <span class="mt-1 text-[10px] font-bold uppercase tracking-wider text-red-400">{{ $fixture->minutes }}'</span>
+                                                    <span class="mt-0.5 text-[8px] font-bold uppercase tracking-wider text-red-400 sm:mt-1 sm:text-[10px]">{{ $fixture->minutes }}'</span>
                                                 @else
-                                                    <span class="text-lg font-bold text-white">
+                                                    <span class="text-xs font-bold text-white sm:text-lg">
                                                         {{ $fixture->kickoff_time ? $fixture->kickoff_time->format('H:i') : 'TBC' }}
                                                     </span>
-                                                    <span class="mt-0.5 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+                                                    <span class="mt-0.5 text-[8px] font-semibold uppercase tracking-wider text-gray-500 sm:mt-0.5 sm:text-[10px]">
                                                         {{ $fixture->kickoff_time ? $fixture->kickoff_time->format('d M') : '' }}
                                                     </span>
                                                 @endif
                                             </div>
 
-                                            <div class="flex flex-1 items-center justify-start gap-3">
+                                            <div class="flex flex-1 min-w-0 items-center justify-start gap-1.5 sm:gap-3">
                                                 @if($fixture->awayTeam)
-                                                    <img src="{{ route('img.team', $fixture->awayTeam->id) }}" alt="{{ $fixture->awayTeam->short_name }}" class="h-8 w-8 rounded-md object-contain" loading="lazy" onerror="this.style.display='none'" />
+                                                    <img src="{{ route('img.team', $fixture->awayTeam->id) }}" alt="{{ $fixture->awayTeam->short_name }}" class="h-5 w-5 shrink-0 rounded object-contain sm:h-8 sm:w-8 sm:rounded-md" loading="lazy" onerror="this.style.display='none'" />
                                                 @endif
-                                                <div class="text-left">
-                                                    <span class="block text-sm font-semibold text-white sm:text-base">
+                                                <div class="text-left min-w-0">
+                                                    <span class="block truncate text-[11px] font-semibold text-white sm:text-sm md:text-base">
                                                         {{ $fixture->awayTeam?->name ?? 'TBD' }}
                                                     </span>
                                                 </div>
