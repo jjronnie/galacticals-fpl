@@ -2,147 +2,115 @@
     <main class="mx-auto max-w-6xl p-4 sm:p-6">
         <x-adsense />
 
-        <section class="relative overflow-hidden rounded-3xl border border-gray-700 bg-gradient-to-br from-card via-card to-gray-800 p-8 text-center sm:p-12">
-            <div class="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-accent/5 blur-3xl"></div>
-            <div class="pointer-events-none absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-green-600/5 blur-3xl"></div>
+        <section class="py-8 text-center sm:py-12">
+            <p class="text-xs font-semibold uppercase tracking-widest text-accent">Premier League Fantasy Tracker</p>
+            <h1 class="mt-2 text-3xl font-extrabold leading-tight text-white sm:text-4xl">
+                Your League Story, Week by Week
+            </h1>
+            <p class="mx-auto mt-3 max-w-lg text-sm text-gray-400 sm:text-base">
+                Track every gameweek, see who's rising and falling, and discover which managers are making the smartest moves.
+            </p>
 
-            <div class="relative">
-                <p class="text-xs font-semibold uppercase tracking-widest text-accent">Premier League Fantasy Tracker</p>
-                <h1 class="mt-3 text-3xl font-extrabold leading-tight text-white sm:text-5xl">
-                    Your League Story,<br class="hidden sm:block"> Week by Week
-                </h1>
-                <p class="mx-auto mt-4 max-w-2xl text-base text-gray-400 sm:text-lg">
-                    Track every gameweek, see who's rising and falling, and discover which managers are making the smartest moves.
-                </p>
-
-                <div class="mt-8 flex flex-wrap justify-center gap-3">
-                    @auth
-                        <a href="{{ route('dashboard') }}" class="rounded-xl bg-green-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-green-600/20 transition hover:bg-green-500 hover:shadow-green-500/30">
-                            Open Dashboard
-                        </a>
-                    @else
-                        <a href="{{ route('register') }}" class="rounded-xl bg-green-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-green-600/20 transition hover:bg-green-500 hover:shadow-green-500/30">
-                            Create Free Account
-                        </a>
-                    @endauth
-
-                    <a href="{{ route('public.leagues.list') }}" class="rounded-xl border border-gray-600 px-6 py-3 text-sm font-semibold text-gray-300 transition hover:border-accent hover:text-accent">
-                        Explore Leagues
+            <div class="mt-6 flex flex-wrap justify-center gap-3">
+                @auth
+                    <a href="{{ route('dashboard') }}" class="rounded-lg bg-green-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-green-500">
+                        Open Dashboard
                     </a>
-                </div>
+                @else
+                    <a href="{{ route('register') }}" class="rounded-lg bg-green-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-green-500">
+                        Create Free Account
+                    </a>
+                @endauth
+
+                <a href="{{ route('public.leagues.list') }}" class="rounded-lg border border-gray-600 px-5 py-2.5 text-sm font-semibold text-gray-300 transition hover:border-accent hover:text-accent">
+                    Explore Leagues
+                </a>
             </div>
         </section>
 
         @if($currentEvent)
-            <section class="mt-8 rounded-3xl border border-gray-700 bg-card">
-                <div class="flex flex-col items-center justify-between gap-4 border-b border-gray-700 p-5 sm:flex-row sm:px-8">
-                    <div class="flex items-center gap-3">
-                        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-accent/10">
-                            <svg class="h-5 w-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            <section class="w-full rounded-3xl border border-gray-700 bg-card">
+                <div class="flex items-center justify-center gap-4 border-b border-gray-700 px-4 py-4 sm:px-8 sm:py-5">
+                    @if($prevEvent)
+                        <a href="{{ route('home', ['event' => $prevEvent]) }}"
+                           class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gray-600 text-gray-300 transition hover:border-accent hover:text-accent">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
                             </svg>
-                        </div>
-                        <div>
-                            <h2 class="text-xl font-bold text-white">Gameweek {{ $currentEvent }}</h2>
-                            <p class="text-xs text-gray-500">{{ $groupedByDate->count() }} match day{{ $groupedByDate->count() !== 1 ? 's' : '' }}</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-2">
-                        @if($prevEvent)
-                            <a href="{{ route('home', ['event' => $prevEvent]) }}"
-                               class="inline-flex items-center gap-1.5 rounded-lg border border-gray-600 px-3 py-2 text-xs font-semibold text-gray-300 transition hover:border-accent hover:text-accent">
-                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
-                                </svg>
-                                GW {{ $prevEvent }}
-                            </a>
-                        @else
-                            <span class="inline-flex items-center gap-1.5 rounded-lg border border-gray-700 px-3 py-2 text-xs font-semibold text-gray-600">
-                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
-                                </svg>
-                                {{ $minEvent }}
-                            </span>
-                        @endif
-
-                        <span class="rounded-lg bg-gray-800 px-3 py-2 text-xs font-bold text-accent">
-                            GW {{ $currentEvent }}
+                        </a>
+                    @else
+                        <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gray-700 text-gray-600">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                            </svg>
                         </span>
+                    @endif
 
-                        @if($nextEvent)
-                            <a href="{{ route('home', ['event' => $nextEvent]) }}"
-                               class="inline-flex items-center gap-1.5 rounded-lg border border-gray-600 px-3 py-2 text-xs font-semibold text-gray-300 transition hover:border-accent hover:text-accent">
-                                GW {{ $nextEvent }}
-                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-                                </svg>
-                            </a>
-                        @else
-                            <span class="inline-flex items-center gap-1.5 rounded-lg border border-gray-700 px-3 py-2 text-xs font-semibold text-gray-600">
-                                {{ $maxEvent }}
-                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-                                </svg>
-                            </span>
-                        @endif
-                    </div>
+                    <h2 class="text-lg font-bold text-white sm:text-xl">
+                        Gameweek {{ $currentEvent }}
+                    </h2>
+
+                    @if($nextEvent)
+                        <a href="{{ route('home', ['event' => $nextEvent]) }}"
+                           class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gray-600 text-gray-300 transition hover:border-accent hover:text-accent">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </a>
+                    @else
+                        <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gray-700 text-gray-600">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </span>
+                    @endif
                 </div>
 
-                <div class="px-3 py-4 sm:p-8">
+                <div class="divide-y divide-gray-800/60">
                     @forelse($groupedByDate as $date => $dateFixtures)
-                        <div class="mb-8 last:mb-0">
-                            <div class="mb-4 flex items-center gap-3">
-                                <div class="h-px flex-1 bg-gradient-to-r from-transparent via-gray-700 to-transparent"></div>
-                                <span class="text-xs font-semibold uppercase tracking-widest text-gray-500">{{ $date }}</span>
-                                <div class="h-px flex-1 bg-gradient-to-r from-transparent via-gray-700 to-transparent"></div>
-                            </div>
+                        <div class="px-3 py-3 sm:px-6 sm:py-4">
+                            <p class="mb-2 text-center text-[10px] font-semibold uppercase tracking-widest text-gray-500 sm:mb-3 sm:text-xs">{{ $date }}</p>
 
-                            <div class="space-y-2 sm:space-y-3">
+                            <div class="space-y-1.5 sm:space-y-2">
                                 @foreach($dateFixtures as $fixture)
-                                    <div class="group w-full rounded-xl border border-gray-700/50 bg-gray-800/30 p-2.5 transition hover:border-gray-600 hover:bg-gray-800/50 sm:rounded-2xl sm:p-4">
-                                        <div class="flex items-center justify-between gap-1.5 sm:gap-3">
-                                            <div class="flex flex-1 min-w-0 items-center justify-end gap-1.5 sm:gap-3">
-                                                <div class="text-right min-w-0">
-                                                    <span class="block truncate text-[11px] font-semibold text-white sm:text-sm md:text-base">
-                                                        {{ $fixture->homeTeam?->name ?? 'TBD' }}
-                                                    </span>
-                                                </div>
-                                                @if($fixture->homeTeam)
-                                                    <img src="{{ route('img.team', $fixture->homeTeam->id) }}" alt="{{ $fixture->homeTeam->short_name }}" class="h-5 w-5 shrink-0 rounded object-contain sm:h-8 sm:w-8 sm:rounded-md" loading="lazy" onerror="this.style.display='none'" />
-                                                @endif
+                                    <div class="flex items-center justify-between gap-1 py-1.5 sm:gap-3 sm:py-2">
+                                        <div class="flex flex-1 min-w-0 items-center justify-end gap-1.5 sm:gap-3">
+                                            <div class="text-right min-w-0">
+                                                <span class="block truncate text-[11px] font-semibold text-white sm:text-sm">
+                                                    {{ $fixture->homeTeam?->name ?? 'TBD' }}
+                                                </span>
                                             </div>
+                                            @if($fixture->homeTeam)
+                                                <img src="{{ route('img.team', $fixture->homeTeam->id) }}" alt="{{ $fixture->homeTeam->short_name }}" class="h-5 w-5 shrink-0 rounded object-contain sm:h-7 sm:w-7" loading="lazy" onerror="this.style.display='none'" />
+                                            @endif
+                                        </div>
 
-                                            <div class="flex min-w-[50px] flex-col items-center justify-center sm:min-w-[90px]">
-                                                @if($fixture->isFinished())
-                                                    <span class="rounded bg-gray-700/80 px-1.5 py-0.5 text-xs font-extrabold tracking-tight text-white sm:rounded-lg sm:px-4 sm:py-1.5 sm:text-xl">
-                                                        {{ $fixture->team_h_score ?? '-' }} - {{ $fixture->team_a_score ?? '-' }}
-                                                    </span>
-                                                    <span class="mt-0.5 text-[8px] font-bold uppercase tracking-wider text-gray-500 sm:mt-1 sm:text-[10px]">Full Time</span>
-                                                @elseif($fixture->isLive())
-                                                    <span class="rounded bg-red-600/90 px-1.5 py-0.5 text-xs font-extrabold tracking-tight text-white animate-pulse sm:rounded-lg sm:px-4 sm:py-1.5 sm:text-xl">
-                                                        {{ $fixture->team_h_score ?? 0 }} - {{ $fixture->team_a_score ?? 0 }}
-                                                    </span>
-                                                    <span class="mt-0.5 text-[8px] font-bold uppercase tracking-wider text-red-400 sm:mt-1 sm:text-[10px]">{{ $fixture->minutes }}'</span>
-                                                @else
-                                                    <span class="text-xs font-bold text-white sm:text-lg">
-                                                        {{ $fixture->kickoff_time ? $fixture->kickoff_time->format('H:i') : 'TBC' }}
-                                                    </span>
-                                                    <span class="mt-0.5 text-[8px] font-semibold uppercase tracking-wider text-gray-500 sm:mt-0.5 sm:text-[10px]">
-                                                        {{ $fixture->kickoff_time ? $fixture->kickoff_time->format('d M') : '' }}
-                                                    </span>
-                                                @endif
-                                            </div>
+                                        <div class="flex min-w-[48px] flex-col items-center justify-center sm:min-w-[80px]">
+                                            @if($fixture->isFinished())
+                                                <span class="text-xs font-extrabold tracking-tight text-white sm:text-lg">
+                                                    {{ $fixture->team_h_score ?? '-' }} - {{ $fixture->team_a_score ?? '-' }}
+                                                </span>
+                                                <span class="text-[8px] font-bold uppercase tracking-wider text-gray-500 sm:text-[10px]">FT</span>
+                                            @elseif($fixture->isLive())
+                                                <span class="text-xs font-extrabold tracking-tight text-red-400 animate-pulse sm:text-lg">
+                                                    {{ $fixture->team_h_score ?? 0 }} - {{ $fixture->team_a_score ?? 0 }}
+                                                </span>
+                                                <span class="text-[8px] font-bold uppercase tracking-wider text-red-400 sm:text-[10px]">{{ $fixture->minutes }}'</span>
+                                            @else
+                                                <span class="text-[11px] font-bold text-white sm:text-base">
+                                                    {{ $fixture->kickoff_time ? $fixture->kickoff_time->format('H:i') : 'TBC' }}
+                                                </span>
+                                            @endif
+                                        </div>
 
-                                            <div class="flex flex-1 min-w-0 items-center justify-start gap-1.5 sm:gap-3">
-                                                @if($fixture->awayTeam)
-                                                    <img src="{{ route('img.team', $fixture->awayTeam->id) }}" alt="{{ $fixture->awayTeam->short_name }}" class="h-5 w-5 shrink-0 rounded object-contain sm:h-8 sm:w-8 sm:rounded-md" loading="lazy" onerror="this.style.display='none'" />
-                                                @endif
-                                                <div class="text-left min-w-0">
-                                                    <span class="block truncate text-[11px] font-semibold text-white sm:text-sm md:text-base">
-                                                        {{ $fixture->awayTeam?->name ?? 'TBD' }}
-                                                    </span>
-                                                </div>
+                                        <div class="flex flex-1 min-w-0 items-center justify-start gap-1.5 sm:gap-3">
+                                            @if($fixture->awayTeam)
+                                                <img src="{{ route('img.team', $fixture->awayTeam->id) }}" alt="{{ $fixture->awayTeam->short_name }}" class="h-5 w-5 shrink-0 rounded object-contain sm:h-7 sm:w-7" loading="lazy" onerror="this.style.display='none'" />
+                                            @endif
+                                            <div class="text-left min-w-0">
+                                                <span class="block truncate text-[11px] font-semibold text-white sm:text-sm">
+                                                    {{ $fixture->awayTeam?->name ?? 'TBD' }}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -150,14 +118,9 @@
                             </div>
                         </div>
                     @empty
-                        <div class="py-16 text-center">
-                            <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-800">
-                                <svg class="h-8 w-8 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
-                                </svg>
-                            </div>
-                            <p class="text-lg font-semibold text-gray-400">No fixtures for Gameweek {{ $currentEvent }}</p>
-                            <p class="mt-2 text-sm text-gray-600">Fixtures will appear once synced from the FPL API.</p>
+                        <div class="py-12 text-center">
+                            <p class="text-sm font-semibold text-gray-400">No fixtures for Gameweek {{ $currentEvent }}</p>
+                            <p class="mt-1 text-xs text-gray-600">Fixtures will appear once synced from the FPL API.</p>
                         </div>
                     @endforelse
                 </div>
