@@ -4,17 +4,26 @@ namespace App\Console\Commands;
 
 use App\Models\FplFixture;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class FplSyncFixtures extends Command
 {
-    protected $signature = 'fpl:sync-fixtures';
+    protected $signature = 'fpl:sync-fixtures {--force : Skip live match check and always sync}';
 
-    protected $description = 'Fetch FPL fixtures from the API and upsert them into the database.';
+    protected $description = 'Fetch FPL fixtures from the API and upsert them into the database. Syncs every 2 minutes during live matches, hourly otherwise.';
+
+    private const SYNC_COOLDOWN_MINUTES = 2;
 
     public function handle(): int
     {
+        if (! $this->option('force') && ! $this->shouldSync()) {
+            $this->info('No live or upcoming fixtures. Skipping sync.');
+
+            return self::SUCCESS;
+        }
+
         $this->info('Fetching fixtures from FPL API...');
 
         try {
@@ -41,9 +50,16 @@ class FplSyncFixtures extends Command
             }
 
             $count = 0;
+            $liveCount = 0;
             $upsertData = [];
 
             foreach ($fixtures as $fixture) {
+                $isLive = ($fixture['started'] ?? false) && ! ($fixture['finished'] ?? false);
+
+                if ($isLive) {
+                    $liveCount++;
+                }
+
                 $upsertData[] = [
                     'fpl_fixture_id' => $fixture['id'],
                     'event' => $fixture['event'],
@@ -96,7 +112,7 @@ class FplSyncFixtures extends Command
 
             FplFixture::upsert($upsertData, $uniqueBy, $columns);
 
-            $this->info("Upserted {$count} fixtures successfully.");
+            $this->info("Upserted {$count} fixtures".($liveCount > 0 ? " ({$liveCount} live)" : '').'.');
 
             return self::SUCCESS;
         } catch (\Throwable $e) {
@@ -108,5 +124,36 @@ class FplSyncFixtures extends Command
 
             return self::FAILURE;
         }
+    }
+
+    private function shouldSync(): bool
+    {
+        if (Cache::has('fpl:fixtures:syncing')) {
+            return false;
+        }
+
+        $hasLiveFixtures = FplFixture::query()
+            ->where('started', true)
+            ->where('finished', false)
+            ->exists();
+
+        if ($hasLiveFixtures) {
+            Cache::put('fpl:fixtures:syncing', true, now()->addMinutes(self::SYNC_COOLDOWN_MINUTES));
+
+            return true;
+        }
+
+        $hasUpcomingFixtures = FplFixture::query()
+            ->where('started', false)
+            ->whereBetween('kickoff_time', [now(), now()->addMinutes(30)])
+            ->exists();
+
+        if ($hasUpcomingFixtures) {
+            Cache::put('fpl:fixtures:syncing', true, now()->addMinutes(self::SYNC_COOLDOWN_MINUTES));
+
+            return true;
+        }
+
+        return false;
     }
 }

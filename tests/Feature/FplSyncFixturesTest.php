@@ -58,9 +58,9 @@ class FplSyncFixturesTest extends TestCase
             ], 200),
         ]);
 
-        $this->artisan('fpl:sync-fixtures')
+        $this->artisan('fpl:sync-fixtures --force')
             ->assertSuccessful()
-            ->expectsOutput('Upserted 2 fixtures successfully.');
+            ->expectsOutput('Upserted 2 fixtures.');
 
         $this->assertDatabaseCount('fpl_fixtures', 2);
         $this->assertDatabaseHas('fpl_fixtures', [
@@ -84,8 +84,70 @@ class FplSyncFixturesTest extends TestCase
             '*/fixtures/*' => Http::response([], 500),
         ]);
 
-        $this->artisan('fpl:sync-fixtures')
+        $this->artisan('fpl:sync-fixtures --force')
             ->assertFailed();
+    }
+
+    public function test_fixture_sync_skips_when_no_live_or_upcoming_fixtures(): void
+    {
+        FplFixture::create([
+            'fpl_fixture_id' => 99,
+            'event' => 1,
+            'team_h' => 1,
+            'team_a' => 2,
+            'kickoff_time' => now()->subDays(10),
+            'started' => true,
+            'finished' => true,
+            'finished_provisional' => true,
+            'team_h_score' => 1,
+            'team_a_score' => 0,
+            'minutes' => 90,
+        ]);
+
+        $this->artisan('fpl:sync-fixtures')
+            ->assertSuccessful()
+            ->expectsOutput('No live or upcoming fixtures. Skipping sync.');
+    }
+
+    public function test_fixture_sync_runs_when_live_fixture_exists(): void
+    {
+        Http::fake([
+            '*/fixtures/*' => Http::response([
+                [
+                    'id' => 5,
+                    'event' => 3,
+                    'team_h' => 1,
+                    'team_a' => 2,
+                    'kickoff_time' => now()->subMinutes(30),
+                    'started' => true,
+                    'finished' => false,
+                    'finished_provisional' => false,
+                    'team_h_score' => 1,
+                    'team_a_score' => 1,
+                    'minutes' => 30,
+                    'pulse_id' => 200,
+                    'stats' => [],
+                ],
+            ], 200),
+        ]);
+
+        FplFixture::create([
+            'fpl_fixture_id' => 5,
+            'event' => 3,
+            'team_h' => 1,
+            'team_a' => 2,
+            'kickoff_time' => now()->subMinutes(30),
+            'started' => true,
+            'finished' => false,
+            'finished_provisional' => false,
+            'team_h_score' => 1,
+            'team_a_score' => 1,
+            'minutes' => 30,
+        ]);
+
+        $this->artisan('fpl:sync-fixtures')
+            ->assertSuccessful()
+            ->expectsOutput('Upserted 1 fixtures (1 live).');
     }
 
     public function test_matchday_checker_exits_when_fixtures_not_finished(): void

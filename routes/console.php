@@ -10,7 +10,7 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('fpl:sync-fixtures')
-    ->hourly()
+    ->everyTwoMinutes()
     ->timezone('Africa/Kampala')
     ->withoutOverlapping();
 
