@@ -41,7 +41,7 @@
                 <a href="{{ route('admin.data.fixtures') }}" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.data.fixtures') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
                     Fixtures
                 </a>
-                <a href="{{ route('admin.jobs') }}" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.jobs') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
+                <a href="{{ route('admin.jobs.index') }}" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.jobs.index') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
                     Failed Jobs
                 </a>
                 <a href="{{ route('admin.data.leagues') }}" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.data.leagues') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
