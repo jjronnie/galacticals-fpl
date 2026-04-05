@@ -1,6 +1,6 @@
 <x-app-layout>
     <div class="space-y-6" x-data="failedJobsPanel({
-        retryUrl: '{{ url('/admin/jobs') }}',
+        retryUrl: '{{ route('admin.jobs') }}',
         retryAllUrl: '{{ route('admin.jobs.retryAll') }}',
         flushUrl: '{{ route('admin.jobs.flush') }}',
         csrfToken: '{{ csrf_token() }}',
