@@ -430,7 +430,7 @@ class AdminDataController extends Controller
         $totalFailed = $failedJobs->count();
         $byJobClass = $failedJobs->groupBy('job')->map->count();
 
-        return view('admin.data.jobs', [
+        return view('admin.data.failedjobs', [
             'failedJobs' => $failedJobs,
             'totalFailed' => $totalFailed,
             'byJobClass' => $byJobClass,
