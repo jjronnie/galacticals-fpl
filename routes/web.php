@@ -74,7 +74,7 @@ Route::middleware('auth')->group(function (): void {
 });
 
 Route::middleware(['auth', 'can:admin'])->group(function (): void {
-    Route::resource('admin', AdminController::class)->only(['index', 'update', 'destroy']);
+    Route::resource('admin', AdminController::class);
 
     Route::post('/admin/send-league-reminders', [AdminController::class, 'sendMissingLeagueReminders'])
         ->name('admin.send.league.reminders');
