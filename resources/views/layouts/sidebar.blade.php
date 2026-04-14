@@ -2,33 +2,11 @@
     @if (auth()->user()->isAdmin())
         <aside class="hidden min-h-screen w-64 shrink-0 border-r border-gray-800 bg-card lg:flex lg:flex-col">
             <div class="border-b border-gray-800 px-5 py-4">
-                <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Admin Navigation</p>
+                <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Administration</p>
                 <p class="mt-1 text-sm font-bold text-white">Control Panel</p>
             </div>
 
-            <nav class="flex-1 space-y-1 px-3 py-4 text-sm">
-                <a href="{{ route('home') }}" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('home') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
-                    Home
-                </a>
-                <a href="{{ route('dashboard') }}" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('dashboard') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
-                    Dashboard
-                </a>
-                <a href="{{ route('public.leagues.list') }}" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('public.leagues.*') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
-                    Leagues
-                </a>
-                @if (! auth()->user()->hasClaimedProfile())
-                    <a href="{{ route('profile.search') }}" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('profile.search') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
-                        Search &amp; Claim
-                    </a>
-                @endif
-                <a href="{{ route('profile.index') }}" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('profile.index') || request()->routeIs('profile.section') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
-                    Profile
-                </a>
-                <a href="{{ route('profile.edit') }}" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('profile.edit') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
-                    Settings
-                </a>
-
-                <p class="pt-4 text-xs font-semibold uppercase tracking-wider text-gray-500">Administration</p>
+            <nav class="flex-1 overflow-y-auto space-y-1 px-3 py-4 text-sm">
                 <a href="{{ route('admin.index') }}" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.index') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
                     Users
                 </a>
@@ -42,7 +20,7 @@
                     Fixtures
                 </a>
                 <a href="{{ route('admin.jobs.index') }}" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.jobs.index') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
-                    Failed Jobs
+                    Jobs
                 </a>
                 <a href="{{ route('admin.data.leagues') }}" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.data.leagues') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
                      Leagues

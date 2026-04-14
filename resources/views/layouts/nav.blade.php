@@ -185,7 +185,7 @@
                 <div class="flex h-full flex-col">
                     <div class="flex items-center justify-between border-b border-gray-800 px-4 py-4">
                         <div>
-                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Admin</p>
+                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Administration</p>
                             <p class="text-sm font-bold text-white">Control Panel</p>
                         </div>
                         <button 
@@ -197,36 +197,11 @@
                     </div>
 
                     <nav class="flex-1 space-y-1 overflow-y-auto p-3 text-sm">
-                        <a href="{{ route('home') }}" @click="adminMenuOpen = false" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('home') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
-                            Home
-                        </a>
-                        <a href="{{ route('dashboard') }}" @click="adminMenuOpen = false" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('dashboard') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
-                            Dashboard
-                        </a>
-                        <a href="{{ route('public.leagues.list') }}" @click="adminMenuOpen = false" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('public.leagues.*') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
-                            Leagues
-                        </a>
-                        @if (! auth()->user()->hasClaimedProfile())
-                            <a href="{{ route('profile.search') }}" @click="adminMenuOpen = false" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('profile.search') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
-                                Claim
-                            </a>
-                        @endif
-                        <a href="{{ route('profile.index') }}" @click="adminMenuOpen = false" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('profile.index') || request()->routeIs('profile.section') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
-                            My Team
-                        </a>
-                        <a href="{{ route('profile.edit') }}" @click="adminMenuOpen = false" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('profile.edit') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
-                            More
-                        </a>
-
-                        <p class="pt-4 text-xs font-semibold uppercase tracking-wider text-gray-500">Administration</p>
                         <a href="{{ route('admin.index') }}" @click="adminMenuOpen = false" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.index') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
                             Users
                         </a>
                         <a href="{{ route('admin.data') }}" @click="adminMenuOpen = false" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.data') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
                             Data Sync
-                        </a>
-                        <a href="{{ route('admin.data.leagues') }}" @click="adminMenuOpen = false" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.data.leagues') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
-                            Admin Leagues
                         </a>
                         <a href="{{ route('admin.teams') }}" @click="adminMenuOpen = false" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.teams*') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
                             Teams & Players
@@ -236,6 +211,9 @@
                         </a>
                         <a href="{{ route('admin.jobs.index') }}" @click="adminMenuOpen = false" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.jobs.index') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
                             Jobs
+                        </a>
+                        <a href="{{ route('admin.data.leagues') }}" @click="adminMenuOpen = false" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.data.leagues') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
+                            Leagues
                         </a>
                         <a href="{{ route('admin.managers.index') }}" @click="adminMenuOpen = false" class="block rounded-lg px-3 py-2 font-medium {{ request()->routeIs('admin.managers.index') ? 'bg-primary text-white' : 'text-gray-300 hover:bg-primary hover:text-white' }}">
                             Claimed Profiles
