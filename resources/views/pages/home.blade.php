@@ -27,8 +27,8 @@
                     </div>
                 </div>
 
-                <div class="md:w-1/2 w-full h-40 md:h-auto relative min-h-[200px]">
-                    <img src="https://fantasy.premierleague.com/assets/player-comp-3-1x-jmoo-BrN.png" alt="FPL Dashboard Preview" class="absolute inset-0 w-full h-full object-cover object-left rounded-r-2xl" />
+                <div class="md:w-1/2 w-full  relative min-h-[200px]">
+                    <img src="{{ asset('assets/img/home/4.png') }}" alt="FPL Dashboard Preview" class="absolute inset-0 w-full h-full object-cover object-left rounded-r-2xl" />
                 </div>
             </div>
         </section>
@@ -36,7 +36,7 @@
         <section class="mt-6 px-2 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div class="group flex flex-col overflow-hidden rounded-2xl bg-card border border-gray-800 hover:border-gray-700 transition-all">
                 <div class="h-40 bg-gray-800/50 relative overflow-hidden">
-                    <img src="https://fantasy.premierleague.com/assets/compete-against-friends-DQjT6J8X.png" alt="League Tracking" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <img src="{{ asset('assets/img/home/1.png') }}" alt="League Tracking" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 </div>
                 <div class="p-4 flex-1 flex flex-col">
                     <h2 class="text-base font-bold text-white">Live League Tracking</h2>
@@ -48,7 +48,7 @@
 
             <div class="group flex flex-col overflow-hidden rounded-2xl bg-card border border-gray-800 hover:border-gray-700 transition-all">
                 <div class="h-40 bg-gray-800/50 relative overflow-hidden">
-                    <img src="https://fantasy.premierleague.com/assets/pick-your-squad-Bg7eY9kS.png" alt="Personal Analytics" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <img src="{{ asset('assets/img/home/3.png') }}" alt="Personal Analytics" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 </div>
                 <div class="p-4 flex-1 flex flex-col">
                     <h2 class="text-base font-bold text-white">Deep Personal Analytics</h2>
@@ -60,7 +60,7 @@
 
             <div class="group flex flex-col overflow-hidden rounded-2xl bg-card border border-gray-800 hover:border-gray-700 transition-all sm:col-span-2 lg:col-span-1">
                 <div class="h-40 bg-gray-800/50 relative overflow-hidden">
-                    <img src="https://resources.premierleague.pulselive.com/photo-resources/2025/07/26/9bf151f7-f4ae-4057-9c80-c13e227964bd/FPL-basics-1.jpg?width=1440" alt="Actionable Insights" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <img src="{{ asset('assets/img/home/2.webp') }}" alt="Actionable Insights" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 </div>
                 <div class="p-4 flex-1 flex flex-col">
                     <h2 class="text-base font-bold text-white">Actionable FPL Insights</h2>
