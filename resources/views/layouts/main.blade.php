@@ -9,6 +9,8 @@
     <meta name="googlebot" content="index, follow">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    <style>[x-cloak] { display: none !important; }</style>
+
 
     <link rel="icon" href="{{ asset('assets/img/logo-light.webp') }}">
     <link rel="apple-touch-icon" href="{{ asset('assets/img/logo-light.webp') }}">

@@ -1,4 +1,4 @@
-<x-app-layout x-data="{ logoutModalOpen: false }">
+<x-app-layout>
 
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
@@ -26,7 +26,7 @@
                         </a>
                         @endforeach
 
-                        <button @click="$dispatch('open-logout-modal')" class="flex items-center justify-between w-full py-4 px-4 text-gray-200 hover:bg-white/5 transition">
+                        <button id="logout-btn" class="flex items-center justify-between w-full py-4 px-4 text-gray-200 hover:bg-white/5 transition">
                             <span class="text-base font-medium">Log out</span>
                             <i data-lucide="log-out" class="w-5 h-5 text-gray-400"></i>
                         </button>
@@ -67,3 +67,53 @@
         </div>
     </div>
 </x-app-layout>
+
+<!-- Logout Modal -->
+<div id="logout-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm" style="display: none;">
+    <div class="w-full max-w-sm mx-4 bg-card rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
+        <div class="p-6 text-center">
+            <div class="w-14 h-14 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
+                <i data-lucide="log-out" class="w-7 h-7 text-red-500"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">Log out</h3>
+            <p class="text-gray-400 text-sm mb-6">Are you sure you want to log out of your account?</p>
+            <div class="flex gap-3">
+                <button id="logout-cancel" class="flex-1 px-4 py-3 rounded-xl font-medium text-gray-300 bg-white/5 hover:bg-white/10 transition">
+                    Cancel
+                </button>
+                <form method="POST" action="{{ route('logout') }}" class="flex-1">
+                    @csrf
+                    <button type="submit" class="w-full px-4 py-3 rounded-xl font-medium bg-red-600 hover:bg-red-500 text-white transition">
+                        Log out
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const logoutBtn = document.getElementById('logout-btn');
+    const logoutModal = document.getElementById('logout-modal');
+    const logoutCancel = document.getElementById('logout-cancel');
+    
+    if (logoutBtn && logoutModal) {
+        logoutBtn.addEventListener('click', function() {
+            logoutModal.style.display = 'flex';
+        });
+    }
+    if (logoutCancel && logoutModal) {
+        logoutCancel.addEventListener('click', function() {
+            logoutModal.style.display = 'none';
+        });
+    }
+    if (logoutModal) {
+        logoutModal.addEventListener('click', function(e) {
+            if (e.target === logoutModal) {
+                logoutModal.style.display = 'none';
+            }
+        });
+    }
+});
+</script>
