@@ -10,6 +10,18 @@
 
     <!-- Right Section -->
     <div class="ml-auto flex items-center space-x-4 relative">
+        @auth
+            @if (auth()->user()->isAdmin())
+                <button
+                    @click="adminMenuOpen = true"
+                    class="lg:hidden p-2 rounded-lg text-gray-300 hover:bg-primary hover:text-white"
+                    aria-label="Open admin menu"
+                >
+                    <i data-lucide="menu" class="h-6 w-6"></i>
+                </button>
+            @endif
+        @endauth
+
         @guest
         <a href="{{ route('login') }}" class="btn-sm">
             Login

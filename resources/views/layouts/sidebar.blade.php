@@ -53,7 +53,8 @@
 
     @php
         $isAdmin = auth()->user()->isAdmin();
-        $isLeaguesActive = request()->routeIs('public.leagues.*') || request()->routeIs('featured.latest');
+        $isLatestActive = request()->routeIs('featured.latest');
+        $isLeaguesActive = request()->routeIs('public.leagues.*');
         $isDashboardActive = request()->routeIs('dashboard');
         $isProfileActive = request()->routeIs('profile.index') || request()->routeIs('profile.section');
         $isMoreActive = request()->routeIs('profile.edit');
@@ -65,10 +66,10 @@
             <a
                 href="{{ route('featured.latest') }}"
                 aria-label="Latest"
-                class="group flex w-full flex-col items-center justify-center rounded-xl px-2 py-1.5 transition {{ $isLeaguesActive ? 'text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white' }}"
+                class="group flex w-full flex-col items-center justify-center rounded-xl px-2 py-1.5 transition {{ $isLatestActive ? 'text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white' }}"
             >
                 <i data-lucide="square-menu" class="h-5 w-5"></i>
-                @if ($isLeaguesActive)
+                @if ($isLatestActive)
                     <span class="mt-1 text-[10px] font-semibold leading-none">Latest</span>
                 @endif
             </a>
@@ -122,13 +123,13 @@
     </nav>
 @else
     <nav class="fixed bottom-3 left-1/2 z-50 w-[calc(100%-1rem)] max-w-md -translate-x-1/2 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-xl shadow-[0_12px_36px_rgba(2,6,23,0.45)]">
-        <div class="grid grid-cols-4 items-center gap-1 px-1 py-2">
+        <div class="grid grid-cols-5 items-center gap-1 px-1 py-2">
             <a
-                href="{{ route('public.leagues.list') }}"
+                href="{{ route('featured.latest') }}"
                 aria-label="Latest"
                 class="group flex w-full flex-col items-center justify-center rounded-xl px-2 py-1.5 transition text-gray-400 hover:bg-white/5 hover:text-white"
             >
-                <i data-lucide="compass" class="h-5 w-5"></i>
+                <i data-lucide="square-menu" class="h-5 w-5"></i>
             </a>
             <a
                 href="{{ route('public.leagues.list') }}"
@@ -138,15 +139,22 @@
                 <i data-lucide="trophy" class="h-5 w-5"></i>
             </a>
             <a
-                href="{{ route('dashboard') }}"
-                aria-label="Dashboard"
+                href="{{ route('home') }}"
+                aria-label="Home"
                 class="justify-self-center rounded-full border border-white/20 bg-primary/90 p-2 shadow-[0_10px_24px_rgba(2,6,23,0.5)] transition hover:scale-[1.03] hover:border-accent hover:bg-secondary"
             >
                 <img
                     src="{{ asset('assets/img/logo-light.webp') }}"
-                    alt="Dashboard"
+                    alt="Home"
                     class="h-8 w-8 rounded-full object-cover"
                 >
+            </a>
+            <a
+                href="{{ route('register') }}"
+                aria-label="Get Started"
+                class="group flex w-full flex-col items-center justify-center rounded-xl px-2 py-1.5 transition text-gray-400 hover:bg-white/5 hover:text-white"
+            >
+                <i data-lucide="user-plus" class="h-5 w-5"></i>
             </a>
             <a
                 href="{{ route('login') }}"

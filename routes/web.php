@@ -16,7 +16,6 @@ use App\Http\Controllers\SystemController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [FrontendController::class, 'home'])->name('home');
-Route::get('/latest', [FeaturedController::class, 'latest'])->name('featured.latest');
 Route::get('/fixtures', [FrontendController::class, 'fixtures'])->name('fixtures');
 Route::get('/fixtures/update', [FrontendController::class, 'updateFixtures'])->name('fixtures.update')->middleware('auth');
 Route::get('/img/team/{teamId}', [FplImageController::class, 'team'])->whereNumber('teamId')->name('img.team');
@@ -31,6 +30,7 @@ Route::get('/s/{code}', [FrontendController::class, 'shortCode'])->name('short.l
 Route::get('/p/{code}', [ManagerProfileController::class, 'short'])->name('managers.short');
 
 Route::middleware('auth')->group(function (): void {
+    Route::get('/latest', [FeaturedController::class, 'latest'])->name('featured.latest');
     Route::get('/managers/{entryId}/insights/{section}', [ManagerProfileController::class, 'section'])
         ->whereNumber('entryId')
         ->name('managers.section');
