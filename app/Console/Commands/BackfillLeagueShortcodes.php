@@ -2,13 +2,14 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\League;
+use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
 class BackfillLeagueShortcodes extends Command
 {
     protected $signature = 'leagues:backfill-shortcodes';
+
     protected $description = 'Generate unique shortcodes for existing leagues without one';
 
     public function handle()

@@ -14,7 +14,7 @@ return new class extends Migration
             $table->unsignedInteger('event')->nullable()->index();
             $table->unsignedInteger('team_h');
             $table->unsignedInteger('team_a');
-             $table->unsignedInteger('team_h_difficulty')->nullable();
+            $table->unsignedInteger('team_h_difficulty')->nullable();
             $table->unsignedInteger('team_a_difficulty')->nullable();
             $table->dateTime('kickoff_time')->nullable()->index();
             $table->boolean('started')->default(false);

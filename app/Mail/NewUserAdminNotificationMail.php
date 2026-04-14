@@ -15,6 +15,7 @@ class NewUserAdminNotificationMail extends Mailable implements ShouldQueue
     use Queueable, SerializesModels;
 
     public User $user;
+
     public string $appName;
 
     /**
@@ -32,7 +33,7 @@ class NewUserAdminNotificationMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '🚨 New User Registered: ' . $this->user->name,
+            subject: '🚨 New User Registered: '.$this->user->name,
         );
     }
 

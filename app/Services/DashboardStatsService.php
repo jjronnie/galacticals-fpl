@@ -99,6 +99,42 @@ class DashboardStatsService
         });
     }
 
+    public function getManagerOfTheWeek(League $league): ?array
+    {
+        $latestGameweek = ManagerPick::query()
+            ->whereHas('manager', function ($query) use ($league): void {
+                $query->where('league_id', $league->id);
+            })
+            ->whereNotNull('event_points')
+            ->max('gameweek');
+
+        if (! $latestGameweek) {
+            return null;
+        }
+
+        $scores = GameweekScore::query()
+            ->whereHas('manager', function ($query) use ($league): void {
+                $query->where('league_id', $league->id);
+            })
+            ->where('gameweek', $latestGameweek)
+            ->orderByDesc('points')
+            ->first();
+
+        if (! $scores) {
+            return null;
+        }
+
+        return [
+            'name' => $scores->manager->player_name,
+            'team_name' => $scores->manager->team_name,
+            'entry_id' => $scores->manager->entry_id,
+            'points' => $scores->points,
+            'gameweek' => (int) $latestGameweek,
+            'league_name' => $league->name,
+            'favourite_team_id' => $scores->manager->favourite_team_id,
+        ];
+    }
+
     /**
      * @return array<int, array<string, mixed>>
      */
@@ -264,6 +300,7 @@ class DashboardStatsService
                 return [
                     'gameweek' => (int) $gameweek,
                     'player_id' => $bestPick['player_id'],
+                    'team_id' => $bestPick['team_id'] ?? null,
                     'web_name' => $bestPick['web_name'],
                     'points' => $bestPick['points'],
                     'fpl_photo' => $bestPick['fpl_photo'] ?? null,
@@ -395,6 +432,7 @@ class DashboardStatsService
 
                 return [
                     'player_id' => (int) $pick->player_id,
+                    'team_id' => (int) ($pick->player->team?->id ?? 0),
                     'web_name' => (string) $pick->player->web_name,
                     'points' => (int) ($pick->event_points ?? 0),
                     'element_type' => (int) ($pick->player->element_type ?? 0),

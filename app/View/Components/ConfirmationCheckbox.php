@@ -8,18 +8,18 @@ use Illuminate\View\Component;
 
 class ConfirmationCheckbox extends Component
 {
-
     public string $id;
+
     public string $name;
+
     public string $label;
+
     public string $color;
-
-
 
     /**
      * Create a new component instance.
      */
-       public function __construct(
+    public function __construct(
         string $id = 'confirm-details',
         string $name = 'confirm_details',
         string $label = 'I confirm that I have cross-checked and entered the correct details',

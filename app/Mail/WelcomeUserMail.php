@@ -15,8 +15,10 @@ class WelcomeUserMail extends Mailable implements ShouldQueue
     use Queueable, SerializesModels;
 
     public User $user;
+
     public string $appName;
-    public string $youtubeLink = 'https://www.youtube.com/embed/Rlp772BoxIw'; 
+
+    public string $youtubeLink = 'https://www.youtube.com/embed/Rlp772BoxIw';
 
     /**
      * Create a new message instance.
@@ -33,7 +35,7 @@ class WelcomeUserMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Welcome to ' . $this->appName . '!',
+            subject: 'Welcome to '.$this->appName.'!',
         );
     }
 

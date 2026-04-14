@@ -1,4 +1,4 @@
-{{-- @if(auth()->guest() || (auth()->check() && !auth()->user()->isAdmin()))
+@if(auth()->guest() || (auth()->check() && !auth()->user()->isAdmin()))
 <div x-data="{ adLoaded: false, adFailed: false }" x-init="
     setTimeout(() => {
         const ad = $el.querySelector('ins.adsbygoogle');
@@ -37,4 +37,4 @@
         </script>
     </div>
 </div>
-@endif --}}
+@endif

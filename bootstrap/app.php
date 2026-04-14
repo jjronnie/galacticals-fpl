@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Middleware\AdminRole;
 use App\Http\Middleware\BlockSuspendedUsers;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,11 +19,11 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
-            'admin' => \App\Http\Middleware\AdminRole::class,
+            'admin' => AdminRole::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->render(function (\Illuminate\Auth\Access\AuthorizationException $exception, $request) {
+        $exceptions->render(function (AuthorizationException $exception, $request) {
             return redirect()->route('dashboard')
                 ->with('error', 'You are not authorized to perform this action. Please contact admin for help.');
         });

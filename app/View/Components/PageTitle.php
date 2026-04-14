@@ -2,13 +2,14 @@
 
 namespace App\View\Components;
 
-use Illuminate\View\Component;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
+use Illuminate\View\Component;
 
 class PageTitle extends Component
 {
     public ?string $title;
+
     public ?string $subtitle;
 
     /**

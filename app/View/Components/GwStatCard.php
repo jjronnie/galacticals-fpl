@@ -7,6 +7,7 @@ use Illuminate\View\Component;
 class GwStatCard extends Component
 {
     public $title;
+
     public $color;
 
     public function __construct($title = 'TITLE', $color = 'green')

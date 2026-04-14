@@ -10,13 +10,9 @@ class LeagueUpdateStarted extends Mailable
 {
     use Queueable, SerializesModels;
 
- 
-
-public function build()
-{
-    return $this->subject('League Update Started')
-        ->markdown('emails.league-update-started');
-}
-
-
+    public function build()
+    {
+        return $this->subject('League Update Started')
+            ->markdown('emails.league-update-started');
+    }
 }

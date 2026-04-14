@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-      Schema::table('users', function (Blueprint $table) {
-        $table->timestamp('league_reminder_sent_at')->nullable();
-        
-    });
+        Schema::table('users', function (Blueprint $table) {
+            $table->timestamp('league_reminder_sent_at')->nullable();
+
+        });
     }
 
     /**
@@ -22,8 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-       Schema::table('users', function (Blueprint $table) {
-        $table->dropColumn('league_reminder_sent_at');
-    });
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('league_reminder_sent_at');
+        });
     }
 };

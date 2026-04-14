@@ -79,7 +79,7 @@ class SocialLoginController extends Controller
                 Mail::to((string) config('mail.admin_address'))->queue(new NewUserAdminNotificationMail($user));
             }
 
-            Auth::login($user);
+            Auth::login($user, true);
 
             return redirect()
                 ->intended(route('dashboard', absolute: false))

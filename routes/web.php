@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminDataController;
 use App\Http\Controllers\AdminManagerController;
 use App\Http\Controllers\AdminProfileVerificationController;
 use App\Http\Controllers\ClaimComplaintController;
+use App\Http\Controllers\FeaturedController;
 use App\Http\Controllers\FplImageController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\LeagueController;
@@ -15,7 +16,9 @@ use App\Http\Controllers\SystemController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [FrontendController::class, 'home'])->name('home');
-Route::get('/fixtures/update', [FrontendController::class, 'updateFixtures'])->name('fixtures.update');
+Route::get('/latest', [FeaturedController::class, 'latest'])->name('featured.latest');
+Route::get('/fixtures', [FrontendController::class, 'fixtures'])->name('fixtures');
+Route::get('/fixtures/update', [FrontendController::class, 'updateFixtures'])->name('fixtures.update')->middleware('auth');
 Route::get('/img/team/{teamId}', [FplImageController::class, 'team'])->whereNumber('teamId')->name('img.team');
 Route::get('/img/player/{playerId}', [FplImageController::class, 'player'])->whereNumber('playerId')->name('img.player');
 Route::get('/more', [FrontendController::class, 'more'])->name('more');
@@ -24,21 +27,23 @@ Route::get('/privacy-policy', [FrontendController::class, 'policy'])->name('priv
 Route::get('/terms-and-conditions', [FrontendController::class, 'terms'])->name('terms');
 Route::get('/sitemap.xml', fn () => response()->file(public_path('sitemap.xml')));
 
-Route::get('/leagues', [FrontendController::class, 'index'])->name('public.leagues.list');
-
 Route::get('/s/{code}', [FrontendController::class, 'shortCode'])->name('short.league');
 Route::get('/p/{code}', [ManagerProfileController::class, 'short'])->name('managers.short');
-Route::get('/managers/{entryId}/insights/{section}', [ManagerProfileController::class, 'section'])
-    ->whereNumber('entryId')
-    ->name('managers.section');
-Route::get('/managers/{entryId}', [ManagerProfileController::class, 'show'])
-    ->whereNumber('entryId')
-    ->name('managers.show');
+
+Route::middleware('auth')->group(function (): void {
+    Route::get('/managers/{entryId}/insights/{section}', [ManagerProfileController::class, 'section'])
+        ->whereNumber('entryId')
+        ->name('managers.section');
+    Route::get('/managers/{entryId}', [ManagerProfileController::class, 'show'])
+        ->whereNumber('entryId')
+        ->name('managers.show');
+});
 
 Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('/dashboard', [LeagueController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/player-of-week-history', [LeagueController::class, 'playerOfWeekHistory'])->name('dashboard.player-of-week-history');
     Route::get('/dashboard/team-of-week-history', [LeagueController::class, 'teamOfWeekHistory'])->name('dashboard.team-of-week-history');
+    Route::get('/leagues', [FrontendController::class, 'index'])->name('public.leagues.list');
     Route::get('/leagues/setup', [LeagueController::class, 'create'])->name('league.create');
     Route::get('/leagues/confirm', [LeagueController::class, 'confirm'])->name('leagues.confirm');
     Route::post('/leagues/confirm', [LeagueController::class, 'confirmAction'])->name('leagues.confirm.action');
@@ -123,15 +128,17 @@ Route::middleware(['auth', 'can:admin'])->group(function (): void {
     Route::patch('/admin/verifications/managers/{manager}/revoke', [AdminProfileVerificationController::class, 'revokeManagerVerification'])->name('admin.verifications.managers.revoke');
 });
 
-Route::get('/leagues/{slug}/gameweeks/{gameweek}', [LeagueController::class, 'showGameweek'])
-    ->whereNumber('gameweek')
-    ->name('public.leagues.gameweek.show');
-
-Route::get('/leagues/{slug}/performance', [LeagueController::class, 'showPerformance'])
-    ->name('public.leagues.performance');
-
-Route::get('/leagues/{slug}/{gameweek?}', [LeagueController::class, 'show'])
-    ->where('gameweek', '[0-9]+')
-    ->name('public.leagues.show');
-
 require __DIR__.'/auth.php';
+
+Route::middleware(['auth', 'verified'])->group(function (): void {
+    Route::get('/leagues/{slug}/gameweeks/{gameweek}', [LeagueController::class, 'showGameweek'])
+        ->whereNumber('gameweek')
+        ->name('public.leagues.gameweek.show');
+
+    Route::get('/leagues/{slug}/performance', [LeagueController::class, 'showPerformance'])
+        ->name('public.leagues.performance');
+
+    Route::get('/leagues/{slug}/{gameweek?}', [LeagueController::class, 'show'])
+        ->where('gameweek', '[0-9]+')
+        ->name('public.leagues.show');
+});

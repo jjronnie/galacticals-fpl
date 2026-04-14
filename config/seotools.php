@@ -4,7 +4,7 @@ return [
     'meta' => [
         'defaults' => [
             'title' => 'FPL Galaxy',
-            'titleBefore' => false, 
+            'titleBefore' => false,
             'description' => 'Advanced Fantasy Premier League statistics and analytics',
             'separator' => ' | ',
             'keywords' => ['FPL', 'Fantasy Premier League', 'FPL Stats', 'Mini League', 'FPL Galaxy', 'FPL Analytics'],
@@ -47,4 +47,3 @@ return [
         ],
     ],
 ];
-

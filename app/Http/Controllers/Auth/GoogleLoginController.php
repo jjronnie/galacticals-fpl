@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\NewUserAdminNotificationMail;
 use App\Mail\WelcomeUserMail;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -18,7 +19,7 @@ class GoogleLoginController extends Controller
     /**
      * Redirect the user to the Google authentication page.
      *
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
     public function redirectToGoogle()
     {
@@ -28,7 +29,7 @@ class GoogleLoginController extends Controller
     /**
      * Handle the callback from Google authentication.
      *
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
     public function handleGoogleCallback()
     {

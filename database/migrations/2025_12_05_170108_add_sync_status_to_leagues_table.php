@@ -25,7 +25,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-         Schema::table('leagues', function (Blueprint $table) {
+        Schema::table('leagues', function (Blueprint $table) {
             $table->dropColumn(['sync_status', 'sync_message', 'total_managers', 'synced_managers', 'last_synced_at']);
         });
     }

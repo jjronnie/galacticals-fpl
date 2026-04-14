@@ -37,6 +37,13 @@ class FrontendController extends Controller
     {
         $this->seoService->setHome();
 
+        return view('pages.home');
+    }
+
+    public function fixtures(Request $request): View
+    {
+        $this->seoService->setHome();
+
         $event = $request->integer('event');
 
         if ($event > 0) {
@@ -67,7 +74,7 @@ class FrontendController extends Controller
         $prevEvent = $currentEvent > $minEvent ? $currentEvent - 1 : null;
         $nextEvent = $currentEvent < $maxEvent ? $currentEvent + 1 : null;
 
-        return view('pages.home', compact(
+        return view('pages.fixtures', compact(
             'groupedByDate',
             'currentEvent',
             'prevEvent',

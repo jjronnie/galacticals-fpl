@@ -7,7 +7,9 @@ use Illuminate\View\Component;
 class Logo extends Component
 {
     public $width;
+
     public $height;
+
     public $class;
 
     public function __construct($width = '', $height = '', $class = '')

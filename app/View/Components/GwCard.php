@@ -9,7 +9,7 @@ class GwCard extends Component
     public $gw;
 
     /**
-     * @param array $gw Single GW performance dataset
+     * @param  array  $gw  Single GW performance dataset
      */
     public function __construct($gw)
     {

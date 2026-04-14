@@ -52,26 +52,24 @@
     @endif
 
     @php
-        $hasClaimedProfile = auth()->user()->hasClaimedProfile();
-        $isHomeActive = request()->routeIs('home');
-        $isLeaguesActive = request()->routeIs('public.leagues.*');
+        $isAdmin = auth()->user()->isAdmin();
+        $isLeaguesActive = request()->routeIs('public.leagues.*') || request()->routeIs('featured.latest');
         $isDashboardActive = request()->routeIs('dashboard');
-        $isClaimActive = request()->routeIs('profile.search');
         $isProfileActive = request()->routeIs('profile.index') || request()->routeIs('profile.section');
         $isMoreActive = request()->routeIs('profile.edit');
-        $authBottomNavColumns = $hasClaimedProfile ? 'grid-cols-5' : 'grid-cols-6';
+        $isAdminPage = request()->routeIs('admin.*') || request()->routeIs('admin.data.*') || request()->routeIs('admin.managers.*') || request()->routeIs('admin.complaints.*') || request()->routeIs('admin.verifications.*') || request()->routeIs('admin.jobs.*');
     @endphp
 
     <nav class="fixed bottom-3 left-1/2 z-50 w-[calc(100%-1rem)] max-w-md -translate-x-1/2 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-xl shadow-[0_12px_36px_rgba(2,6,23,0.45)]">
-        <div class="grid {{ $authBottomNavColumns }} items-center gap-1 px-1 py-2">
+        <div class="grid grid-cols-5 items-center gap-1 px-1 py-2">
             <a
-                href="{{ route('home') }}"
-                aria-label="Home"
-                class="group flex w-full flex-col items-center justify-center rounded-xl px-2 py-1.5 transition {{ $isHomeActive ? 'text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white' }}"
+                href="{{ route('featured.latest') }}"
+                aria-label="Latest"
+                class="group flex w-full flex-col items-center justify-center rounded-xl px-2 py-1.5 transition {{ $isLeaguesActive ? 'text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white' }}"
             >
-                <i data-lucide="house" class="h-5 w-5"></i>
-                @if ($isHomeActive)
-                    <span class="mt-1 text-[10px] font-semibold leading-none">Home</span>
+                <i data-lucide="square-menu" class="h-5 w-5"></i>
+                @if ($isLeaguesActive)
+                    <span class="mt-1 text-[10px] font-semibold leading-none">Latest</span>
                 @endif
             </a>
 
@@ -99,27 +97,14 @@
                 >
             </a>
 
-            @if (! $hasClaimedProfile)
-                <a
-                    href="{{ route('profile.search') }}"
-                    aria-label="Claim"
-                    class="group flex w-full flex-col items-center justify-center rounded-xl px-2 py-1.5 transition {{ $isClaimActive ? 'text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white' }}"
-                >
-                    <i data-lucide="search" class="h-5 w-5"></i>
-                    @if ($isClaimActive)
-                        <span class="mt-1 text-[10px] font-semibold leading-none">Claim</span>
-                    @endif
-                </a>
-            @endif
-
             <a
                 href="{{ route('profile.index') }}"
-                aria-label="My Team"
+                aria-label="Profile"
                 class="group flex w-full flex-col items-center justify-center rounded-xl px-2 py-1.5 transition {{ $isProfileActive ? 'text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white' }}"
             >
                 <i data-lucide="users-round" class="h-5 w-5"></i>
                 @if ($isProfileActive)
-                    <span class="mt-1 text-[10px] font-semibold leading-none">My Team</span>
+                    <span class="mt-1 text-[10px] font-semibold leading-none">Profile</span>
                 @endif
             </a>
 
@@ -136,54 +121,39 @@
         </div>
     </nav>
 @else
-    @php
-        $isHomeActive = request()->routeIs('home');
-        $isLeaguesActive = request()->routeIs('public.leagues.*');
-        $isRegisterActive = request()->routeIs('register');
-        $isLoginActive = request()->routeIs('login');
-    @endphp
-
     <nav class="fixed bottom-3 left-1/2 z-50 w-[calc(100%-1rem)] max-w-md -translate-x-1/2 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-xl shadow-[0_12px_36px_rgba(2,6,23,0.45)]">
         <div class="grid grid-cols-4 items-center gap-1 px-1 py-2">
             <a
-                href="{{ route('home') }}"
-                aria-label="Home"
-                class="group flex w-full flex-col items-center justify-center rounded-xl px-2 py-1.5 transition {{ $isHomeActive ? 'text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white' }}"
+                href="{{ route('public.leagues.list') }}"
+                aria-label="Latest"
+                class="group flex w-full flex-col items-center justify-center rounded-xl px-2 py-1.5 transition text-gray-400 hover:bg-white/5 hover:text-white"
             >
-                <i data-lucide="house" class="h-5 w-5"></i>
-                @if ($isHomeActive)
-                    <span class="mt-1 text-[10px] font-semibold leading-none">Home</span>
-                @endif
+                <i data-lucide="compass" class="h-5 w-5"></i>
             </a>
             <a
                 href="{{ route('public.leagues.list') }}"
                 aria-label="Leagues"
-                class="group flex w-full flex-col items-center justify-center rounded-xl px-2 py-1.5 transition {{ $isLeaguesActive ? 'text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white' }}"
+                class="group flex w-full flex-col items-center justify-center rounded-xl px-2 py-1.5 transition text-gray-400 hover:bg-white/5 hover:text-white"
             >
                 <i data-lucide="trophy" class="h-5 w-5"></i>
-                @if ($isLeaguesActive)
-                    <span class="mt-1 text-[10px] font-semibold leading-none">Leagues</span>
-                @endif
             </a>
             <a
-                href="{{ route('register') }}"
-                aria-label="Register"
-                class="group flex w-full flex-col items-center justify-center rounded-xl px-2 py-1.5 transition {{ $isRegisterActive ? 'text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white' }}"
+                href="{{ route('dashboard') }}"
+                aria-label="Dashboard"
+                class="justify-self-center rounded-full border border-white/20 bg-primary/90 p-2 shadow-[0_10px_24px_rgba(2,6,23,0.5)] transition hover:scale-[1.03] hover:border-accent hover:bg-secondary"
             >
-                <i data-lucide="user-plus" class="h-5 w-5"></i>
-                @if ($isRegisterActive)
-                    <span class="mt-1 text-[10px] font-semibold leading-none">Register</span>
-                @endif
+                <img
+                    src="{{ asset('assets/img/logo-light.webp') }}"
+                    alt="Dashboard"
+                    class="h-8 w-8 rounded-full object-cover"
+                >
             </a>
             <a
                 href="{{ route('login') }}"
                 aria-label="Login"
-                class="group flex w-full flex-col items-center justify-center rounded-xl px-2 py-1.5 transition {{ $isLoginActive ? 'text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white' }}"
+                class="group flex w-full flex-col items-center justify-center rounded-xl px-2 py-1.5 transition text-gray-400 hover:bg-white/5 hover:text-white"
             >
                 <i data-lucide="log-in" class="h-5 w-5"></i>
-                @if ($isLoginActive)
-                    <span class="mt-1 text-[10px] font-semibold leading-none">Login</span>
-                @endif
             </a>
         </div>
     </nav>

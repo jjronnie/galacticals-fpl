@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-             $table->string('role')->default('user'); // default role
-        $table->string('google_id')->nullable()->unique();
+            $table->string('role')->default('user'); // default role
+            $table->string('google_id')->nullable()->unique();
         });
     }
 
