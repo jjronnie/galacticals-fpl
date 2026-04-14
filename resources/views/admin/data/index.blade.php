@@ -11,8 +11,7 @@
             fetchManagersUrl: '{{ route('admin.data.fetchManagers') }}',
             computeGameweeksUrl: '{{ route('admin.data.computeGameweeks') }}',
             syncFixturesUrl: '{{ route('admin.data.syncFixtures') }}',
-            leaguesUrl: '{{ route('admin.data.leagues') }}',
-            observerUrl: '{{ route('admin.data.observer') }}'
+            leaguesUrl: '{{ route('admin.data.leagues') }}'
         })"
         x-init="init()"
     >
@@ -230,7 +229,6 @@
                 syncFixturesUrl: config.syncFixturesUrl,
                 flushCacheUrl: config.flushCacheUrl,
                 leaguesUrl: config.leaguesUrl,
-                observerUrl: config.observerUrl,
                 summary: config.initialPayload.summary,
                 jobs: config.initialPayload.jobs,
                 leagues: config.initialPayload.leagues,

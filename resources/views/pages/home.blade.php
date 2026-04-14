@@ -1,5 +1,5 @@
 <x-app-layout>
-    <main class="mx-auto max-w-6xl p-4 sm:p-6">
+    <main class="mx-auto max-w-6xl">
         <x-adsense />
 
         <section class="py-8 text-center sm:py-12">
@@ -91,11 +91,12 @@
                                                     {{ $fixture->team_h_score ?? '-' }} - {{ $fixture->team_a_score ?? '-' }}
                                                 </span>
                                                 <span class="text-[8px] font-bold uppercase tracking-wider text-gray-500 sm:text-[10px]">FT</span>
-                                            @elseif($fixture->isLive())
-                                                <span class="text-xs font-extrabold tracking-tight text-red-400 animate-pulse sm:text-lg">
-                                                    {{ $fixture->team_h_score ?? 0 }} - {{ $fixture->team_a_score ?? 0 }}
-                                                </span>
-                                                <span class="text-[8px] font-bold uppercase tracking-wider text-red-400 sm:text-[10px]">{{ $fixture->minutes }}'</span>
+@elseif($fixture->isLive())
+    <span class="text-xs font-extrabold tracking-tight text-red-400 animate-pulse sm:text-lg">
+        {{ $fixture->team_h_score ?? 0 }} - {{ $fixture->team_a_score ?? 0 }}
+    </span>
+    <span class="text-[8px] font-bold uppercase tracking-wider text-red-400 sm:text-[10px] live-fixture-minutes" data-fixture-id="{{ $fixture->fpl_fixture_id }}" data-start-minutes="{{ $fixture->minutes }}">{{ $fixture->minutes }}'</span>
+@endelseif
                                             @else
                                                 <span class="text-[11px] font-bold text-white sm:text-base">
                                                     {{ $fixture->kickoff_time ? $fixture->kickoff_time->format('H:i') : 'TBC' }}
@@ -262,3 +263,95 @@
         <x-back-to-top />
     </main>
 </x-app-layout>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if there are any live fixtures on the page
+        const hasLiveFixtures = document.querySelectorAll('.live-fixture-minutes').length > 0;
+        
+        if (hasLiveFixtures) {
+            // Function to refresh fixture data
+            function refreshFixtureData() {
+                // Get current event from URL or default to first available
+                const urlParams = new URLSearchParams(window.location.search);
+                const currentEvent = urlParams.get('event') || 
+                                   document.querySelector('[data-current-event]')?.getAttribute('data-current-event') || 1;
+                                   
+                // Fetch fresh fixture data via AJAX
+                fetch(`/fixtures/update?event=${currentEvent}`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.html) {
+                        // Replace the fixture container with fresh data
+                        const fixtureContainer = document.querySelector('.divide-y.divide-gray-800/60');
+                        if (fixtureContainer) {
+                            fixtureContainer.innerHTML = data.html;
+                            
+                            // Re-initialize live minute tracking for newly loaded fixtures
+                            initializeLiveMinutes();
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Failed to refresh fixture data:', error);
+                });
+            }
+            
+            // Function to initialize live minute tracking
+            function initializeLiveMinutes() {
+                // Function to update live fixture minutes
+                function updateLiveFixtureMinutes() {
+                    const liveMinutesElements = document.querySelectorAll('.live-fixture-minutes');
+                    
+                    liveMinutesElements.forEach(element => {
+                        const fixtureId = element.getAttribute('data-fixture-id');
+                        const startMinutes = parseInt(element.getAttribute('data-start-minutes')) || 0;
+                        
+                        // Calculate elapsed time since element creation
+                        const elementLoadTime = element._loadTime || Date.now();
+                        const elapsedSeconds = (Date.now() - elementLoadTime) / 1000;
+                        const currentMinutes = startMinutes + Math.floor(elapsedSeconds / 60);
+                        
+                        element.textContent = currentMinutes + "'";
+                    });
+                }
+                
+                // Initialize load time for each element
+                document.querySelectorAll('.live-fixture-minutes').forEach(element => {
+                    if (!element._loadTime) {
+                        element._loadTime = Date.now();
+                    }
+                });
+                
+                // Update immediately
+                updateLiveFixtureMinutes();
+                
+                // Update every 30 seconds for live UI updates
+                if (window.liveMinuteInterval) {
+                    clearInterval(window.liveMinuteInterval);
+                }
+                window.liveMinuteInterval = setInterval(updateLiveFixtureMinutes, 30000);
+            }
+            
+            // Initialize live minute tracking on load
+            initializeLiveMinutes();
+            
+            // Refresh fixture data every 30 seconds during live matches
+            // This catches new matches starting, goals, etc.
+            if (window.fixtureRefreshInterval) {
+                clearInterval(window.fixtureRefreshInterval);
+            }
+            window.fixtureRefreshInterval = setInterval(refreshFixtureData, 30000);
+            
+            // Also refresh immediately on load to ensure we have latest data
+            refreshFixtureData();
+        }
+    });
+</script>

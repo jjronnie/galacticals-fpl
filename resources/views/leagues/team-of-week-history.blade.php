@@ -1,5 +1,5 @@
 <x-app-layout>
-    <main class="mx-auto max-w-5xl space-y-6 px-1 py-6 sm:px-6 lg:px-8">
+    <main class="mx-auto max-w-5xl space-y-6">
         <section class="rounded-2xl border border-gray-700 bg-card p-4 sm:p-5">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-3">

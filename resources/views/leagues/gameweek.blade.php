@@ -8,7 +8,7 @@
         $worstPoints = $standingsRows->isNotEmpty() ? (int) $standingsRows->min('points') : null;
     @endphp
 
-    <main class="mx-auto max-w-7xl space-y-6 px-2 py-8 sm:px-6 lg:px-8">
+    <main class="mx-auto max-w-7xl space-y-6">
         <section class="rounded-2xl border border-gray-700 bg-card p-5">
             <div class="text-center">
                 <h1 class="text-2xl font-extrabold text-white">{{ $league->name }}</h1>

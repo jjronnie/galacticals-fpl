@@ -1,6 +1,6 @@
 <x-app-layout>
 
-    <main class="max-w-5xl mx-auto p-4 space-y-10">
+    <main class="max-w-5xl mx-auto space-y-6">
         <x-adsense />
 
         <h2 class="text-4xl font-extrabold text-white text-center">How to Find Your Fantasy Premier League, League ID

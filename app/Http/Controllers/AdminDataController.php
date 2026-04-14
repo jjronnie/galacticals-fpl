@@ -13,10 +13,8 @@ use App\Models\FplSyncRun;
 use App\Models\FplTeam;
 use App\Models\League;
 use App\Models\Manager;
-use App\Models\ManagerChip;
 use App\Services\FixtureService;
 use App\Services\SyncJobProgressService;
-use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -46,25 +44,6 @@ class AdminDataController extends Controller
     public function status(): JsonResponse
     {
         return response()->json($this->buildStatusPayload());
-    }
-
-    public function observer(): View
-    {
-        $chipRecordsCount = ManagerChip::query()->count();
-
-        $chipNames = ManagerChip::query()
-            ->select('chip_name')
-            ->distinct()
-            ->orderBy('chip_name')
-            ->pluck('chip_name')
-            ->map(fn (string $chipName): string => $this->formatChipName($chipName))
-            ->unique()
-            ->values();
-
-        return view('admin.data.observer', [
-            'chipRecordsCount' => $chipRecordsCount,
-            'chipNames' => $chipNames,
-        ]);
     }
 
     public function teams(): View
@@ -390,8 +369,47 @@ class AdminDataController extends Controller
         return $this->actionResponse($request, 'Fixtures sync queued.');
     }
 
-    public function jobs(): View
+    public function jobs(Request $request): View|JsonResponse
     {
+        // Get all jobs from the jobs table
+        $allDbJobs = DB::table('jobs')
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(function (object $row): array {
+                $payload = json_decode($row->payload, true);
+                $command = $payload['data']['command'] ?? null;
+                $jobClass = 'Unknown';
+                $displayName = 'Unknown Job';
+
+                if ($command !== null) {
+                    if (is_string($command)) {
+                        $unserialized = @unserialize($command);
+                        if ($unserialized !== false && is_object($unserialized)) {
+                            $jobClass = get_class($unserialized);
+                            $displayName = class_basename($jobClass);
+                        }
+                    } elseif (is_object($command)) {
+                        $jobClass = get_class($command);
+                        $displayName = class_basename($jobClass);
+                    }
+                }
+
+                return [
+                    'id' => (string) $row->id,
+                    'type' => 'queue',
+                    'job' => $displayName,
+                    'job_class' => $jobClass,
+                    'status' => $row->reserved_at ? 'processing' : 'queued',
+                    'progress' => 0,
+                    'queue' => $row->queue,
+                    'attempts' => $row->attempts,
+                    'label' => 'Created: '.date('Y-m-d H:i:s', $row->created_at),
+                    'created_at' => date('Y-m-d H:i:s', $row->created_at),
+                    'updated_at' => date('Y-m-d H:i:s', $row->created_at),
+                ];
+            });
+
+        // Get failed jobs from database
         $failedJobs = DB::table('failed_jobs')
             ->orderByDesc('failed_at')
             ->get()
@@ -403,7 +421,6 @@ class AdminDataController extends Controller
                 if ($command !== null) {
                     if (is_string($command)) {
                         $unserialized = @unserialize($command);
-
                         if ($unserialized !== false) {
                             $jobClass = get_class($unserialized);
                         }
@@ -412,28 +429,52 @@ class AdminDataController extends Controller
                     }
                 }
 
-                $displayName = class_basename($jobClass);
-                $exceptionPreview = mb_substr($row->exception, 0, 300);
-
                 return [
-                    'id' => $row->id,
-                    'uuid' => $row->uuid,
-                    'queue' => $row->queue,
-                    'job' => $displayName,
+                    'id' => 'failed_'.$row->id,
+                    'type' => 'failed',
+                    'job' => class_basename($jobClass),
                     'job_class' => $jobClass,
-                    'exception' => $exceptionPreview,
-                    'failed_at' => $row->failed_at,
-                    'failed_at_human' => Carbon::parse($row->failed_at)->diffForHumans(),
+                    'status' => 'failed',
+                    'progress' => 0,
+                    'queue' => $row->queue,
+                    'attempts' => null,
+                    'label' => mb_substr($row->exception, 0, 150),
+                    'created_at' => $row->failed_at,
+                    'updated_at' => $row->failed_at,
                 ];
             });
 
-        $totalFailed = $failedJobs->count();
-        $byJobClass = $failedJobs->groupBy('job')->map->count();
+        // Combine jobs + failed jobs
+        $allJobs = $allDbJobs->concat($failedJobs)->sortByDesc(function ($job) {
+            return $job['updated_at'] ?? 0;
+        })->values();
+
+        // Paginate jobs (20 per page)
+        $page = $request->input('page', 1);
+        $perPage = 20;
+        $offset = ($page - 1) * $perPage;
+
+        $totalJobs = $allJobs->count();
+        $paginatedJobs = $allJobs->slice($offset, $perPage);
+        $lastPage = max(1, ceil($totalJobs / $perPage));
+
+        // Return JSON for AJAX requests
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'jobs' => $paginatedJobs->values()->all(),
+                'total_jobs' => $totalJobs,
+                'current_page' => $page,
+                'last_page' => $lastPage,
+                'per_page' => $perPage,
+            ]);
+        }
 
         return view('admin.data.failedjobs', [
-            'failedJobs' => $failedJobs,
-            'totalFailed' => $totalFailed,
-            'byJobClass' => $byJobClass,
+            'jobs' => $paginatedJobs,
+            'totalJobs' => $totalJobs,
+            'currentPage' => $page,
+            'lastPage' => $lastPage,
+            'perPage' => $perPage,
         ]);
     }
 

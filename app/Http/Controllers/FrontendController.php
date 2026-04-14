@@ -113,4 +113,54 @@ class FrontendController extends Controller
             'slug' => $league->slug,
         ]);
     }
+
+    public function updateFixtures(Request $request): JsonResponse
+    {
+        // Only allow AJAX requests
+        if (! $request->ajax() && ! $request->wantsJson()) {
+            return response()->json(['success' => false, 'message' => 'Invalid request'], 400);
+        }
+
+        $event = $request->integer('event');
+        if (! $event) {
+            $event = app(FixtureService::class)->getCurrentEvent();
+        }
+
+        if (! $event) {
+            return response()->json(['success' => false, 'message' => 'No event specified']);
+        }
+
+        $fixtures = FplFixture::query()
+            ->where('event', $event)
+            ->with(['homeTeam', 'awayTeam'])
+            ->orderBy('kickoff_time')
+            ->get();
+
+        $groupedByDate = $fixtures->groupBy(function ($fixture) {
+            return $fixture->kickoff_time
+                ? $fixture->kickoff_time->format('l, j F Y')
+                : 'TBC';
+        });
+
+        $maxEvent = FplFixture::query()->whereNotNull('event')->max('event');
+        $minEvent = FplFixture::query()->whereNotNull('event')->min('event');
+
+        $prevEvent = $event > $minEvent ? $event - 1 : null;
+        $nextEvent = $event < $maxEvent ? $event + 1 : null;
+
+        // Render just the fixture HTML portion
+        $html = view('partials.fixtures-content', compact(
+            'groupedByDate',
+            'event',
+            'prevEvent',
+            'nextEvent',
+            'maxEvent',
+            'minEvent'
+        ))->render();
+
+        return response()->json([
+            'success' => true,
+            'html' => $html,
+        ]);
+    }
 }

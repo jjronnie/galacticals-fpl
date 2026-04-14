@@ -3,10 +3,10 @@
 
 
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-
-            <div class="p-4 sm:p-8 bg-card shadow sm:rounded-lg">
+<div class="py-2">
+        <div class="max-w-7xl mx-auto space-y-1">
+        
+            <div class="bg-card shadow sm:rounded-lg">
                 <div class="max-w-xl">
 
                     @php
@@ -48,10 +48,10 @@
 
 
 
-            <div class="p-4 sm:p-8 bg-card shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    <div
-                        class=" px-4 md:px-6 flex flex-col sm:flex-row justify-between items-center text-sm text-gray-200 space-y-2 sm:space-y-0">
+             <div class="bg-card shadow sm:rounded-lg">
+                 <div class="max-w-xl">
+                     <div
+                         class="flex flex-col sm:flex-row justify-between items-center text-sm text-gray-200 space-y-2 sm:space-y-0">
                         <p>&copy; {{ date('Y') }} <a href="http://techtowerinc.com" target="_blank"
                                 rel="noopener noreferrer"> TechTower Inc. </a>| All rights reserved.</p>
 

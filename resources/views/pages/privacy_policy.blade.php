@@ -1,6 +1,6 @@
 <x-app-layout>
 
-    <main class="max-w-4xl mx-auto p-4 space-y-4">
+    <main class="max-w-4xl mx-auto space-y-4">
 
           <x-adsense/>
         

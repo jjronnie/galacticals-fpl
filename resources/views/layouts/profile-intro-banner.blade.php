@@ -1,4 +1,4 @@
-@php
+{{-- @php
     $shouldShowProfileIntro = ! auth()->check() || ! auth()->user()->hasClaimedProfile();
 @endphp
 
@@ -13,12 +13,12 @@
             </div>
 
             <div>
-                
+
                     <a href="{{ route('profile.search') }}" class="inline-flex rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-primary hover:bg-cyan-300">
                         Claim Yours Now
                     </a>
-               
+
             </div>
         </div>
     </section>
-@endif
+@endif --}}

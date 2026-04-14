@@ -1,6 +1,6 @@
 <x-app-layout>
 
-    <main class=" p-4 space-y-6">
+    <main class="space-y-6">
 
         <x-adsense />
 

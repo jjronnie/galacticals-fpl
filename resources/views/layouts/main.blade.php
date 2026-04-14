@@ -1165,7 +1165,7 @@
 </head>
 
 
-<body class="font-sans  text-white bg-primary  m-0 p-0 flex flex-col min-h-screen ">
+<body class="font-sans  text-white bg-primary  m-0 px-2 flex flex-col min-h-screen ">
 
     <!-- Preloader-->
     @if (!request()->routeIs(['login', 'register', 'dashboard']))
