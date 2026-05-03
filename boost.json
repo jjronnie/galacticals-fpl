@@ -1,14 +1,15 @@
 {
     "agents": [
-        "codex",
         "copilot",
         "opencode"
     ],
-    "editors": [
-        "codex",
-        "opencode",
-        "vscode"
-    ],
-    "guidelines": [],
-    "sail": true
+    "guidelines": true,
+    "mcp": true,
+    "nightwatch_mcp": false,
+    "sail": true,
+    "skills": [
+        "laravel-best-practices",
+        "socialite-development",
+        "tailwindcss-development"
+    ]
 }
